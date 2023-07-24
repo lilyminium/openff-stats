@@ -17,3 +17,26 @@ scripts/get-openff-forcefields-stats.log:Total downloads: 246055
 scripts/get-openff-software-downloads.log:Total downloads: 928312
 scripts/get-openff-software-stats.log:Total downloads: 567702
 ```
+
+## Difference between openff-forcefields-stats and openff-forcefields-downloads (and corresponding openff-software)
+
+openff-xx-stats uses the more robust `condastats` API to get download data.
+This is updated on a periodic basis, but as of July 2023 does not
+include Python 3.10+.
+(See https://github.com/ContinuumIO/anaconda-package-data/issues/41 for more).
+That means it undercounts downloads.
+
+openff-xx-downloads uses a fragile script to visit the Anaconda page
+(e.g. https://anaconda.org/conda-forge/openff-toolkit) and parses the HTML
+to get the total downloads listed. For now, this is likely the more
+accurate figure, and it is likely updated more frequently than `anaconda-package-data`.
+
+
+## Citations
+Right now this uses Crossref to get citation data. This doesn't always
+match up with how many citations are shown if you look at the individual
+journal articles.
+
+DataCite also has a queryable API for citations. Zenodo's API returns
+download count, but no citations. A solution could be to parse HTML
+as above.
