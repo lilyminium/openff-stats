@@ -3,7 +3,7 @@ Stats for OpenFF software and FFs
 
 The `data/` directory contains the outputs of the `scripts/` directory.
 
-Each Python script (`*.py`) has an accompanying shell script (`*.zsh`)
+Each Python script (`*.py`) has an accompanying shell script (`*.sh`)
 that demonstrates how to run it, as well as a log file (`*.log`)
 demonstrating the outputs. The shell scripts should be modified
 to run on your own machine, e.g. by changing the shell to `bash`
