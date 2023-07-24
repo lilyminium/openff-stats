@@ -55,6 +55,7 @@ jobs:
         cd ..
 
     - name: deploy
+      if: github.event_name != 'pull_request'
       env:
         GH_USER: github-actions
         GH_EMAIL: "github-action@users.noreply.github.com"
