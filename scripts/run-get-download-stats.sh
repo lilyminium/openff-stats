@@ -24,3 +24,9 @@ python get-anaconda-downloads.py                          \
     --package           "openff-forcefields"                \
     --output            "../data/openff-forcefields-downloads.csv" \
     > get-openff-forcefields-downloads.log 2>&1
+
+
+python get-anaconda-downloads.py                            \
+    --package           "ambertools"                        \
+    --output            "../data/ambertools-downloads.csv"  \
+    > get-ambertools-downloads.log 2>&1

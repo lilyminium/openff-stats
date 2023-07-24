@@ -23,3 +23,9 @@ python get-openff-software-stats.py                         \
     --package           "openff-forcefields"                \
     --output-directory  "../data/openff-forcefields-stats/" \
     > get-openff-forcefields-stats.log 2>&1
+
+
+python get-openff-software-stats.py                         \
+    --package           "ambertools"                        \
+    --output-directory  "../data/ambertools-stats/"         \
+    > get-ambertools-stats.log 2>&1
