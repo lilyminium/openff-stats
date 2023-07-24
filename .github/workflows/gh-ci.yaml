@@ -1,0 +1,77 @@
+name: GH Actions CI
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  # Specific group naming so CI is only cancelled
+  # within same PR or on merge to main
+  group: ${{ github.ref }}-${{ github.head_ref }}-${{ github.workflow }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash -l {0}
+
+
+jobs:
+  main_tests:
+    name: CI
+    runs-on: ubuntu-latest
+    strategy:
+        fail-fast: false
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Build information
+      run: |
+        uname -a
+        df -h
+        ulimit -a
+
+    - name: setup micromamba
+      uses: mamba-org/setup-micromamba@v1
+      with:
+        environment-file: environment.yaml
+
+    - name: Python information
+      run: |
+        which python
+        conda info
+        conda list
+
+    - name: Run scripts
+      run: |
+        cd scripts
+        for script in $(ls run*); do
+          echo "Running $script"
+          ./$script
+        done
+        cd ..
+
+    - name: deploy
+      env:
+        GH_USER: github-actions
+        GH_EMAIL: "github-action@users.noreply.github.com"
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GH_REPOSITORY: "github.com/${{ github.repository }}.git"
+      run: |
+        REV=$(git rev-parse --short HEAD)
+        BRANCH="${GITHUB_REF#refs/heads/}"
+
+        git init
+        git config user.name $GH_USER
+        git config user.email $GH_EMAIL
+        git remote add upstream "https://${GH_USER}:${GH_TOKEN}@${GH_REPOSITORY}"
+        git fetch --depth 50 upstream $BRANCH main
+        git reset upstream/main
+
+        git diff-index --quiet HEAD -- || git commit -m "executed run scripts"
+        git push -q upstream HEAD:main
+
+

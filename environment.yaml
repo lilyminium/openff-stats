@@ -2,6 +2,8 @@ name: condastats
 channels:
 - conda-forge
 dependencies:
+- python
+- pip
 - click ==8.1.5
 - condastats ==0.2.1
 - ipykernel ==6.24.0

@@ -1,6 +1,6 @@
-#!/bin/zsh
+#!/bin/bash
 
-source ~/.zshrc
+source ~/.bashrc
 
 micromamba activate condastats
 
