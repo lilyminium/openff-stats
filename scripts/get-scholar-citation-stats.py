@@ -6,9 +6,10 @@ def get_scholar_citations(
     import re
     import requests
     
-    url = f"https://scholar.google.com/scholar?cites={record_id}&as_sdt=2005&sciodt=0,5&hl=en"
+    url = f"https://scholar.google.com/scholar?cluster={record_id}&as_sdt=2005&sciodt=0,5&hl=en"
     response = requests.get(url)
-    message = response.text.split("Cited by")[1].strip()
+    pattern = f"cites={record_id}" + '[0-9a-zA-Z&;,=_]+">Cited by '
+    message = re.split(pattern, response.text)[1]
     return int(re.match("\d+", message).group(0))
 
 @click.command()

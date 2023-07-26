@@ -11,14 +11,16 @@ and perhaps using `conda` or `mamba` in place of `micromamba`.
 
 ```bash
 $ grep Total scripts/*.log
+scripts/get-ambertools-downloads.log:Total downloads: 1087098
 scripts/get-chemrxiv-metrics.log:Total Abstract Views: 60812
 scripts/get-chemrxiv-metrics.log:Total Citations: 5
 scripts/get-chemrxiv-metrics.log:Total Content Downloads: 14012
 scripts/get-crossref-citation-stats.log:Total citations: 483
-scripts/get-openff-forcefields-downloads.log:Total downloads: 289479
+scripts/get-openff-forcefields-downloads.log:Total downloads: 290921
 scripts/get-openff-forcefields-stats.log:Total downloads: 246055
+scripts/get-openff-software-downloads.log:Total downloads: 935230
 scripts/get-openff-software-stats.log:Total downloads: 567702
-scripts/get-scholar-citation-stats.log:Total citations: 3654
+scripts/get-scholar-citation-stats.log:Total citations: 727
 ```
 
 ## Difference between openff-forcefields-stats and openff-forcefields-downloads (and corresponding openff-software)
