@@ -1,0 +1,16 @@
+,ID,Title,Abstract Views,Citations,Content Downloads
+0,60c7524af96a00b232288199,"Development and Benchmarking of Open Force Field v1.0.0, the Parsley Small Molecule Force Field",4571,0,1709
+1,60c73d570f50db72bd3954a8,Toward Expanded Diversity of Host-Guest Interactions via Synthesis and Characterization of Cyclodextrin Derivatives,7066,0,505
+2,60c73e994c8919d320ad1e16,Facile Synthesis of a Diverse Library of Mono-3-substituted _-Cyclodextrin Analogues,3803,0,933
+3,60c73f85ee301c7b01c78902,Toward Learned Chemical Perception of Force Field Typing Rules,7167,0,1244
+4,60c74162702a9b3e6a18a234,Systematic Optimization of Water Models Using Liquid/Vapor Surface Tension Data,3004,0,871
+5,60c74279f96a002e02286613,ChemPer: An Open Source Tool for Automatically Generating SMIRKS Patterns,4802,2,1384
+6,60c7447c842e65b592db2478,Binding thermodynamics of host-guest systems with SMIRNOFF99Frosst 1.0.5 from the Open Force Field Initiative,4834,0,1601
+7,60c7495a842e6554fddb2d13,Driving Torsion Scans with Wavefront Propagation,2805,0,632
+8,60c74f009abda207d4f8d77e,Benchmark Assessment of Molecular Geometries and Energies from Small Molecule Force Fields,13534,1,1312
+9,60c74f13bdbb89358ba39cd3,Improving Small Molecule Force Fields by Identifying and Characterizing Small Molecules with Inconsistent Parameters,3350,0,567
+10,62587928ebac3a4647d513f7,Improving force field accuracy by training against condensed phase mixture properties,1250,0,635
+11,631a10083940c20533f81566,Open Force Field BespokeFit: Automating Bespoke Torsion Parametrization At Scale,806,1,478
+12,635b03b118a8cc66da547ee2,Collaborative assessment of molecular geometries and energies from the Open Force Field,536,0,348
+13,63bc6a17d19cc558a9ff063b,Development and Benchmarking of Open Force Field 2.0.0 -- the Sage Small Molecule Force Field,2034,1,1158
+14,6192a4c064a707380070fe26,"The Open Force Field Evaluator: An automated, efficient, and scalable framework for the estimation of physical properties from molecular simulation",1250,0,635
