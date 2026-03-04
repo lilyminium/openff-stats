@@ -29,16 +29,47 @@ DATACITE_BASE = "https://api.datacite.org/dois"
 # Discovery
 # ---------------------------------------------------------------------------
 
-def _search_zenodo(params: dict) -> list[dict]:
-    """Execute a single Zenodo search and return the list of hits."""
+def _search_zenodo(base_params: dict, max_records: int = 400) -> list[dict]:
+    """Execute a Zenodo search with pagination and API-compatibility fallbacks."""
     url = f"{ZENODO_BASE}/records"
-    try:
-        response = requests.get(url, params=params, timeout=60)
-        response.raise_for_status()
-        return response.json().get("hits", {}).get("hits", [])
-    except Exception as exc:
-        print(f"  Warning: Zenodo search failed ({params}): {exc}")
-        return []
+    # Zenodo unauthenticated requests currently allow max page size of 25.
+    size = 25
+    page = 1
+    results: list[dict] = []
+
+    while len(results) < max_records:
+        params_with_page = {**base_params, "size": size, "page": page}
+        attempts = [
+            {**params_with_page, "sort": "newest"},
+            {**params_with_page, "sort": "mostrecent"},
+            params_with_page,
+        ]
+
+        response = None
+        last_error: Exception | None = None
+        for params in attempts:
+            try:
+                candidate = requests.get(url, params=params, timeout=60)
+                candidate.raise_for_status()
+                response = candidate
+                break
+            except Exception as exc:
+                last_error = exc
+
+        if response is None:
+            print(f"  Warning: Zenodo search failed ({params_with_page}): {last_error}")
+            break
+
+        page_hits = response.json().get("hits", {}).get("hits", [])
+        if not page_hits:
+            break
+
+        results.extend(page_hits)
+        if len(page_hits) < size:
+            break
+        page += 1
+
+    return results[:max_records]
 
 
 def discover_zenodo(output_file: str) -> pd.DataFrame:
@@ -59,13 +90,8 @@ def discover_zenodo(output_file: str) -> pd.DataFrame:
 
     hits_by_doi: dict[str, dict] = {}
 
-    # 1. Community search
-    community_hits = _search_zenodo({
-        "communities": "openforcefield",
-        "size": 200,
-        "all_versions": "false",
-        "sort": "mostrecent",
-    })
+    # 1. Community-focused search
+    community_hits = _search_zenodo({"communities": "openforcefield"})
     print(f"  openforcefield community: {len(community_hits)} records")
     for hit in community_hits:
         doi = hit.get("doi") or hit.get("metadata", {}).get("doi", "")
@@ -73,13 +99,8 @@ def discover_zenodo(output_file: str) -> pd.DataFrame:
             hits_by_doi[doi] = hit
 
     # 2. Free-text search
-    for query in ['openff', '"open force field"']:
-        freetext_hits = _search_zenodo({
-            "q": query,
-            "size": 200,
-            "all_versions": "false",
-            "sort": "mostrecent",
-        })
+    for query in ["openff", '"open force field"', "openforcefield"]:
+        freetext_hits = _search_zenodo({"q": query})
         print(f"  query '{query}': {len(freetext_hits)} records")
         for hit in freetext_hits:
             doi = hit.get("doi") or hit.get("metadata", {}).get("doi", "")

@@ -41,8 +41,7 @@ openff-stats discover-packages
 # Find publications for one or more ORCID authors (writes candidates/publications.csv)
 # Not all papers found will be OpenFF-related — review carefully!
 openff-stats discover-publications \
-    --orcid 0000-0002-1544-1476 \
-    --orcid 0000-0002-4317-1381
+    --orcid-csv inputs/orcids.csv
 
 # Find OpenFF records on Zenodo (writes candidates/zenodo.csv)
 openff-stats discover-zenodo
@@ -79,7 +78,7 @@ Two methods are used, and their counts often differ:
 | Method | Column | Notes |
 |--------|--------|-------|
 | Anaconda HTML | `anaconda_total` | Scrapes `https://anaconda.org/conda-forge/{pkg}`. Most up-to-date total; fragile HTML parsing. |
-| condastats API | `condastats_total` | Queries the Anaconda package dataset. More robust; updated periodically; historically undercounted Python 3.10+ installs (fixed in newer data). |
+| condastats API | `condastats_total` | Queries the Anaconda package dataset. More robust; updated periodically, so may undercount between updates. |
 
 The `downloads_yearly.csv` file uses condastats data (the only source with monthly/yearly breakdown).
 

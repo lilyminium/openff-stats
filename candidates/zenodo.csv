@@ -14,7 +14,10 @@ zenodo_id,doi,title,creators,publication_year,resource_type
 18177180,10.5281/zenodo.18177180,openforcefield/openff-units: 0.3.2 Compatibility with Pint 0.25 and Python 3.14,Matt Thompson; Josh A. Mitchell; Mike Henry; Irfan Alibay; Richard Gowers,2026,software
 18176313,10.5281/zenodo.18176313,OpenFF 2.3.0rc2 Relative Binding Free Energy Benchmarks,"Alibay, Irfan",2026,dataset
 18600021,10.5281/zenodo.18600021,openforcefield/smirnoff99Frosst: 1.1.0.1,David L. Mobley; Jeff Wagner; Caitlin Bannan; Andrea Rizzi; Matt Thompson; Mike Henry,2026,software
+18459439,10.5281/zenodo.18459439,nglviewer/nglview: v4.0.1,Hai Nguyen; Alexander Rose; Roberto Di Remigio Eikås; Jan Janssen; Hugo van Kemenade; Richard Gowers; Martin K. Scherer; David L. Dotson; himkt; hai-schrodinger; Max Linke; Kawai; Yunqi Shao; Wanja Schulze; Toshiki Kataoka; Paweł T. Jochym; wangm23456; npm-to-cdn-bot (by Forbes Lindesay); Zachary Riedlshah; Viktor Horvath; Toon Verstraelen; Paolo Tosco; Marvin Poul; Martin Hunt; Josh A. Mitchell; John Chodera; Joe Greener; jaimergp; Hadrien Mary,2026,software
 18350609,10.5281/zenodo.18350609,openforcefield/yammbs: 0.3.1,Matt Thompson; Brent Westbrook; Finlay Clark; Lily Wang; Alexandra (Lexie) McIsaac; James R. Baggs Eastwood,2026,software
+18346784,10.5281/zenodo.18346784,MDAnalysis/mdacli: v0.2.0,João M.C. Teixeira; Philip Loche; Henrik Stooss; Lily Wang; Oliver Beckstein; Shreejan Dolai,2026,software
+18344076,10.5281/zenodo.18344076,MDAnalysis/GridDataFormats: 1.1.1 rc0 test release,Oliver Beckstein; Max Linke; Irfan Alibay; Giacomo Fiorin; Lily Wang; Eloy Félix; Jan Domański; Josh Vermaas; Olivier Languin-Cattoën; Pradyumn Prasad; ReneH; Rich; Richard Gowers; Rocco Meli; Zhiyi Wu; rathann; tluchko,2026,software
 18684333,10.5281/zenodo.18684333,"OpenFF Keynote, OMSF Workshop 2025","Wang, Lily; Shirts, Michael",2025,presentation
 17555239,10.5281/zenodo.17555239,YDS Upload 76,"OpenFF, YDS",2025,dataset
 17555233,10.5281/zenodo.17555233,YDS Upload 77,"OpenFF, YDS",2025,dataset
@@ -68,6 +71,7 @@ zenodo_id,doi,title,creators,publication_year,resource_type
 14867658,10.5281/zenodo.14867658,POPC openff-1.3.1 replicate 1,Julianne Hoeflich,2025,dataset
 14861207,10.5281/zenodo.14861207,OpenFF MSD verification,"Frankel, Patrick",2025,dataset
 14804144,10.5281/zenodo.14804144,OpenFF Parsley 1.3.1 POPC bilayer,"Frankel, Patrick",2025,dataset
+14776136,10.5281/zenodo.14776136,Amber Lipid21 bilayer simulations,"Frankel, Patrick",2025,dataset
 14714284,10.5281/zenodo.14714284,OpenFF Sage 2.2.0 lipid bilayer simulations,"Frankel, Patrick",2025,dataset
 14610399,10.5281/zenodo.14610399,openforcefield/openff-recharge: 0.5.3,SimonBoothroyd; Matt Thompson; Lily Wang; Josh A. Mitchell; Jeff Wagner; trevorgokey,2025,software
 18334678,10.5281/zenodo.18334678,What's up with OpenFF?,"Eastwood, James",2025,publication
@@ -78,6 +82,12 @@ zenodo_id,doi,title,creators,publication_year,resource_type
 18334205,10.5281/zenodo.18334205,Why We Should Drop (Graph-based) Bond Order and No Longer Use Aromaticity,"Mobley, David",2025,publication
 18333764,10.5281/zenodo.18333764,Six Steps to Success When Reporting Open-Source Computational Chemistry Issues,"Thompson, Matt",2025,other
 17981851,10.5281/zenodo.17981851,openmm/openmmforcefields: 0.15.1,John Chodera; Evan Pretti; Mike Henry; Matt Thompson; Hannah Bruce Macdonald; Ivy Zhang; Iván Pulido; Ken Takaba; Rafal Wiewiora; Jeff Wagner; Peter Eastman; Chaya Stern; George; Hannah Baumann; Josh Horton; Niklas Rindtorff,2025,software
+17914880,10.5281/zenodo.17914880,omsf/gha-runner: v0.6.2,Ethan Holz; David W.H. Swenson; Jennifer Wei; Jeff Wagner; Ryan Williams; Mikhail P,2025,software
+17664757,10.5281/zenodo.17664757,alchemistry/alchemtest: 1.0.0,Oliver Beckstein; Domenico Marson; David L. Dotson; Zhiyi Wu; Ian Kenney; shuail; Dominik Wille; Jennifer A Clark; Jérôme Hénin; Tom Joseph; Bryce Allen; Mohammad Soroush Barhaghi; Victoria Lim; hl2500; trje3733,2025,software
+17382469,10.5281/zenodo.17382469,MDAnalysis/mdanalysis: Release 2.10.0 of MDAnalysis and MDAnalysisTests,Richard Gowers; Oliver Beckstein; Max Linke; Irfan Alibay; Jonathan Barnoud; Tyler Reddy; Hugo MacDermott-Opeskin; Rocco Meli; Lily Wang; Utkarsh Bansal; Johannes Zeman; John Detlefs; David L. Dotson; Manuel N. Melo; Mateusz Bieniek; ayushsuhane; Sébastien Buchoux; Matteo Tiberti; Naveen Michaud-Agrawal; Davide Cruz; Sean Seyler; denniej0-2; Philip Loche; Jose Borreguero; Yuxuan Zhuang; Tanish Yelgoe; Nabarun Pal; Ninad; Jan Domański; Zhiyi Wu,2025,software
+17373150,10.5281/zenodo.17373150,choderalab/pymbar: 4.2.0 Disable JAX Acceleration with an Environmental Variable,"Michael Shirts; Kyle Beauchamp; Levi Naden; John Chodera; jaimergp; Mike Henry; Stefano Martiniani; Chaya Stern; Matt Thompson; badisa; Jennifer A Clark; Josh Fass; Richard Gowers; Robert T. McGibbon; Bradley Dice; David L. Dotson; Irfan Alibay; Iván Pulido; Kazuya Ujihara; Marc Schuh; Tucker ""Emme"" Burgin",2025,software
+17035954,10.5281/zenodo.17035954,matta-research-group/SwiftPol: v.0.1.4,"Hannah Turney; Lukasz Sekula; Jennifer A Clark; Matta, Micaela",2025,software
+15678719,10.5281/zenodo.15678719,OpenFreeEnergy/cinnabar: v0.5.0,Richard Gowers; Hannah Bruce Macdonald; Mike Henry; Alyssa Travitz; Irfan Alibay; dfhahn; Iván Pulido; Josh A. Mitchell; Ivy Zhang; John Chodera; David L. Dotson; glass-w; Hannah Baumann; anna,2025,software
 14193547,10.5281/zenodo.14193547,Progress on SMIRNOFF protein force field,"Cavender, Chapin",2024,presentation
 13343917,10.5281/zenodo.13343917,OpenFF Keynote: OMSF Workshop 2024,"David, Mobley; Lily, Wang; The Open Force Field Consortium",2024,presentation
 12628105,10.5281/zenodo.12628105,OMSF Symposium 2024: OpenFF Live Demo,"Wagner, Jeffrey R; Mitchell, Josh A",2024,presentation
@@ -104,6 +114,7 @@ zenodo_id,doi,title,creators,publication_year,resource_type
 13845128,10.5281/zenodo.13845128,OpenFF 2.2.0 + NAGL POPC / TRJ Verification,"Frankel, Patrick",2024,dataset
 11788561,10.5281/zenodo.11788561,OpenFF POPC Packmol Test,"Frankel, Patrick",2024,dataset
 11491381,10.5281/zenodo.11491381,openforcefield/openff-fragmenter: 0.2.2,Chaya Stern; Jeff Wagner; SimonBoothroyd; Matt Thompson; Josh A. Mitchell; Josh Horton; John Chodera; Daniel Smith,2024,software
+11385284,10.5281/zenodo.11385284,DFT torsiondrive data for: MACE-OFF23: Transferable Machine Learning Force Fields for Organic Molecules,"Kovács, Dávid Péter; Moore, James Harry; Browning, Nicholas; Batatia, Ilyes; Horton, Joshua T; Kapil, Venkat; Witt, William; Magdău, Ioan-Bogdan; Cole, Daniel; Csányi, Gábor",2024,dataset
 11075560,10.5281/zenodo.11075560,OpenFF POPE (64:64),"Hoeflich, Julianne",2024,dataset
 10976284,10.5281/zenodo.10976284,OpenFF 320K HMR,"Frankel, Patrick",2024,dataset
 10976273,10.5281/zenodo.10976273,OpenFF 270K HMR,"Frankel, Patrick",2024,dataset
@@ -115,7 +126,11 @@ zenodo_id,doi,title,creators,publication_year,resource_type
 10732986,10.5281/zenodo.10732986,OpenFF POPC Sim (200 ns equilibration test),"Frankel, Patrick",2024,dataset
 10680895,10.5281/zenodo.10680895,OpenFF POPC Simulation w/ sd integrator,"Frankel, Patrick",2024,dataset
 10607759,10.5281/zenodo.10607759,openforcefield/openff-models: 0.1.2,Matt Thompson; Richard Gowers; Mike Henry,2024,software
+10476922,10.5281/zenodo.10476922,gwallison/openFF: Before big changes to chem list summary,gwallison,2024,software
 14198706,10.5281/zenodo.14198706,OpenFE v0.13.0 partial charge benchmarks,"Alibay, Irfan",2024,other
+10975225,10.5281/zenodo.10975225,SPICE 2.0.1,"Eastman, Peter; Behara, Pavan Kumar; Dotson, David; Galvelis, Raimondas; Herr, John; Horton, Josh; Mao, Yuezhi; Chodera, John; Pritchard, Benjamin; Wang, Yuanqing; De Fabritiis, Gianni; Markland, Thomas",2024,dataset
+10495732,10.5281/zenodo.10495732,"Workflow and simulation input files to ""Current state of open source force fields in protein-ligand binding affinity predictions""","Gapsys, Vytautas; Hahn, David",2024,workflow
+14207583,10.5281/zenodo.14207583,MDAnalysis/mdahole2: v0.5.0,Ian Kenney; Irfan Alibay; Lily Wang; Oliver Beckstein; Tyler Reddy,2024,software
 10822060,10.5281/zenodo.10822060,Supporting  Information: Non-bonded force field parameters from MBIS partitioning of the molecular electron density improve thermophysical properties prediction of organic liquids,"Pulido, Jorge",2024,software
 10038276,10.5281/zenodo.10038276,Benchmarking forcefields with crystal structure simulations of organic molecules,"Hüfner, Tobias; Stern, Peter; Hagler, Arnie; Gilson, Michael",2023,presentation
 8250346,10.5281/zenodo.8250346,"The Open Field Initiative: Open Source, Open Data",Michael R. Shirts,2023,presentation
@@ -156,6 +171,9 @@ zenodo_id,doi,title,creators,publication_year,resource_type
 8299506,10.5281/zenodo.8299506,200 ns Quality Analysis of OpenFF Parameterized Pure POPC Lipid Bilayer,Patrick Frankel,2023,publication
 8248276,10.5281/zenodo.8248276,10 ns Quality Analysis Test of OpenFF Parameterized Pure POPC Lipid Bilayer,Patrick Frankel,2023,publication
 8221147,10.25080/gerudo-f2bc6f59-032,"Open Force Field: next-generation force fields with open data, open software, and open science","Wagner, Jeffrey",2023,presentation
+8252914,10.5281/zenodo.8252914,Kartograf: An Accurate Graph-Based Atom Mapper For Hybrid Topology Relative Free Energy Calculations,"Ries, Benjamin; Alibay, Irfan; Henry, Michael M.; Swenson, David W. H.; David Dotson; Gowers, Richard J.",2023,poster
+16898565,10.5281/zenodo.16898565,OpenFreeEnergy/Lomap: v3.0.0 - Added gufe bindings,Richard Gowers; Mark Mackey; Toni Mey; Alyssa Travitz; Irfan Alibay; shuail; Mike Henry; David W.H. Swenson; Shaochen Shi; David L. Mobley; Hannah Baumann; Josh A. Mitchell; JenkeScheen; Lester Hedges; Gaetano Calabro',2023,software
+10058664,10.5281/zenodo.10058664,MDAnalysis/MDAnalysisData: 0.9.0,Oliver Beckstein; Richard Gowers; Irfan Alibay; Shujie Fan; Lily Wang; Micaela Matta,2023,software
 7596498,10.5281/zenodo.7596498,Collaborative Assessment of Molecular Geometries and Energies from the Open Force Field,"D'Amore, Lorenzo; Hahn, David F.; Dotson, David L.; Horton, Joshua, T.; Anwar, Jamshed; Craig, Ian; Fox, Thomas; Gobbi, Alberto; Lakkaraju, Sirish Kaushik; Lucas, Xavier; Meier, Katharina; Mobley, David L.; Narayanan, Arjun; Shindler, Christina E. M.; Swope, William C.; in 't Veld, Pieter J.; Wagner, Jeffrey; Xue, Bai; Tresadern, Gary J.",2022,dataset
 7548777,10.5281/zenodo.7548777,Benchmarking QM theory for drug-like molecules to train force fields,"Behara, Pavan Kumar; Jang, Hyesu; Horton, Joshua; Dotson, David; Boothroyd, Simon; Cavender, Chapin; Gapsys, Vytautas; Gokey, Trevor; Hahn, David; Maat, Jessica; Madin, Owen; Pulido, Ivan; Thompson, Matthew; Wagner, Jeffrey; Wang, Lily; Chodera, John; Cole, Daniel; Gilson, Michael; Shirts, Michael; Bayly, Christopher; Wang, Lee-Ping; Mobley, David",2022,poster
 7499695,10.5281/zenodo.7499695,"Sage, the Open Force Field 2.0.0 and the road map forward",Michael R. Shirts,2022,presentation
@@ -171,6 +189,8 @@ zenodo_id,doi,title,creators,publication_year,resource_type
 6631982,10.5281/zenodo.6631982,"An update on the Open Force Field Initiative: Progress, plans and opportunities","Mobley, David; Open Force Field Initiative",2022,presentation
 6153446,10.5281/zenodo.6153446,"Building an open, self-consistent force field for biopolymers and small molecules with the Open Force Field Initiative infrastructure","Cavender, Chapin E; Behara, Pavan K; Boothroyd, Simon; Dotson, David L; Gapsys, Vyautas; Hahn, David F; Horton, Josha T; Pulido, Ivan J; Thompson, Matthew W; Wager, Jeffrey; Wang, Lily; Chodera, John D; Cole, Daniel J; Mobley, David L; Shirts, Michael R; Gilson, Michael K",2022,poster
 5846958,10.5281/zenodo.5846958,OpenFF Biopolymer FF meeting: dipeptide 2-D TorsionDrives,"Cavender, Chapin E",2022,presentation
+7852102,10.5281/zenodo.7852102,A computational workflow for binding free energies in Python,Simon Nygaard-Thomsen,2022,dataset
+7255700,10.5281/zenodo.7255700,pAPRika,"Slochower, David; Setiadi, Jeffry; Henriksen, Niel; Boothroyd, Simon; Thompson, Matthew; Wang, Liangyue",2022,software
 6600875,10.5281/zenodo.6600875,Protein-Ligand Benchmark Dataset for Free Energy Calculations,"Hahn, David F.; Wagner, Jeffrey R.",2022,software
 5498181,10.5281/zenodo.5498181,OpenFF Biopolymer FF meeting: tetrapeptide torsion profiles,Chapin E. Cavender,2021,presentation
 5495927,10.5281/zenodo.5495927,Follow-up workshop on Bespoke Fitting,Joshua Horton,2021,presentation
@@ -210,9 +230,15 @@ zenodo_id,doi,title,creators,publication_year,resource_type
 4279620,10.5281/zenodo.4279620,openforcefield/cmiles: v0.1.6: Maintenance and testing updates,Chaya Stern; Matt Thompson,2020,software
 3963295,10.5281/zenodo.3963295,"Introducing the first optimized Open Force Field 1.0.0 (codename ""Parsley"")","Qiu, Yudong; Smith, Daniel G. A.; Boothroyd, Simon; Wagner, Jeffrey; Bannan, Caitlin C.; Gokey, Trevor; Jang, Hyesu; Lim, Victoria T.; Stern, Chaya D.; Rizzi, Andrea; Lucas, Xavier; Tjanaka, Bryon; Shirts, Michael R.; Gilson, Michael K.; Chodera, John D.; Bayly, Christopher I.; Mobley, David L.; Wang, Lee-Ping",2019,publication
 3539635,10.5281/zenodo.3539635,Graph Nets for partial charge prediction,"Wang, Yuanqing",2019,presentation
+3533435,10.5281/zenodo.3533435,Using NMR relaxation data to improve the dynamics of methyl groups in AMBER and CHARMM force fields,"Hoffmann, Falk",2019,presentation
+3445476,10.5281/zenodo.3445476,Data Curation: The Forgotten Practice in the Era of AI,"Daga, Pankaj R.",2019,presentation
+3420778,10.5281/zenodo.3420778,Binding free energy calculations for protein-ligand systems,"Gapsys, Vytautas",2019,presentation
+3407844,10.5281/zenodo.3407844,ff19SB - Amino acid specific protein backbone parameters trained against quantum mechanics energies in solution,"Tian, Chuan",2019,presentation
 3405597,10.5281/zenodo.3405597,Next Steps for OpenFF Development,"Gilson, Michael K.",2019,presentation
+3405594,10.5281/zenodo.3405594,Artificial Intelligence (AI) Solutions for Computational & Organic Chemistry,"Isayev, Olexandr",2019,presentation
 3405585,10.5281/zenodo.3405585,The future of the Open Force Field Initiative: Year Two and Beyond,"Chodera, John D.",2019,presentation
 3405567,10.5281/zenodo.3405567,Parameterization Perspective IV: Data for Parameterization and Validation - Physical Properties,"Shirts, Michael R.",2019,presentation
+3405561,10.5281/zenodo.3405561,The MolSSI Quantum Chemistry Archive Project,"Smith, Daniel G. A.",2019,presentation
 3405547,10.5281/zenodo.3405547,Parameterization Perspective II: The Property Estimator,"Boothroyd, Simon",2019,presentation
 3405539,10.5281/zenodo.3405539,Parameterization perspective I: Parameter optimization methodology,"Wang, Lee Ping",2019,presentation
 3405520,10.5281/zenodo.3405520,Discussion of progress and current status of OpenFF,"Chodera, John D.",2019,presentation
@@ -231,5 +257,6 @@ zenodo_id,doi,title,creators,publication_year,resource_type
 3228414,10.5281/zenodo.3228414,Open Force Field Roadmap,John D. Chodera; Michael K. Gilson; David L. Mobley; Michael R. Shirts; Lee-Ping Wang,2019,presentation
 3478573,10.5281/zenodo.3478573,"openforcefield/release-1-fitting: OpenFF ""parsley"" 1.0.0-RC2: Fitting Valence with QM Data",Yudong Qiu; hyejang,2019,software
 3522250,10.5281/zenodo.3522250,openforcefield/nistdataselection: 0.0.2 Parsley Benchmark Set Selection,SimonBoothroyd; Jeff Wagner,2019,software
+3369457,10.5281/zenodo.3369457,drugdata/D3R: Parallel task execution and updates for new Schrodinger,Chris Churas; shuail; crawld; Jeff Wagner; rvswift; nadyawilliams,2019,software
 5009751,10.7280/D1CD4C,Supporting Information: Toward learned chemical perception of force field typing rules,"Zanette, Camila; Bannan, Caitlin C.; Bayly, Christopher I.; Fass, Josh; Gilson, Michael K.; Shirts, Michael R.; Chodera, John D.; Mobley, David L.",2018,dataset
 3862411,10.5281/zenodo.3862411,BioExcel Webinar #31 - Open Force Field Initiative: The SMIRNOFF format and learned chemical perception,"Bannan, Caitlin",2018,presentation

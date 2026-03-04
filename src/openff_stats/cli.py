@@ -4,9 +4,10 @@ openff-stats command-line interface.
 Entry point: `openff-stats`
 
 Discovery commands (output candidates for human review):
-  openff-stats discover-publications --orcid XXXX [--orcid YYYY ...]
+  openff-stats discover-publications --orcid-csv inputs/orcids.csv
   openff-stats discover-packages
   openff-stats discover-zenodo
+  openff-stats scholar-clusters --input inputs/publications.csv
 
 Data collection commands (read curated inputs/, write data/):
   openff-stats citations
@@ -37,11 +38,19 @@ def cli() -> None:
     "--orcid",
     "orcids",
     multiple=True,
-    required=True,
     metavar="ORCID",
     help=(
         "ORCID identifier to query (e.g. 0000-0002-1544-1476). "
         "May be repeated for multiple authors."
+    ),
+)
+@click.option(
+    "--orcid-csv",
+    type=click.Path(exists=True),
+    help=(
+        "Path to a CSV file with Name and ORCID columns. "
+        "If provided, ORCIDs will be loaded from this file. "
+        "Individual --orcid flags can also be used to add more."
     ),
 )
 @click.option(
@@ -50,14 +59,39 @@ def cli() -> None:
     show_default=True,
     help="Path for the candidates CSV (for human review).",
 )
-def discover_publications(orcids: tuple[str, ...], output: str) -> None:
+def discover_publications(
+    orcids: tuple[str, ...],
+    orcid_csv: str | None,
+    output: str,
+) -> None:
     """Discover publications via ORCID + Crossref and write a candidates CSV.
 
     The output requires human verification before being saved to
     inputs/publications.csv. Not all papers found will be OpenFF-related.
+    Publications are sorted by the number of authors that overlap with
+    the provided ORCID list, as more overlaps indicate OpenFF publications.
     """
+    import pandas as pd
     from openff_stats.publications import discover_publications as _discover
-    _discover(list(orcids), output)
+
+    # Load ORCIDs and author names
+    all_orcids = list(orcids)
+    author_names: list[str] = []
+
+    if orcid_csv:
+        df = pd.read_csv(orcid_csv)
+        for _, row in df.iterrows():
+            orcid = str(row.get("ORCID", "")).strip()
+            name = str(row.get("Name", "")).strip()
+            if orcid:
+                all_orcids.append(orcid)
+            if name:
+                author_names.append(name)
+
+    if not all_orcids:
+        raise click.UsageError("No ORCIDs provided via --orcid or --orcid-csv.")
+
+    _discover(all_orcids, output, author_names)
 
 
 @cli.command("discover-packages")
@@ -117,6 +151,33 @@ def citations(input_csv: str, output_csv: str) -> None:
     """Collect citation counts from Crossref, Google Scholar, and ChemRxiv."""
     from openff_stats.publications import collect_all_citations
     collect_all_citations(input_csv, output_csv)
+
+
+@cli.command("scholar-clusters")
+@click.option(
+    "--input",
+    "input_csv",
+    default="inputs/publications.csv",
+    show_default=True,
+    help="Path to publications CSV containing title and scholar_cluster_id columns.",
+)
+@click.option(
+    "--output",
+    "output_csv",
+    default="inputs/publications.csv",
+    show_default=True,
+    help="Path to write updated CSV with scholar_cluster_id values.",
+)
+@click.option(
+    "--overwrite-existing",
+    is_flag=True,
+    default=False,
+    help="Re-query rows that already have scholar_cluster_id values.",
+)
+def scholar_clusters(input_csv: str, output_csv: str, overwrite_existing: bool) -> None:
+    """Populate scholar_cluster_id values by searching Google Scholar by title."""
+    from openff_stats.publications import populate_scholar_cluster_ids
+    populate_scholar_cluster_ids(input_csv, output_csv, overwrite_existing)
 
 
 @cli.command("downloads")
@@ -210,10 +271,20 @@ def plot_downloads(yearly_csv: str, output_path: str) -> None:
     "--zenodo-input", default="inputs/zenodo.csv", show_default=True,
     help="Curated Zenodo CSV.",
 )
+@click.option(
+    "--refresh-scholar-clusters",
+    is_flag=True,
+    default=False,
+    help=(
+        "Populate/update scholar_cluster_id values in the publications input "
+        "before collecting citations."
+    ),
+)
 def run_all(
     publications_input: str,
     packages_input: str,
     zenodo_input: str,
+    refresh_scholar_clusters: bool,
 ) -> None:
     """Run the full data-collection pipeline (citations, downloads, zenodo, plot).
 
@@ -222,13 +293,24 @@ def run_all(
     """
     import pathlib
 
-    from openff_stats.publications import collect_all_citations
+    from openff_stats.publications import (
+        collect_all_citations,
+        populate_scholar_cluster_ids,
+    )
     from openff_stats.downloads import collect_all_downloads
     from openff_stats.zenodo import collect_zenodo_citations
     from openff_stats.plotting import plot_downloads_per_year
 
     # --- Citations ---
     if pathlib.Path(publications_input).exists():
+        if refresh_scholar_clusters:
+            click.echo("\n=== Scholar cluster IDs ===")
+            populate_scholar_cluster_ids(
+                publications_input,
+                publications_input,
+                overwrite_existing=True,
+            )
+
         click.echo("\n=== Citation counts ===")
         collect_all_citations(publications_input, "data/citations.csv")
     else:

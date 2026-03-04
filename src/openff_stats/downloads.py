@@ -64,7 +64,7 @@ def discover_packages(output_file: str) -> pd.DataFrame:
 
 
 def get_anaconda_downloads(package: str) -> int | None:
-    """Scrape total download count from the Anaconda package page.
+    """Return total download count from the Anaconda.org JSON API.
 
     Parameters
     ----------
@@ -74,14 +74,13 @@ def get_anaconda_downloads(package: str) -> int | None:
     Returns
     -------
     int or None
-        Total download count, or None if the page couldn't be parsed.
+        Total download count, or None if the request failed.
     """
-    url = f"https://anaconda.org/conda-forge/{package}"
+    url = f"https://api.anaconda.org/package/conda-forge/{package}"
     try:
-        content = requests.get(url, timeout=30).content.decode("utf-8")
-        n_downloads = content.split("total downloads")[0]
-        n_downloads = n_downloads.split("<span>")[-1].split("</span>")[0]
-        return int(n_downloads.replace(",", ""))
+        response = requests.get(url, timeout=30)
+        response.raise_for_status()
+        return int(response.json()["ndownloads"])
     except Exception as exc:
         print(f"  Warning: could not get Anaconda downloads for {package}: {exc}")
         return None
