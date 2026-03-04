@@ -21,6 +21,7 @@ These numbers vastly overcount "real" installs of our packages for the following
 - many openff packages depend on each other and downloading one will pull in others. As the "total OpenFF conda-forge downloads" simply sums all downloads across all packages, this means the figure is likely inflated at least 5-fold, likely closer to 10.
 - many, perhaps most, of these downloads will simply be from running CI and tests.
 
+One thing to note: where there are two versions of a package, e.g. openff-toolkit and openff-toolkit-base, I have only used the download counts of the second. So these at least are not double counted.
 
 ### Citations
 
