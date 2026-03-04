@@ -21,11 +21,11 @@ These numbers vastly overcount "real" installs of our packages for the following
 - many openff packages depend on each other and downloading one will pull in others. As the "total OpenFF conda-forge downloads" simply sums all downloads across all packages, this means the figure is likely inflated at least 5-fold, likely closer to 10.
 - many, perhaps most, of these downloads will simply be from running CI and tests.
 
-One thing to note: where there are two versions of a package, e.g. openff-toolkit and openff-toolkit-base, I have only used the download counts of the second. So these at least are not double counted.
+Methodology note: where there are two versions of a package, e.g. openff-toolkit and openff-toolkit-base, I have only used the download counts of the second. So these at least are not double counted.
 
 ### Citations
 
-Here we use Google Scholar and CrossRef numbers because they're easy. Out of Google Scholar, CrossRef, and Scopus, Google Scholar tends to have the highest citation numbers. Importantly, we have anecdotally seen Google Scholar numbers fluctuate, possibly as a result of behind-the-scenes algorithm updates. It's important to cite when the numbers were generated. The date is above.
+Here we use Google Scholar and CrossRef numbers because they're easy. Out of Google Scholar, CrossRef, and Scopus, Google Scholar tends to have the highest citation numbers. One thing to note, we have anecdotally seen Google Scholar numbers fluctuate depending on when we look at them, possibly as a result of behind-the-scenes algorithm updates. The date is above.
 
 ## Installation
 
