@@ -1,11 +1,6 @@
 name: GH Actions CI
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+  workflow_dispatch:
 
 concurrency:
   # Specific group naming so CI is only cancelled

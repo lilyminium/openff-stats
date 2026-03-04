@@ -576,8 +576,13 @@ def collect_all_citations(input_csv: str, output_csv: str) -> None:
             chemrxiv_downloads.append(None)
             chemrxiv_citations.append(None)
 
+    keep_cols = ["DOI", "title", "authors", "year"]
+    df = df[keep_cols].copy()  # only keep core metadata + new citation columns
+
     df["crossref_citations"] = crossref_citations
+    df["crossref_citations"] = df["crossref_citations"].astype(int)
     df["scholar_citations"] = scholar_citations
+    df["scholar_citations"] = df["scholar_citations"].astype(int)
     df["chemrxiv_views"] = chemrxiv_views
     df["chemrxiv_downloads"] = chemrxiv_downloads
     df["chemrxiv_citations"] = chemrxiv_citations

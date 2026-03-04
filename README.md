@@ -2,6 +2,12 @@
 
 Stats for OpenFF software packages and publications.
 
+**Note: I've only manually checked the Google Scholar numbers for citations.**
+
+Note that Google Scholar citations require selenium.
+I've essentially hardcoded this to work on my machine (tm);
+no guarantees it'll work for you.
+
 ## Installation
 
 ```bash
@@ -33,6 +39,8 @@ data/plots/openff_downloads_per_year.png
 ## Usage
 
 ### Discovery (run once, then verify manually)
+
+I also suggest updating manually. I started off with this automated list but it took 10+ min to download all publications, and 20 min to sort through all the OpenFF ones. I've suggested a base list of authors to check publications for. Note some people are not on the list due to possible confusion with other projects, e.g. OpenFE, and some just publish a lot!
 
 ```bash
 # Find openff-* packages on conda-forge (writes candidates/packages.csv)
