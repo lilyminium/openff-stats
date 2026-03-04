@@ -8,6 +8,24 @@ Note that Google Scholar citations require selenium.
 I've essentially hardcoded this to work on my machine (tm);
 no guarantees it'll work for you.
 
+Date last updated: 2026-03-04
+
+## Please read these caveats before using these numbers
+
+### Download counts
+
+Please take these download counts with a gigantic pile of salt.
+They are *not* a reflection of user numbers.
+These numbers vastly overcount "real" installs of our packages for the following reasons:
+
+- many openff packages depend on each other and downloading one will pull in others. As the "total OpenFF conda-forge downloads" simply sums all downloads across all packages, this means the figure is likely inflated at least 5-fold, likely closer to 10.
+- many, perhaps most, of these downloads will simply be from running CI and tests.
+
+
+### Citations
+
+Here we use Google Scholar and CrossRef numbers because they're easy. Out of Google Scholar, CrossRef, and Scopus, Google Scholar tends to have the highest citation numbers. Importantly, we have anecdotally seen Google Scholar numbers fluctuate, possibly as a result of behind-the-scenes algorithm updates. It's important to cite when the numbers were generated. The date is above.
+
 ## Installation
 
 ```bash
@@ -85,7 +103,7 @@ Two methods are used, and their counts often differ:
 
 | Method | Column | Notes |
 |--------|--------|-------|
-| Anaconda HTML | `anaconda_total` | Scrapes `https://anaconda.org/conda-forge/{pkg}`. Most up-to-date total; fragile HTML parsing. |
+| Anaconda API | `anaconda_total` | Queries `https://api.anaconda.org/package/conda-forge/{pkg}`. Most up-to-date total. |
 | condastats API | `condastats_total` | Queries the Anaconda package dataset. More robust; updated periodically, so may undercount between updates. |
 
 The `downloads_yearly.csv` file uses condastats data (the only source with monthly/yearly breakdown).
@@ -101,7 +119,7 @@ The `downloads_yearly.csv` file uses condastats data (the only source with month
 
 ## CI
 
-GitHub Actions runs `openff-stats run-all` on every push to `main` and commits
+GitHub Actions runs `openff-stats run-all` on manual trigger (`workflow_dispatch`) and commits
 updated `data/` files back to the repository. Discovery steps are not run in CI
 (they require human review).
 

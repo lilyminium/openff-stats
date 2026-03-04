@@ -57,6 +57,8 @@ jobs:
         git config user.email $GH_EMAIL
         git remote set-url origin "https://${GH_USER}:${GH_TOKEN}@${GH_REPOSITORY}"
 
-        git add -A data
+        sed -i "s/^Date last updated: .*/Date last updated: $(date -u +%Y-%m-%d)/" README.md
+
+        git add -A data README.md
         git diff-index --quiet HEAD -- || git commit -m "Update stats data [skip ci]"
         git push origin HEAD:main
