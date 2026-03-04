@@ -1,0 +1,15 @@
+package,category
+openff-toolkit,openff
+openff-evaluator,openff
+openff-interchange,openff
+openff-bespokefit,openff
+openff-recharge,openff
+openff-qcsubmit,openff
+openff-fragmenter,openff
+openff-utilities,openff
+openff-units,openff
+openff-models,openff
+openff-nagl,openff
+openff-forcefields,openff
+ambertools,competitor
+parmed,competitor

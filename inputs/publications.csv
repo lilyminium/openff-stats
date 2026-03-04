@@ -1,0 +1,24 @@
+DOI,title,scholar_cluster_id,chemrxiv_id
+10.1021/acs.jctc.3c00039,Development and Benchmarking of Open Force Field 2.0.0 -- the Sage Small Molecule Force Field,8359765322967275002,63bc6a17d19cc558a9ff063b
+10.1021/acs.jcim.2c01185,Collaborative assessment of molecular geometries and energies from the Open Force Field,16480797665682612390,635b03b118a8cc66da547ee2
+10.1021/acs.jcim.2c01153,Open Force Field BespokeFit: Automating Bespoke Torsion Parametrization At Scale,2916721558950980699,631a10083940c20533f81566
+10.1039/D2SC02739A,End-to-end differentiable construction of molecular mechanics force field,14225836617431196461,
+10.1021/acs.jcim.1c00829,Improving force field accuracy by training against condensed phase mixture properties,3809533846648119895,62587928ebac3a4647d513f7
+10.1021/acs.jctc.1c01111,The Open Force Field Evaluator: An automated efficient and scalable framework for the estimation of physical properties from molecular simulation,11948990495114871057,6192a4c064a707380070fe26
+10.33011/livecoms.4.1.1497,Best practices for constructing preparing and evaluating protein-ligand binding affinity benchmarks,13138921547659384212,
+10.1021/acs.jctc.1c00571,Development and Benchmarking of Open Force Field v1.0.0 the Parsley Small Molecule Force Field,17983662759197080071,60c7524af96a00b232288199
+10.1007/s10822-020-00367-1,Improving Small Molecule Force Fields by Identifying and Characterizing Small Molecules with Inconsistent Parameters,13295987342031603640,60c74f13bdbb89358ba39cd3
+10.12688/f1000research.27141.1,Benchmark Assessment of Molecular Geometries and Energies from Small Molecule Force Fields,1757383535498424661,60c74f009abda207d4f8d77e
+10.1063/5.0009232,Driving torsion scans with wavefront propagation,15708242222232448386,60c7495a842e6554fddb2d13
+10.1021/acs.jctc.9b00748,Binding thermodynamics of host-guest systems with SMIRNOFF99Frosst 1.0.5 from the Open Force Field Initiative,12170383757084290149,60c7447c842e65b592db2478
+10.1021/acs.jpcb.9b05455,Systematic Optimization of Water Models Using Liquid/Vapor Surface Tension Data,3901606813298760245,60c74162702a9b3e6a18a234
+10.1063/1.5039504,Uncertainty quantification confirms unreliable extrapolation toward high pressures for united-atom Mie potential force field,13396023871483645335,
+10.1021/acs.jctc.8b00821,Toward learned chemical perception of force field typing rules,5850116357068617279,60c73f85ee301c7b01c78902
+10.1080/10610278.2018.1562191,Facile Synthesis of a Diverse Library of Mono-3-substituted Cyclodextrin Analogues,2748067346678988479,60c73e994c8919d320ad1e16
+10.1021/acs.jctc.8b00640,Escaping atom types using direct chemical perception,11625810612387726681,
+10.1021/acs.jced.7b00104,Approaches for Calculating Solvation Free Energies and Enthalpies Demonstrated with an Update of the FreeSolv Database,11301682711893913635,
+10.1021/acs.jpcb.5b06703,Towards Automated Benchmarking of Atomistic Forcefields: Neat Liquid Densities and Static Dielectric Constants from the ThermoML Data Archive,7838589776371434715,
+,Toward Expanded Diversity of Host-Guest Interactions via Synthesis and Characterization of Cyclodextrin Derivatives,,60c73d570f50db72bd3954a8
+,ChemPer: An Open Source Tool for Automatically Generating SMIRKS Patterns,,60c74279f96a002e02286613
+,(Preprint) The Open Force Field Evaluator: An automated efficient and scalable framework for the estimation of physical properties from molecular simulation,7718174809234446263,
+,Bayesian inference-driven model parameterization and model selection for 2CLJQ fluid models,14609493297750728260,

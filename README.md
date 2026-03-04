@@ -1,47 +1,121 @@
 # openff-stats
-Stats for OpenFF software and FFs
 
-The `data/` directory contains the outputs of the `scripts/` directory.
+Stats for OpenFF software packages and publications.
 
-Each Python script (`*.py`) has an accompanying shell script (`*.sh`)
-that demonstrates how to run it, as well as a log file (`*.log`)
-demonstrating the outputs. The shell scripts should be modified
-to run on your own machine, e.g. by changing the shell to `bash`
-and perhaps using `conda` or `mamba` in place of `micromamba`.
+## Installation
 
 ```bash
-$ grep Total scripts/*.log
-scripts/get-ambertools-downloads.log:Total downloads: 1087098
-scripts/get-chemrxiv-metrics.log:Total Abstract Views: 60812
-scripts/get-chemrxiv-metrics.log:Total Citations: 5
-scripts/get-chemrxiv-metrics.log:Total Content Downloads: 14012
-scripts/get-crossref-citation-stats.log:Total citations: 483
-scripts/get-openff-forcefields-downloads.log:Total downloads: 290921
-scripts/get-openff-forcefields-stats.log:Total downloads: 246055
-scripts/get-openff-software-downloads.log:Total downloads: 935230
-scripts/get-openff-software-stats.log:Total downloads: 567702
-scripts/get-scholar-citation-stats.log:Total citations: 727
+conda env create -f environment.yaml
+conda activate openff-stats
 ```
 
-## Difference between openff-forcefields-stats and openff-forcefields-downloads (and corresponding openff-software)
+All dependencies are declared in `pyproject.toml` and installed via `pip install -e .`.
 
-openff-xx-stats uses the more robust `condastats` API to get download data.
-This is updated on a periodic basis, but as of July 2023 does not
-include Python 3.10+.
-(See https://github.com/ContinuumIO/anaconda-package-data/issues/41 for more).
-That means it undercounts downloads.
+## Overview
 
-openff-xx-downloads uses a fragile script to visit the Anaconda page
-(e.g. https://anaconda.org/conda-forge/openff-toolkit) and parses the HTML
-to get the total downloads listed. For now, this is likely the more
-accurate figure, and it is likely updated more frequently than `anaconda-package-data`.
+The pipeline has two kinds of steps:
 
+- **Discovery** — automatically finds candidate papers, packages, or Zenodo records. Output requires **human verification** before use.
+- **Collection** — reads the curated `inputs/` files and writes stats to `data/`.
 
-## Citations
-Right now this uses Crossref to get citation data. This doesn't always
-match up with how many citations are shown if you look at the individual
-journal articles.
+```
+inputs/publications.csv   ← curated list of OpenFF papers
+inputs/packages.csv       ← curated list of conda-forge packages to track
+inputs/zenodo.csv         ← curated list of Zenodo records with DOIs
 
-DataCite also has a queryable API for citations. Zenodo's API returns
-download count, but no citations. A solution could be to parse HTML
-as above.
+data/citations.csv             ← citation counts from Crossref, Scholar, ChemRxiv
+data/downloads.csv             ← total downloads per package (both methods)
+data/downloads_yearly.csv      ← per-package per-year downloads (condastats)
+data/zenodo_citations.csv      ← DataCite citation counts for Zenodo records
+data/plots/openff_downloads_per_year.png
+```
+
+## Usage
+
+### Discovery (run once, then verify manually)
+
+```bash
+# Find openff-* packages on conda-forge (writes candidates/packages.csv)
+openff-stats discover-packages
+
+# Find publications for one or more ORCID authors (writes candidates/publications.csv)
+# Not all papers found will be OpenFF-related — review carefully!
+openff-stats discover-publications \
+    --orcid 0000-0002-1544-1476 \
+    --orcid 0000-0002-4317-1381
+
+# Find OpenFF records on Zenodo (writes candidates/zenodo.csv)
+openff-stats discover-zenodo
+```
+
+After running discovery, review the `candidates/` CSV, remove non-OpenFF entries,
+fill in any missing IDs (Scholar cluster ID, ChemRxiv ID), then copy to `inputs/`.
+
+### Data collection
+
+```bash
+# Collect citation counts (Crossref + Google Scholar + ChemRxiv)
+openff-stats citations
+
+# Collect conda-forge download stats (Anaconda HTML scraping + condastats)
+openff-stats downloads
+
+# Collect DataCite citation counts for Zenodo records
+openff-stats zenodo-citations
+
+# Generate downloads-per-year bar chart
+openff-stats plot-downloads
+
+# Run everything at once (skips discovery)
+openff-stats run-all
+```
+
+All commands have `--help` and accept `--input` / `--output` overrides.
+
+## Download count methods
+
+Two methods are used, and their counts often differ:
+
+| Method | Column | Notes |
+|--------|--------|-------|
+| Anaconda HTML | `anaconda_total` | Scrapes `https://anaconda.org/conda-forge/{pkg}`. Most up-to-date total; fragile HTML parsing. |
+| condastats API | `condastats_total` | Queries the Anaconda package dataset. More robust; updated periodically; historically undercounted Python 3.10+ installs (fixed in newer data). |
+
+The `downloads_yearly.csv` file uses condastats data (the only source with monthly/yearly breakdown).
+
+## Citation sources
+
+| Source | Notes |
+|--------|-------|
+| Crossref (`crossref_citations`) | Counts DOI-to-DOI citation links within Crossref. Reliable but lower than Scholar. |
+| Google Scholar (`scholar_citations`) | Scraped from Scholar cluster pages. Higher counts (includes grey literature); fragile — may fail due to CAPTCHAs. Scholar cluster IDs are in `inputs/publications.csv`. |
+| ChemRxiv (`chemrxiv_views`, `chemrxiv_downloads`, `chemrxiv_citations`) | From the ChemRxiv public API. Only available for preprints. ChemRxiv record IDs are in `inputs/publications.csv`. |
+| DataCite (`citation_count`) | For Zenodo records, queried via `api.datacite.org`. Tracks DOI-to-DOI citations registered with DataCite or Crossref. |
+
+## CI
+
+GitHub Actions runs `openff-stats run-all` on every push to `main` and commits
+updated `data/` files back to the repository. Discovery steps are not run in CI
+(they require human review).
+
+## inputs/ file formats
+
+### inputs/publications.csv
+```
+DOI, title, scholar_cluster_id, chemrxiv_id
+```
+Leave `scholar_cluster_id` or `chemrxiv_id` blank if not applicable.
+Scholar cluster IDs are found in the URL parameter `cluster=NNNNN` on a Scholar page.
+ChemRxiv record IDs are the hex string in ChemRxiv article URLs.
+
+### inputs/packages.csv
+```
+package, category
+```
+`category` is either `openff` or `competitor`.
+
+### inputs/zenodo.csv
+```
+zenodo_id, doi, title
+```
+`zenodo_id` is the numeric Zenodo record ID; `doi` is the full DOI (e.g. `10.5281/zenodo.NNNNNNN`).

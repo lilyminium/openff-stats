@@ -1,12 +1,8 @@
-name: condastats
+name: openff-stats
 channels:
-- conda-forge
+  - conda-forge
 dependencies:
-- python
-- pip
-- click ==8.1.5
-- condastats ==0.2.1
-- ipykernel ==6.24.0
-- pandas ==2.0.3
-- seaborn ==0.12.2
-- tqdm ==4.65.0
+  - python >=3.10
+  - pip
+  - pip:
+      - -e .

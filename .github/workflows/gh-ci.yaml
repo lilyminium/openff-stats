@@ -19,14 +19,14 @@ defaults:
 
 
 jobs:
-  main_tests:
-    name: CI
+  collect-stats:
+    name: Collect stats
     runs-on: ubuntu-latest
     strategy:
-        fail-fast: false
+      fail-fast: false
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Build information
       run: |
@@ -34,7 +34,7 @@ jobs:
         df -h
         ulimit -a
 
-    - name: setup micromamba
+    - name: Set up micromamba
       uses: mamba-org/setup-micromamba@v1
       with:
         environment-file: environment.yaml
@@ -42,19 +42,13 @@ jobs:
     - name: Python information
       run: |
         which python
-        conda info
+        python --version
         conda list
 
-    - name: Run scripts
-      run: |
-        cd scripts
-        for script in $(ls run*); do
-          echo "Running $script"
-          ./$script
-        done
-        cd ..
+    - name: Run data collection
+      run: openff-stats run-all
 
-    - name: deploy
+    - name: Deploy data to main
       if: github.event_name != 'pull_request'
       env:
         GH_USER: github-actions
@@ -62,18 +56,12 @@ jobs:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GH_REPOSITORY: "github.com/${{ github.repository }}.git"
       run: |
-        REV=$(git rev-parse --short HEAD)
         BRANCH="${GITHUB_REF#refs/heads/}"
 
-        git init
         git config user.name $GH_USER
         git config user.email $GH_EMAIL
-        git remote add upstream "https://${GH_USER}:${GH_TOKEN}@${GH_REPOSITORY}"
-        git fetch --depth 50 upstream $BRANCH main
-        git reset upstream/main
+        git remote set-url origin "https://${GH_USER}:${GH_TOKEN}@${GH_REPOSITORY}"
 
         git add -A data
-        git diff-index --quiet HEAD -- || git commit -m "executed run scripts"
-        git push -q upstream HEAD:main
-
-
+        git diff-index --quiet HEAD -- || git commit -m "Update stats data [skip ci]"
+        git push origin HEAD:main
