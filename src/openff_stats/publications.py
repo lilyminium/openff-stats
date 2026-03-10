@@ -666,6 +666,8 @@ def collect_all_citations(input_csv: str, output_csv: str) -> None:
             chemrxiv_downloads.append(None)
             chemrxiv_citations.append(None)
 
+    is_ff_paper = df.get("force_field_paper", pd.Series(False, index=df.index)).fillna(False).astype(bool)
+
     keep_cols = ["DOI", "title", "authors", "year"]
     df = df[keep_cols].copy()  # only keep core metadata + new citation columns
 
@@ -686,11 +688,24 @@ def collect_all_citations(input_csv: str, output_csv: str) -> None:
     def _sum(col: list) -> int:
         return sum(x for x in col if x is not None)
 
+    def _sum_masked(col: list, mask) -> int:
+        return sum(x for x, m in zip(col, mask) if x is not None and m)
+
+    ff_mask = is_ff_paper.tolist()
+
+    print(f"\n--- All publications ---")
     print(f"Total Crossref citations:    {_sum(crossref_citations)}")
     print(f"Total Scholar citations:     {_sum(scholar_citations)}")
     print(f"Total ChemRxiv views:        {_sum(chemrxiv_views)}")
     print(f"Total ChemRxiv downloads:    {_sum(chemrxiv_downloads)}")
     print(f"Total ChemRxiv citations:    {_sum(chemrxiv_citations)}")
+
+    print(f"\n--- Force field papers only ---")
+    print(f"FF paper Crossref citations: {_sum_masked(crossref_citations, ff_mask)}")
+    print(f"FF paper Scholar citations:  {_sum_masked(scholar_citations, ff_mask)}")
+    print(f"FF paper ChemRxiv views:     {_sum_masked(chemrxiv_views, ff_mask)}")
+    print(f"FF paper ChemRxiv downloads: {_sum_masked(chemrxiv_downloads, ff_mask)}")
+    print(f"FF paper ChemRxiv citations: {_sum_masked(chemrxiv_citations, ff_mask)}")
 
 
 def populate_scholar_cluster_ids(
