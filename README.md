@@ -22,7 +22,10 @@ There's more detail in the rest of this README, but quickly, to update publicati
 
 2. Open `inputs/publications.csv` and quickly verify the new row(s):
     - remove anything not OpenFF-related
-    - optionally fill `scholar_cluster_id` (for Scholar citation counts)
+        - optionally fill `scholar_cluster_id` (for Scholar citation counts)
+            - `scholar_cluster_id` is Google Scholar's internal ID for a paper record group (all versions/hosts of the same paper share this cluster)
+            - manual lookup: open https://scholar.google.com, search the paper title, click **Cited by** on the matching result, then copy the number from `cluster=...` (or `cites=...`) in the URL
+            - example: if the URL contains `cluster=10951048273842882493`, set `scholar_cluster_id` to `10951048273842882493`
     - optionally fill `chemrxiv_id` (for ChemRxiv metrics)
 
 3. If needed, refresh Scholar cluster IDs automatically:
