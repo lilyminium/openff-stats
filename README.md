@@ -10,6 +10,29 @@ no guarantees it'll work for you.
 
 Date last updated: 2026-03-04
 
+## How to update
+
+There's more detail in the rest of this README, but quickly, to update publications:
+
+1. Add new papers (one DOI at a time):
+
+    ```bash
+    openff-stats add-publication-doi "10.1021/acs.jpcb.4c01558"
+    ```
+
+2. Open `inputs/publications.csv` and quickly verify the new row(s):
+    - remove anything not OpenFF-related
+    - optionally fill `scholar_cluster_id` (for Scholar citation counts)
+    - optionally fill `chemrxiv_id` (for ChemRxiv metrics)
+
+3. If needed, refresh Scholar cluster IDs automatically:
+
+    ```bash
+    openff-stats scholar-clusters
+    ```
+
+Then run `openff-stats run-all` to get citations.
+
 ## Please read these caveats before using these numbers
 
 ### Download counts
@@ -59,7 +82,21 @@ data/plots/openff_downloads_per_year.png
 
 ### Discovery (run once, then verify manually)
 
-I also suggest updating manually. I started off with this automated list but it took 10+ min to download all publications, and 20 min to sort through all the OpenFF ones. I've suggested a base list of authors to check publications for. Note some people are not on the list due to possible confusion with other projects, e.g. OpenFE, and some just publish a lot!
+I also suggest updating manually. My original procedure is below.
+
+**The document to update is inputs/publications.csv**
+
+You can just update the CSV yourself, or more conveniently, add a publication via DOI.
+
+```
+openff-stats add-publication-doi "10.1021/acs.jpcb.4c01558"
+```
+
+
+**Original procedure**
+
+
+I started off with this automated list but it took 10+ min to download all publications, and 20 min to sort through all the OpenFF ones. I've suggested a base list of authors to check publications for. Note some people are not on the list due to possible confusion with other projects, e.g. OpenFE, and some just publish a lot!
 
 ```bash
 # Find openff-* packages on conda-forge (writes candidates/packages.csv)

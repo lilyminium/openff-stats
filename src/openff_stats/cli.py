@@ -5,6 +5,7 @@ Entry point: `openff-stats`
 
 Discovery commands (output candidates for human review):
   openff-stats discover-publications --orcid-csv inputs/orcids.csv
+    openff-stats add-publication-doi 10.1021/acs.jpcb.4c01558
   openff-stats discover-packages
   openff-stats discover-zenodo
   openff-stats scholar-clusters --input inputs/publications.csv
@@ -92,6 +93,40 @@ def discover_publications(
         raise click.UsageError("No ORCIDs provided via --orcid or --orcid-csv.")
 
     _discover(all_orcids, output, author_names)
+
+
+@cli.command("add-publication-doi")
+@click.argument("doi")
+@click.option(
+    "--input",
+    "input_csv",
+    default="inputs/publications.csv",
+    show_default=True,
+    help="Path to existing publications CSV.",
+)
+@click.option(
+    "--output",
+    "output_csv",
+    default="inputs/publications.csv",
+    show_default=True,
+    help="Path to write updated publications CSV.",
+)
+@click.option(
+    "--update-existing",
+    is_flag=True,
+    default=False,
+    help="Update title/authors/year if DOI is already present.",
+)
+def add_publication_doi(doi: str, input_csv: str, output_csv: str, update_existing: bool) -> None:
+    """Add a publication to the curated CSV from a DOI via Crossref metadata."""
+    from openff_stats.publications import add_publication_by_doi
+
+    add_publication_by_doi(
+        doi=doi,
+        input_csv=input_csv,
+        output_csv=output_csv,
+        update_existing=update_existing,
+    )
 
 
 @cli.command("discover-packages")

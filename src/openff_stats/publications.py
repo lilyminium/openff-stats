@@ -186,6 +186,13 @@ def _search_scholar_cluster(title: str) -> str | None:
     return None
 
 
+def _normalize_doi(doi: str) -> str:
+    """Return a normalized DOI string without URL prefixes."""
+    value = str(doi).strip()
+    value = re.sub(r"^https?://(dx\.)?doi\.org/", "", value, flags=re.IGNORECASE)
+    return value.upper()
+
+
 def _normalize_text(value: str) -> str:
     """Return lowercased text with punctuation collapsed to spaces."""
     text = re.sub(r"[^a-z0-9]+", " ", str(value).lower())
@@ -468,6 +475,89 @@ def discover_publications(
         "(keep or fill in scholar_cluster_id and chemrxiv_id columns as needed)."
     )
     return df
+
+
+def add_publication_by_doi(
+    doi: str,
+    input_csv: str = "inputs/publications.csv",
+    output_csv: str = "inputs/publications.csv",
+    update_existing: bool = False,
+) -> None:
+    """Add or update a publication entry by DOI using Crossref metadata.
+
+    Parameters
+    ----------
+    doi
+        DOI (plain or doi.org URL).
+    input_csv
+        Path to existing publications CSV.
+    output_csv
+        Path to write updated publications CSV.
+    update_existing
+        If True, update title/authors/year when DOI already exists.
+    """
+    normalized_doi = _normalize_doi(doi)
+    if not normalized_doi:
+        raise ValueError("DOI cannot be empty.")
+
+    meta = _get_crossref_metadata(normalized_doi)
+    if meta is None:
+        raise ValueError(f"Could not fetch Crossref metadata for DOI: {normalized_doi}")
+
+    input_path = pathlib.Path(input_csv)
+    if input_path.exists():
+        df = pd.read_csv(input_path)
+    else:
+        df = pd.DataFrame()
+
+    required_columns = ["DOI", "title", "authors", "year", "scholar_cluster_id", "chemrxiv_id"]
+    for column in required_columns:
+        if column not in df.columns:
+            df[column] = ""
+
+    existing_index = None
+    if not df.empty and "DOI" in df.columns:
+        doi_series = df["DOI"].fillna("").astype(str).str.upper().str.strip()
+        matches = df.index[doi_series == normalized_doi]
+        if len(matches) > 0:
+            existing_index = matches[0]
+
+    if existing_index is not None:
+        if update_existing:
+            df.at[existing_index, "title"] = meta.get("title") or ""
+            df.at[existing_index, "authors"] = meta.get("authors") or ""
+            df.at[existing_index, "year"] = meta.get("year") or ""
+            print(f"Updated existing DOI row: {normalized_doi}")
+        else:
+            print(f"DOI already present, no changes made: {normalized_doi}")
+    else:
+        new_row = {column: "" for column in df.columns}
+        new_row["DOI"] = normalized_doi
+        new_row["title"] = meta.get("title") or ""
+        new_row["authors"] = meta.get("authors") or ""
+        new_row["year"] = meta.get("year") or ""
+
+        chemrxiv_id = _search_chemrxiv_by_title(new_row["title"])
+        new_row["chemrxiv_id"] = chemrxiv_id or ""
+        if "scholar_cluster_id" in new_row:
+            new_row["scholar_cluster_id"] = ""
+
+        df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
+        print(f"Added DOI row: {normalized_doi}")
+
+    df["_year_sort"] = pd.to_numeric(df["year"], errors="coerce")
+    df["_doi_sort"] = df["DOI"].fillna("").astype(str).str.upper()
+    df["_title_sort"] = df["title"].fillna("").astype(str)
+    df = df.sort_values(
+        by=["_year_sort", "_doi_sort", "_title_sort"],
+        ascending=[False, True, True],
+        na_position="last",
+        kind="mergesort",
+    ).drop(columns=["_year_sort", "_doi_sort", "_title_sort"])
+
+    pathlib.Path(output_csv).parent.mkdir(parents=True, exist_ok=True)
+    df.to_csv(output_csv, index=False)
+    print(f"Saved updated publications CSV to {output_csv}")
 
 
 # ---------------------------------------------------------------------------
