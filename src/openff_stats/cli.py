@@ -14,6 +14,7 @@ Data collection commands (read curated inputs/, write data/):
   openff-stats citations
   openff-stats downloads
   openff-stats zenodo-citations
+  openff-stats github-repos         (requires GITHUB_TOKEN env var)
 
 Visualisation:
   openff-stats plot-downloads
@@ -243,6 +244,24 @@ def downloads(input_csv: str, output_csv: str, yearly_csv: str) -> None:
     collect_all_downloads(input_csv, output_csv, yearly_csv)
 
 
+@cli.command("github-repos")
+@click.option(
+    "--output",
+    "output_csv",
+    default="data/github_repos.csv",
+    show_default=True,
+    help="Path for the GitHub repos output CSV.",
+)
+def github_repos(output_csv: str) -> None:
+    """Search GitHub for repos that import or depend on openff.toolkit.
+
+    Uses sharded code-search queries to work around GitHub's 1000-result cap.
+    Requires the GITHUB_TOKEN environment variable to be set.
+    """
+    from openff_stats.github import collect_github_repos
+    collect_github_repos(output_csv)
+
+
 @cli.command("zenodo-citations")
 @click.option(
     "--input",
@@ -315,17 +334,25 @@ def plot_downloads(yearly_csv: str, output_path: str) -> None:
         "before collecting citations."
     ),
 )
+@click.option(
+    "--skip-github",
+    is_flag=True,
+    default=False,
+    help="Skip the GitHub repo search (useful if GITHUB_TOKEN is not set).",
+)
 def run_all(
     publications_input: str,
     packages_input: str,
     zenodo_input: str,
     refresh_scholar_clusters: bool,
+    skip_github: bool,
 ) -> None:
     """Run the full data-collection pipeline (citations, downloads, zenodo, plot).
 
     Reads the three curated input files and writes all outputs to data/.
     Discovery steps are NOT run here — they require separate human verification.
     """
+    import os
     import pathlib
 
     from openff_stats.publications import (
@@ -368,6 +395,20 @@ def run_all(
         collect_zenodo_citations(zenodo_input, "data/zenodo_citations.csv")
     else:
         click.echo(f"Skipping Zenodo citations: {zenodo_input} not found.")
+
+    # --- GitHub repos ---
+    if skip_github:
+        click.echo("\nSkipping GitHub repo search (--skip-github).")
+    elif not os.environ.get("GITHUB_TOKEN"):
+        click.echo(
+            "\nSkipping GitHub repo search: GITHUB_TOKEN is not set. "
+            "Run `openff-stats github-repos` manually once the token is available, "
+            "or re-run with GITHUB_TOKEN set."
+        )
+    else:
+        click.echo("\n=== GitHub repos ===")
+        from openff_stats.github import collect_github_repos
+        collect_github_repos("data/github_repos.csv")
 
     # --- Plot ---
     yearly_csv = "data/downloads_yearly.csv"
