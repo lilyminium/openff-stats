@@ -14,7 +14,7 @@ Data collection commands (read curated inputs/, write data/):
   openff-stats citations
   openff-stats downloads
   openff-stats zenodo-citations
-  openff-stats github-repos         (requires GITHUB_TOKEN env var)
+  openff-stats github-repos         (requires GH_API_TOKEN env var)
 
 Visualisation:
   openff-stats plot-downloads
@@ -256,7 +256,7 @@ def github_repos(output_csv: str) -> None:
     """Search GitHub for repos that import or depend on openff.toolkit.
 
     Uses sharded code-search queries to work around GitHub's 1000-result cap.
-    Requires the GITHUB_TOKEN environment variable to be set.
+    Requires the GH_API_TOKEN environment variable to be set.
     """
     from openff_stats.github import collect_github_repos
     collect_github_repos(output_csv)
@@ -338,7 +338,7 @@ def plot_downloads(yearly_csv: str, output_path: str) -> None:
     "--skip-github",
     is_flag=True,
     default=False,
-    help="Skip the GitHub repo search (useful if GITHUB_TOKEN is not set).",
+    help="Skip the GitHub repo search (useful if GH_API_TOKEN is not set).",
 )
 def run_all(
     publications_input: str,
@@ -399,11 +399,11 @@ def run_all(
     # --- GitHub repos ---
     if skip_github:
         click.echo("\nSkipping GitHub repo search (--skip-github).")
-    elif not os.environ.get("GITHUB_TOKEN"):
+    elif not os.environ.get("GH_API_TOKEN"):
         click.echo(
-            "\nSkipping GitHub repo search: GITHUB_TOKEN is not set. "
+            "\nSkipping GitHub repo search: GH_API_TOKEN is not set. "
             "Run `openff-stats github-repos` manually once the token is available, "
-            "or re-run with GITHUB_TOKEN set."
+            "or re-run with GH_API_TOKEN set."
         )
     else:
         click.echo("\n=== GitHub repos ===")

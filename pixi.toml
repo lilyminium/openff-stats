@@ -1,0 +1,12 @@
+[workspace]
+name = "openff-stats"
+channels = ["conda-forge"]
+platforms = ["osx-arm64", "linux-64"]
+
+[dependencies]
+python = ">=3.10"
+geckodriver = "*"
+firefox = "*"
+
+[pypi-dependencies]
+openff-stats = { path = ".", editable = true }

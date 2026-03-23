@@ -78,6 +78,7 @@ data/citations.csv             ← citation counts from Crossref, Scholar, ChemR
 data/downloads.csv             ← total downloads per package (both methods)
 data/downloads_yearly.csv      ← per-package per-year downloads (condastats)
 data/zenodo_citations.csv      ← DataCite citation counts for Zenodo records
+data/github_repos.csv          ← GitHub repos that import or depend on openff.toolkit
 data/plots/openff_downloads_per_year.png
 ```
 
@@ -129,10 +130,14 @@ openff-stats downloads
 # Collect DataCite citation counts for Zenodo records
 openff-stats zenodo-citations
 
+# Search GitHub for repos that import or depend on openff.toolkit
+# Requires GH_API_TOKEN env var (a GitHub personal access token)
+openff-stats github-repos
+
 # Generate downloads-per-year bar chart
 openff-stats plot-downloads
 
-# Run everything at once (skips discovery)
+# Run everything at once (skips discovery; skips GitHub if GH_API_TOKEN not set)
 openff-stats run-all
 ```
 
@@ -157,6 +162,58 @@ The `downloads_yearly.csv` file uses condastats data (the only source with month
 | Google Scholar (`scholar_citations`) | Scraped from Scholar cluster pages. Higher counts (includes grey literature); fragile — may fail due to CAPTCHAs. Scholar cluster IDs are in `inputs/publications.csv`. |
 | ChemRxiv (`chemrxiv_views`, `chemrxiv_downloads`, `chemrxiv_citations`) | From the ChemRxiv public API. Only available for preprints. ChemRxiv record IDs are in `inputs/publications.csv`. |
 | DataCite (`citation_count`) | For Zenodo records, queried via `api.datacite.org`. Tracks DOI-to-DOI citations registered with DataCite or Crossref. |
+
+## GitHub code search
+
+`openff-stats github-repos` searches GitHub's code search API for public repositories
+that import or declare a dependency on `openff.toolkit`, and writes `data/github_repos.csv`.
+
+Requires a GitHub personal access token in the `GH_API_TOKEN` environment variable.
+No special scopes are needed — public code search works with any valid token.
+
+### What is searched
+
+Nine queries cover the main ways the toolkit appears in a repository:
+
+| Query | `how` label in CSV |
+|-------|--------------------|
+| `import openff.toolkit` in Python files | `import openff.toolkit (Python)` |
+| `from openff.toolkit import ...` in Python files | `from openff.toolkit import ... (Python)` |
+| `import openff.toolkit` in Jupyter notebooks | `import openff.toolkit (Jupyter notebook)` |
+| `from openff.toolkit import ...` in Jupyter notebooks | `from openff.toolkit import ... (Jupyter notebook)` |
+| `openff-toolkit` in `pyproject.toml` | `openff-toolkit in pyproject.toml` |
+| `openff-toolkit` in `requirements.txt` | `openff-toolkit in requirements.txt` |
+| `openff-toolkit` in `environment.yml` | `openff-toolkit in environment.yml` |
+| `openff-toolkit` in `setup.cfg` | `openff-toolkit in setup.cfg` |
+| `openff-toolkit` in `setup.py` | `openff-toolkit in setup.py` |
+
+Queries are run in the order above.
+When a repository matches more than one query, only the **first** (highest-priority) match is kept,
+so direct runtime imports take precedence over dependency-file declarations.
+
+### Output columns
+
+| Column | Description |
+|--------|-------------|
+| `repo` | Repository full name (`owner/repo`) |
+| `url` | URL to the repository on GitHub |
+| `how` | How the toolkit was found (see table above) |
+| `evidence_url` | Permalink to the specific file that matched (blob SHA URL) |
+
+### Working around the 1 000-result cap
+
+GitHub's code search API returns at most 1 000 results per query.
+When a query hits this cap the pipeline automatically re-runs it split across
+six file-size buckets (`0..500`, `501..2000`, …, `>150000` bytes), unions the results,
+and recurses up to two levels if any bucket still overflows.
+This gives a best-effort complete count even for popular queries.
+
+### Caveats
+
+- Counts only **public** repositories — private usage is not captured.
+- Forks are included; the numbers therefore overcount unique projects.
+- GitHub's `total_count` for a query is an estimate and can differ from the
+  number of unique repos actually retrieved after pagination.
 
 ## CI
 
