@@ -3,24 +3,35 @@ openff-stats command-line interface.
 
 Entry point: `openff-stats`
 
-Discovery commands (output candidates for human review):
-  openff-stats discover-publications --orcid-csv inputs/orcids.csv
-  openff-stats add-publication-doi 10.1021/acs.jpcb.4c01558
-  openff-stats discover-packages
-  openff-stats discover-dependents
-  openff-stats discover-zenodo
-  openff-stats scholar-clusters --input inputs/publications.csv
+The source lists in inputs/ are manually curated. Add new sources with:
+  openff-stats add-publication-doi 10.1021/acs.jpcb.4c01558 [--scholar]
+  openff-stats add-github-repo owner/repo
+  openff-stats add-zenodo 10.5281/zenodo.18842670
+
+Google Scholar lookup by DOI (find/store the Scholar cluster ID):
+  openff-stats scholar-lookup 10.1021/acs.jpcb.4c01558 [--save]
 
 Data collection commands (read curated inputs/, write data/):
   openff-stats citations
   openff-stats downloads
   openff-stats zenodo-citations
-  openff-stats github-repos         (requires GITHUB_TOKEN env var)
+  openff-stats github-stars         (requires GITHUB_TOKEN env var)
+  openff-stats github-descriptions  (requires GITHUB_TOKEN env var)
+
+Optional bulk discovery (writes candidates/ for human review; never
+feeds collection directly):
+  openff-stats discover-publications --orcid-csv inputs/orcids.csv
+  openff-stats discover-packages
+  openff-stats discover-dependents
+  openff-stats discover-zenodo
+  openff-stats discover-github-repos (requires GITHUB_TOKEN env var)
+  openff-stats scholar-clusters      (bulk-fill scholar_cluster_id by title)
 
 Visualisation:
   openff-stats plot-downloads
+  openff-stats plot-github-bubbles
 
-Run everything (except discovery):
+Run all collection + the downloads plot (never discovery):
   openff-stats run-all
 """
 
@@ -119,16 +130,105 @@ def discover_publications(
     default=False,
     help="Update title/authors/year if DOI is already present.",
 )
-def add_publication_doi(doi: str, input_csv: str, output_csv: str, update_existing: bool) -> None:
+@click.option(
+    "--scholar",
+    "fetch_scholar",
+    is_flag=True,
+    default=False,
+    help=(
+        "Also look up the Google Scholar cluster ID (Selenium; best-effort — "
+        "the publication is added even if Scholar fails)."
+    ),
+)
+def add_publication_doi(
+    doi: str,
+    input_csv: str,
+    output_csv: str,
+    update_existing: bool,
+    fetch_scholar: bool,
+) -> None:
     """Add a publication to the curated CSV from a DOI via Crossref metadata."""
     from openff_stats.publications import add_publication_by_doi
 
-    add_publication_by_doi(
-        doi=doi,
-        input_csv=input_csv,
-        output_csv=output_csv,
-        update_existing=update_existing,
-    )
+    try:
+        add_publication_by_doi(
+            doi=doi,
+            input_csv=input_csv,
+            output_csv=output_csv,
+            update_existing=update_existing,
+            fetch_scholar=fetch_scholar,
+        )
+    except ValueError as exc:
+        raise click.ClickException(str(exc))
+
+
+@cli.command("add-github-repo")
+@click.argument("repo")
+@click.option(
+    "--input",
+    "inputs_csv",
+    default="inputs/github_repos.csv",
+    show_default=True,
+    help="Path to the curated GitHub repos CSV.",
+)
+def add_github_repo_cmd(repo: str, inputs_csv: str) -> None:
+    """Add a GitHub repo (OWNER/REPO or URL) to the curated CSV.
+
+    Validates the repo via the GitHub API (no token required) and appends it
+    with status=manual.
+    """
+    from openff_stats.github import add_github_repo
+
+    try:
+        add_github_repo(repo, inputs_csv)
+    except ValueError as exc:
+        raise click.ClickException(str(exc))
+
+
+@cli.command("add-zenodo")
+@click.argument("id_or_doi")
+@click.option(
+    "--input",
+    "inputs_csv",
+    default="inputs/zenodo.csv",
+    show_default=True,
+    help="Path to the curated Zenodo CSV.",
+)
+def add_zenodo_cmd(id_or_doi: str, inputs_csv: str) -> None:
+    """Add a Zenodo record (numeric ID, DOI, or URL) to the curated CSV."""
+    from openff_stats.zenodo import add_zenodo_record
+
+    try:
+        add_zenodo_record(id_or_doi, inputs_csv)
+    except ValueError as exc:
+        raise click.ClickException(str(exc))
+
+
+@cli.command("scholar-lookup")
+@click.argument("doi")
+@click.option(
+    "--input",
+    "publications_csv",
+    default="inputs/publications.csv",
+    show_default=True,
+    help="Publications CSV to update when --save is given.",
+)
+@click.option(
+    "--save",
+    is_flag=True,
+    default=False,
+    help="Write the matched cluster ID into the publications CSV.",
+)
+def scholar_lookup_cmd(doi: str, publications_csv: str, save: bool) -> None:
+    """Look up the Google Scholar cluster ID (and citations) for a DOI.
+
+    Searches Scholar for the DOI, falling back to the Crossref title; every
+    candidate is printed with its title similarity, and only a confident
+    match is saved.
+    """
+    from openff_stats.publications import scholar_lookup
+
+    scholar_lookup(doi, publications_csv=publications_csv, save=save)
 
 
 @cli.command("discover-packages")
@@ -350,9 +450,9 @@ def downloads(input_csv: str, output_csv: str, yearly_csv: str) -> None:
 @click.option(
     "--input",
     "repos_csv",
-    default="data/github_repos.csv",
+    default="inputs/github_repos.csv",
     show_default=True,
-    help="Path to the GitHub repos CSV.",
+    help="Path to the curated GitHub repos CSV.",
 )
 @click.option(
     "--output",
@@ -370,22 +470,43 @@ def github_stars(repos_csv: str, output_csv: str) -> None:
     collect_repo_stars(repos_csv, output_csv)
 
 
-@cli.command("github-repos")
+@cli.command("discover-github-repos")
 @click.option(
     "--output",
     "output_csv",
-    default="data/github_repos.csv",
+    default="candidates/github_repos.csv",
     show_default=True,
-    help="Path for the GitHub repos output CSV.",
+    help="Path for the candidates CSV (for human review).",
 )
-def github_repos(output_csv: str) -> None:
+@click.option(
+    "--inputs",
+    "inputs_csv",
+    default="inputs/github_repos.csv",
+    show_default=True,
+    help="Curated repos CSV used to flag which candidates are new.",
+)
+def discover_github_repos_cmd(output_csv: str, inputs_csv: str) -> None:
     """Search GitHub for repos that import or depend on openff.toolkit.
 
     Uses sharded code-search queries to work around GitHub's 1000-result cap.
-    Requires the GITHUB_TOKEN environment variable to be set.
+    Writes a candidates CSV with new repos flagged and sorted first; merge
+    approved rows into inputs/github_repos.csv.  Requires GITHUB_TOKEN.
     """
-    from openff_stats.github import collect_github_repos
-    collect_github_repos(output_csv)
+    from openff_stats.github import discover_github_repos
+    discover_github_repos(output_csv, inputs_csv)
+
+
+@cli.command("github-repos", hidden=True)
+@click.option("--output", "output_csv", default="candidates/github_repos.csv")
+@click.option("--inputs", "inputs_csv", default="inputs/github_repos.csv")
+def github_repos_deprecated(output_csv: str, inputs_csv: str) -> None:
+    """Deprecated alias for discover-github-repos."""
+    click.echo(
+        "`github-repos` is deprecated; use `discover-github-repos`. "
+        f"Output now goes to {output_csv} for human review."
+    )
+    from openff_stats.github import discover_github_repos
+    discover_github_repos(output_csv, inputs_csv)
 
 
 @cli.command("zenodo-citations")
@@ -455,45 +576,8 @@ def plot_dependents(dependents_csv: str, output_path: str) -> None:
     _plot(dependents_csv, output_path)
 
 
-@cli.command("plot-github-tree")
-@click.option(
-    "--input",
-    "github_csv",
-    default="data/github_repos.csv",
-    show_default=True,
-    help="Path to the GitHub repos CSV.",
-)
-@click.option(
-    "--output",
-    "output_path",
-    default="data/plots/openff_github_tree.png",
-    show_default=True,
-    help="Path to save the PNG plot.",
-)
-@click.option(
-    "--exclude-org",
-    "exclude_orgs",
-    multiple=True,
-    help=(
-        "Org/user to exclude from the plot. May be repeated. "
-        "Defaults to openforcefield, lilyminium, ntBre, jaclark5."
-    ),
-)
-@click.option(
-    "--stars",
-    "stars_csv",
-    default=None,
-    show_default=True,
-    help="Path to star counts CSV (from github-stars). Scales line/font weight.",
-)
-def plot_github_tree(github_csv: str, output_path: str, exclude_orgs: tuple[str, ...], stars_csv: str | None) -> None:
-    """Plot all GitHub repos as a radial dendrogram grouped by organisation."""
-    from openff_stats.plotting import plot_github_tree as _plot
-    _plot(github_csv, output_path, list(exclude_orgs) or None, stars_csv)
-
-
 @cli.command("github-descriptions")
-@click.option("--input", "repos_csv", default="data/github_repos.csv", show_default=True)
+@click.option("--input", "repos_csv", default="inputs/github_repos.csv", show_default=True)
 @click.option("--stars", "stars_csv", default="data/github_repo_stars.csv", show_default=True)
 @click.option("--output", "output_csv", default="data/github_repo_descriptions.csv", show_default=True)
 @click.option("--star-threshold", default=30, show_default=True,
@@ -504,35 +588,8 @@ def github_descriptions(repos_csv, stars_csv, output_csv, star_threshold):
     collect_repo_descriptions(repos_csv, stars_csv, output_csv, star_threshold)
 
 
-@cli.command("plot-github-stars")
-@click.option(
-    "--input", "github_csv", default="data/github_repos.csv", show_default=True
-)
-@click.option(
-    "--stars", "stars_csv", default="data/github_repo_stars.csv", show_default=True
-)
-@click.option(
-    "--output",
-    "output_path",
-    default="data/plots/openff_github_stars.png",
-    show_default=True,
-)
-@click.option(
-    "--star-threshold",
-    default=30,
-    show_default=True,
-    help="Min stars for a labelled spoke.",
-)
-@click.option("--exclude-org", "exclude_orgs", multiple=True)
-def plot_github_stars(github_csv, stars_csv, output_path, star_threshold, exclude_orgs):
-    """Radial plot: all repos as spokes, highlighted above star threshold."""
-    from openff_stats.plotting import plot_github_stars_radial
-    plot_github_stars_radial(github_csv, stars_csv, output_path, star_threshold,
-                             list(exclude_orgs) or None)
-
-
 @cli.command("plot-github-bubbles")
-@click.option("--input", "github_csv", default="data/github_repos.csv", show_default=True)
+@click.option("--input", "github_csv", default="inputs/github_repos.csv", show_default=True)
 @click.option("--stars", "stars_csv", default="data/github_repo_stars.csv", show_default=True)
 @click.option("--output", "output_path", default="data/plots/openff_github_bubbles.png", show_default=True)
 @click.option("--star-threshold", default=30, show_default=True,
@@ -550,97 +607,6 @@ def plot_github_bubbles(github_csv, stars_csv, output_path, star_threshold, labe
     desc = descriptions_csv if pathlib.Path(descriptions_csv).exists() else None
     _plot(github_csv, stars_csv, output_path, star_threshold, label_threshold,
           list(exclude_orgs) or None, desc)
-
-
-@cli.command("plot-github-force")
-@click.option(
-    "--input", "github_csv", default="data/github_repos.csv", show_default=True
-)
-@click.option(
-    "--stars", "stars_csv", default="data/github_repo_stars.csv", show_default=True
-)
-@click.option(
-    "--output",
-    "output_path",
-    default="data/plots/openff_github_force.png",
-    show_default=True,
-)
-@click.option(
-    "--star-threshold", default=30, show_default=True, help="Min stars to label a node."
-)
-@click.option("--exclude-org", "exclude_orgs", multiple=True)
-def plot_github_force(github_csv, stars_csv, output_path, star_threshold, exclude_orgs):
-    """Force-directed graph of GitHub repos using openff-toolkit."""
-    from openff_stats.plotting import plot_github_force_directed
-    plot_github_force_directed(github_csv, stars_csv, output_path, star_threshold,
-                               list(exclude_orgs) or None)
-
-
-@cli.command("plot-github-lollipop")
-@click.option("--input", "github_csv", default="data/github_repos.csv", show_default=True)
-@click.option("--stars", "stars_csv", default="data/github_repo_stars.csv", show_default=True)
-@click.option("--output", "output_path", default="data/plots/openff_github_lollipop.png", show_default=True)
-@click.option("--star-threshold", default=30, show_default=True, help="Min stars to include.")
-@click.option("--exclude-org", "exclude_orgs", multiple=True)
-def plot_github_lollipop(github_csv, stars_csv, output_path, star_threshold, exclude_orgs):
-    """Lollipop chart of repos above a star threshold."""
-    from openff_stats.plotting import plot_github_lollipop as _plot
-    _plot(github_csv, stars_csv, output_path, star_threshold,
-          list(exclude_orgs) or None)
-
-
-@cli.command("plot-github-treemap")
-@click.option(
-    "--input",
-    "github_csv",
-    default="data/github_repos.csv",
-    show_default=True,
-    help="Path to the GitHub repos CSV.",
-)
-@click.option(
-    "--output",
-    "output_path",
-    default="data/plots/openff_github_treemap.png",
-    show_default=True,
-    help="Path to save the PNG plot.",
-)
-@click.option(
-    "--min-repos",
-    default=2,
-    show_default=True,
-    help="Minimum repos for an org to get its own tile (others grouped as 'other').",
-)
-def plot_github_treemap(github_csv: str, output_path: str, min_repos: int) -> None:
-    """Plot a treemap of GitHub organisations by repo count."""
-    from openff_stats.plotting import plot_github_treemap as _plot
-    _plot(github_csv, output_path, min_repos)
-
-
-@cli.command("plot-github-orgs")
-@click.option(
-    "--input",
-    "github_csv",
-    default="data/github_repos.csv",
-    show_default=True,
-    help="Path to the GitHub repos CSV.",
-)
-@click.option(
-    "--output",
-    "output_path",
-    default="data/plots/openff_github_orgs.png",
-    show_default=True,
-    help="Path to save the PNG plot.",
-)
-@click.option(
-    "--top-n",
-    default=20,
-    show_default=True,
-    help="Number of top organisations to show.",
-)
-def plot_github_orgs(github_csv: str, output_path: str, top_n: int) -> None:
-    """Plot top GitHub organisations by number of repos using openff-toolkit."""
-    from openff_stats.plotting import plot_github_orgs as _plot
-    _plot(github_csv, output_path, top_n)
 
 
 # ---------------------------------------------------------------------------
@@ -661,6 +627,10 @@ def plot_github_orgs(github_csv: str, output_path: str, top_n: int) -> None:
     help="Curated Zenodo CSV.",
 )
 @click.option(
+    "--github-input", default="inputs/github_repos.csv", show_default=True,
+    help="Curated GitHub repos CSV.",
+)
+@click.option(
     "--refresh-scholar-clusters",
     is_flag=True,
     default=False,
@@ -673,19 +643,23 @@ def plot_github_orgs(github_csv: str, output_path: str, top_n: int) -> None:
     "--skip-github",
     is_flag=True,
     default=False,
-    help="Skip the GitHub repo search (useful if GITHUB_TOKEN is not set).",
+    help="Skip GitHub star collection (useful if GITHUB_TOKEN is not set).",
 )
 def run_all(
     publications_input: str,
     packages_input: str,
     zenodo_input: str,
+    github_input: str,
     refresh_scholar_clusters: bool,
     skip_github: bool,
 ) -> None:
     """Run the full data-collection pipeline (citations, downloads, zenodo, plot).
 
-    Reads the three curated input files and writes all outputs to data/.
-    Discovery steps are NOT run here — they require separate human verification.
+    Reads the curated input files and writes all outputs to data/.
+    Discovery steps are NOT run here — they require separate human
+    verification.  GitHub descriptions and the bubble plot are also manual
+    (`github-descriptions` needs its category column reviewed before
+    `plot-github-bubbles`).
     """
     import os
     import pathlib
@@ -731,19 +705,21 @@ def run_all(
     else:
         click.echo(f"Skipping Zenodo citations: {zenodo_input} not found.")
 
-    # --- GitHub repos ---
+    # --- GitHub stars (for the curated repo list) ---
     if skip_github:
-        click.echo("\nSkipping GitHub repo search (--skip-github).")
+        click.echo("\nSkipping GitHub stars (--skip-github).")
+    elif not pathlib.Path(github_input).exists():
+        click.echo(f"Skipping GitHub stars: {github_input} not found.")
     elif not os.environ.get("GITHUB_TOKEN"):
         click.echo(
-            "\nSkipping GitHub repo search: GITHUB_TOKEN is not set. "
-            "Run `openff-stats github-repos` manually once the token is available, "
-            "or re-run with GITHUB_TOKEN set."
+            "\nSkipping GitHub stars: GITHUB_TOKEN is not set. "
+            "Run `openff-stats github-stars` manually once the token is "
+            "available, or re-run with GITHUB_TOKEN set."
         )
     else:
-        click.echo("\n=== GitHub repos ===")
-        from openff_stats.github import collect_github_repos
-        collect_github_repos("data/github_repos.csv")
+        click.echo("\n=== GitHub stars ===")
+        from openff_stats.github import collect_repo_stars
+        collect_repo_stars(github_input, "data/github_repo_stars.csv")
 
     # --- Plot ---
     yearly_csv = "data/downloads_yearly.csv"

@@ -1,17 +1,26 @@
 """
-GitHub code search for repositories that import or depend on openff.toolkit.
+GitHub repo tracking: curated list in inputs/github_repos.csv plus optional
+code-search discovery.
 
-Uses sharded queries to work around GitHub's hard 1000-result cap on any
-single code-search request: when a query returns >= 1000 hits the search is
-automatically re-run split across file-size buckets, and the results are
-unioned.  Buckets recurse up to depth 2 before giving up on that shard.
-
-Requires the GITHUB_TOKEN environment variable (a personal access token with
-at least public_repo / read access).  The GitHub code search endpoint requires
-authentication — unauthenticated requests receive a 401 Unauthorized error.
+The curated list (columns: repo, url, status, notes) is the source of truth.
+`status` is `manual` (human-added), `auto` (seeded from discovery), or
+`exclude` (kept in the file for the record but skipped by collection/plots).
 
 Workflow:
-  openff-stats github-repos  → searches GitHub, writes data/github_repos.csv
+  openff-stats add-github-repo OWNER/REPO   → append to inputs/github_repos.csv
+  openff-stats discover-github-repos        → code search, writes
+                                              candidates/github_repos.csv for
+                                              human review (new repos first)
+  openff-stats github-stars                 → star counts for the curated list
+
+Discovery uses sharded queries to work around GitHub's hard 1000-result cap on
+any single code-search request: when a query returns >= 1000 hits the search
+is automatically re-run split across file-size buckets, and the results are
+unioned.  Buckets recurse up to depth 2 before giving up on that shard.
+
+Discovery and star collection require the GITHUB_TOKEN environment variable
+(a personal access token; no special scopes needed for public repos).
+`add-github-repo` works without a token.
 """
 
 import os
@@ -48,6 +57,88 @@ _BASE_QUERIES = [
     "openff-toolkit filename:environment.yml",
     "openff-toolkit filename:setup.py",
 ]
+
+
+def load_curated_repos(inputs_csv: str) -> pd.DataFrame:
+    """Load the curated repos CSV, dropping rows with status == 'exclude'."""
+    df = pd.read_csv(inputs_csv)
+    if "status" in df.columns:
+        excluded = df["status"].fillna("").str.strip().str.lower() == "exclude"
+        if excluded.any():
+            print(f"Skipping {excluded.sum()} repo(s) with status=exclude.")
+        df = df[~excluded]
+    return df.reset_index(drop=True)
+
+
+def _normalize_repo_name(repo: str) -> str:
+    """Return 'owner/repo' from a plain name or a github.com URL."""
+    import re
+
+    value = str(repo).strip()
+    value = re.sub(r"^https?://(www\.)?github\.com/", "", value)
+    value = value.rstrip("/").removesuffix(".git")
+    if not re.fullmatch(r"[\w.-]+/[\w.-]+", value):
+        raise ValueError(
+            f"Invalid repo {repo!r}: expected OWNER/REPO or a github.com URL."
+        )
+    return value
+
+
+def add_github_repo(repo: str, inputs_csv: str = "inputs/github_repos.csv") -> None:
+    """Add a repo to the curated CSV, validating it via the GitHub API.
+
+    Works without GITHUB_TOKEN (unauthenticated requests are fine at this
+    volume); if the API is unreachable the repo is appended anyway after a
+    syntax check, with a warning.
+
+    Parameters
+    ----------
+    repo
+        Repo as ``owner/repo`` or a github.com URL.
+    inputs_csv
+        Path to the curated repos CSV.
+    """
+    name = _normalize_repo_name(repo)
+    url = f"https://github.com/{name}"
+
+    token = os.environ.get("GITHUB_TOKEN")
+    headers = {"Authorization": f"token {token}"} if token else {}
+    try:
+        r = requests.get(f"https://api.github.com/repos/{name}", headers=headers, timeout=30)
+        if r.status_code == 404:
+            raise ValueError(f"Repo not found on GitHub: {name}")
+        r.raise_for_status()
+        data = r.json()
+        name = data["full_name"]  # canonical capitalisation
+        url = data["html_url"]
+        print(f"{name}: {data.get('stargazers_count', 0)} stars — {data.get('description') or '(no description)'}")
+    except ValueError:
+        raise
+    except Exception as exc:
+        print(f"Warning: could not validate {name} via the GitHub API ({exc}); adding anyway.")
+
+    input_path = pathlib.Path(inputs_csv)
+    if input_path.exists():
+        df = pd.read_csv(input_path)
+    else:
+        df = pd.DataFrame(columns=["repo", "url", "status", "notes"])
+    for column in ("repo", "url", "status", "notes"):
+        if column not in df.columns:
+            df[column] = ""
+
+    existing = df["repo"].fillna("").astype(str).str.strip().str.lower()
+    if (existing == name.lower()).any():
+        print(f"Repo already present, no changes made: {name}")
+        return
+
+    new_row = {column: "" for column in df.columns}
+    new_row.update({"repo": name, "url": url, "status": "manual"})
+    df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
+    df = df.sort_values("repo", key=lambda s: s.str.lower(), kind="mergesort")
+
+    input_path.parent.mkdir(parents=True, exist_ok=True)
+    df.to_csv(input_path, index=False)
+    print(f"Added {name} to {inputs_csv}")
 
 
 def _get_headers() -> dict[str, str]:
@@ -227,7 +318,7 @@ def collect_repo_stars(repos_csv: str, output_csv: str) -> pd.DataFrame:
     import tqdm
 
     headers = _get_headers()
-    df = pd.read_csv(repos_csv)
+    df = load_curated_repos(repos_csv)
     rows = []
 
     for repo in tqdm.tqdm(df["repo"], desc="Fetching stars"):
@@ -371,7 +462,7 @@ def collect_repo_descriptions(
 
     headers = _get_headers()
 
-    repos_df = pd.read_csv(repos_csv)
+    repos_df = load_curated_repos(repos_csv)
     stars_df = pd.read_csv(stars_csv)
     merged = repos_df.merge(stars_df, on="repo", how="left")
     merged["stars"] = merged["stars"].fillna(0).astype(int)
@@ -420,23 +511,32 @@ def collect_repo_descriptions(
     return df
 
 
-def collect_github_repos(output_csv: str) -> pd.DataFrame:
+def discover_github_repos(
+    output_csv: str = "candidates/github_repos.csv",
+    inputs_csv: str = "inputs/github_repos.csv",
+) -> pd.DataFrame:
     """Search GitHub for repositories that import or depend on openff.toolkit.
 
     Runs a set of sharded code-search queries and unions the results, working
     around the 1 000-result cap that GitHub imposes on any single query.
+    Writes a candidates CSV for human review; repos not already in the curated
+    list are flagged ``new`` and sorted first, so review is a quick scan of
+    the top rows.  Merge approved rows into inputs/github_repos.csv (or use
+    ``add-github-repo``).
 
     Requires the ``GITHUB_TOKEN`` environment variable.
 
     Parameters
     ----------
     output_csv
-        Path to write the results CSV (columns: ``repo``, ``url``).
+        Path to write the candidates CSV (columns: ``repo``, ``url``, ``new``).
+    inputs_csv
+        Path to the curated repos CSV used to flag which candidates are new.
 
     Returns
     -------
     pd.DataFrame
-        DataFrame with columns ``repo`` and ``url``, one row per unique repo.
+        DataFrame with columns ``repo``, ``url``, and ``new``.
     """
     headers = _get_headers()
     all_repos: dict[str, str] = {}
@@ -448,12 +548,24 @@ def collect_github_repos(output_csv: str) -> pd.DataFrame:
         print(f"  running total: {len(all_repos)} repos (+{new_count} new)\n")
         time.sleep(2)
 
+    known: set[str] = set()
+    if pathlib.Path(inputs_csv).exists():
+        curated = pd.read_csv(inputs_csv)
+        known = set(curated["repo"].fillna("").astype(str).str.strip().str.lower())
+
     df = pd.DataFrame(
-        [{"repo": name, "url": url} for name, url in sorted(all_repos.items())]
+        [
+            {"repo": name, "url": url, "new": name.lower() not in known}
+            for name, url in sorted(all_repos.items())
+        ]
     )
+    if not df.empty:
+        df = df.sort_values(["new", "repo"], ascending=[False, True], kind="mergesort")
 
     pathlib.Path(output_csv).parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(output_csv, index=False)
-    print(f"Saved {len(df)} repos to {output_csv}")
+    n_new = int(df["new"].sum()) if not df.empty else 0
+    print(f"Saved {len(df)} repos to {output_csv} ({n_new} not yet in {inputs_csv}).")
+    print("Review the new rows, then add approved repos to the curated list.")
 
     return df
