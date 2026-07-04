@@ -55,18 +55,22 @@ Scholar citation counts need a `scholar_cluster_id` per paper (Scholar's
 internal ID for the group of all versions of a paper). Look one up by DOI:
 
 ```bash
-# Print the matched paper, its cluster ID, and Cited-by count:
+# One DOI — print the matched paper, its cluster ID, and Cited-by count:
 openff-stats scholar-lookup "10.1021/acs.jpcb.4c01558"
 
 # ...and write the cluster ID into inputs/publications.csv:
 openff-stats scholar-lookup "10.1021/acs.jpcb.4c01558" --save
+
+# Every DOI at once — fill scholar_cluster_id for all rows still missing one:
+openff-stats scholar-clusters                     # add --overwrite-existing to redo all
 ```
 
-It searches Scholar for the DOI, falls back to the Crossref title, and
-**validates every candidate against the Crossref title** — only a confident
-match is saved, so you won't silently store the wrong cluster. If nothing
-matches confidently it prints the candidates so you can pick one by hand
-(paste the ID into the `scholar_cluster_id` column).
+Both search Scholar for the DOI, fall back to the paper's title, and
+**validate every candidate against that title** — only a confident match is
+saved, so you won't silently store the wrong cluster. `scholar-lookup` prints
+the candidates when nothing matches confidently so you can pick one by hand
+(paste the ID into the `scholar_cluster_id` column); `scholar-clusters` leaves
+those rows blank and reports the count.
 
 Manual alternative: search the title on <https://scholar.google.com>, click
 **Cited by** on the right result, and copy the number after `cluster=` (or
@@ -125,7 +129,6 @@ openff-stats discover-packages
 openff-stats discover-dependents          # conda-forge reverse deps of openff-toolkit
 openff-stats discover-zenodo
 openff-stats discover-github-repos        # GitHub code search (needs GITHUB_TOKEN)
-openff-stats scholar-clusters             # bulk-fill scholar_cluster_id by title
 ```
 
 `discover-github-repos` flags repos not already in `inputs/github_repos.csv`

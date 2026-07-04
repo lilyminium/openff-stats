@@ -9,7 +9,8 @@ The source lists in inputs/ are manually curated. Add new sources with:
   openff-stats add-zenodo 10.5281/zenodo.18842670
 
 Google Scholar lookup by DOI (find/store the Scholar cluster ID):
-  openff-stats scholar-lookup 10.1021/acs.jpcb.4c01558 [--save]
+  openff-stats scholar-lookup 10.1021/acs.jpcb.4c01558 [--save]   (one DOI)
+  openff-stats scholar-clusters                                   (fill all DOIs)
 
 Data collection commands (read curated inputs/, write data/):
   openff-stats citations
@@ -25,7 +26,6 @@ feeds collection directly):
   openff-stats discover-dependents
   openff-stats discover-zenodo
   openff-stats discover-github-repos (requires GITHUB_TOKEN env var)
-  openff-stats scholar-clusters      (bulk-fill scholar_cluster_id by title)
 
 Visualisation:
   openff-stats plot-downloads
@@ -413,7 +413,11 @@ def citations(input_csv: str, output_csv: str) -> None:
     help="Re-query rows that already have scholar_cluster_id values.",
 )
 def scholar_clusters(input_csv: str, output_csv: str, overwrite_existing: bool) -> None:
-    """Populate scholar_cluster_id values by searching Google Scholar by title."""
+    """Fill scholar_cluster_id for every DOI in the publications CSV (bulk).
+
+    Runs the same DOI-first, title-validated lookup as `scholar-lookup` over
+    every row, filling only the blanks (use --overwrite-existing to redo all).
+    """
     from openff_stats.publications import populate_scholar_cluster_ids
     populate_scholar_cluster_ids(input_csv, output_csv, overwrite_existing)
 

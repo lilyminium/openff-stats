@@ -6,8 +6,11 @@ The curated list is inputs/publications.csv; maintain it with:
        → fetches Crossref metadata, appends a row (optionally fills the
          Scholar cluster ID too)
   openff-stats scholar-lookup DOI [--save]
-       → finds the Google Scholar cluster ID for a DOI (DOI search with
+       → finds the Google Scholar cluster ID for one DOI (DOI search with
          title fallback, validated against the Crossref title)
+  openff-stats scholar-clusters
+       → the same lookup in bulk: fills scholar_cluster_id for every DOI in
+         the publications CSV that is still missing one
 
 Collection:
   openff-stats citations
@@ -16,7 +19,6 @@ Collection:
 
 Optional bulk discovery (candidates/ for human review):
   openff-stats discover-publications --orcid-csv inputs/orcids.csv
-  openff-stats scholar-clusters   (bulk-fill missing scholar_cluster_id)
 
 inputs/publications.csv columns:
   DOI, force_field_paper, title, authors, year, scholar_cluster_id, chemrxiv_id
@@ -35,6 +37,12 @@ import tqdm
 CROSSREF_BASE = "https://api.crossref.org/works"
 ORCID_BASE = "https://pub.orcid.org/v3.0"
 CHEMRXIV_BASE = "https://chemrxiv.org/engage/chemrxiv/public-api/v1"
+
+# scholar_cluster_id / chemrxiv_id are long numeric IDs.  A Scholar cluster ID
+# has up to 20 digits, so if pandas infers the column as float64 (which happens
+# whenever any row is blank) it silently rounds the ID.  Always read these as
+# strings so round-trips stay exact.
+_ID_DTYPES = {"scholar_cluster_id": str, "chemrxiv_id": str}
 
 # Used in Crossref polite pool requests
 MAILTO = "openff-stats@example.com"
@@ -225,21 +233,47 @@ def _best_scholar_match(results: list[dict], title: str) -> tuple[dict, float] |
     return max(scored, key=lambda pair: pair[1])
 
 
-def _search_scholar_cluster(title: str, min_similarity: float = 0.75) -> str | None:
-    """Find the Google Scholar cluster ID for a title, validating the match.
+def _match_scholar(
+    doi: str,
+    title: str,
+    min_similarity: float = 0.75,
+) -> tuple[list[dict], tuple[dict, float] | None]:
+    """Find the Scholar result for a paper, searching by DOI then title.
 
-    Searches Scholar for the first 8 words of the title and returns the
-    cluster ID of the best result whose title similarity reaches
-    *min_similarity*; None when nothing matches confidently.
+    Searches Scholar for the quoted DOI string first (its results are papers
+    that mention the DOI, so the paper itself is not guaranteed to appear),
+    then falls back to a title search when no candidate matches *title*
+    confidently.  Every candidate is scored against *title*, so a wrong hit is
+    never accepted.  Leaves the shared driver open for the caller to reuse.
+
+    Parameters
+    ----------
+    doi
+        DOI to search for (may be empty to search by title only).
+    title
+        Reference title (from the curated CSV or Crossref) used to validate
+        candidates.
+    min_similarity
+        Title similarity below which the DOI search is treated as a miss and
+        the title fallback is tried.
+
+    Returns
+    -------
+    tuple[list[dict], tuple[dict, float] | None]
+        All candidates seen and the best (result, similarity) pair, or None.
     """
-    try:
-        results = _search_scholar(" ".join(title.split()[:8]))
-    except Exception:
-        return None
-    best = _best_scholar_match(results, title)
-    if best is not None and best[1] >= min_similarity:
-        return best[0]["cluster_id"]
-    return None
+    normalized = _normalize_doi(doi) if doi else ""
+    candidates = _search_scholar(f'"{normalized}"') if normalized else []
+    best = _best_scholar_match(candidates, title) if title else None
+
+    if title and (best is None or best[1] < min_similarity):
+        seen = {c["cluster_id"] for c in candidates}
+        for result in _search_scholar(" ".join(title.split()[:8])):
+            if result["cluster_id"] not in seen:
+                candidates.append(result)
+        best = _best_scholar_match(candidates, title)
+
+    return candidates, best
 
 
 def _normalize_doi(doi: str) -> str:
@@ -545,7 +579,7 @@ def add_publication_by_doi(
 
     input_path = pathlib.Path(input_csv)
     if input_path.exists():
-        df = pd.read_csv(input_path)
+        df = pd.read_csv(input_path, dtype=_ID_DTYPES)
     else:
         df = pd.DataFrame()
 
@@ -653,15 +687,7 @@ def scholar_lookup(
 
     try:
         print(f'Searching Scholar for "{normalized_doi}" ...')
-        candidates = _search_scholar(f'"{normalized_doi}"')
-
-        best = _best_scholar_match(candidates, crossref_title)
-        if crossref_title and (best is None or best[1] < min_similarity):
-            print("No confident DOI hit; searching Scholar by title ...")
-            for result in _search_scholar(" ".join(crossref_title.split()[:8])):
-                if result["cluster_id"] not in {c["cluster_id"] for c in candidates}:
-                    candidates.append(result)
-            best = _best_scholar_match(candidates, crossref_title)
+        candidates, best = _match_scholar(normalized_doi, crossref_title, min_similarity)
     finally:
         close_scholar_driver()
 
@@ -692,7 +718,7 @@ def scholar_lookup(
     )
 
     if save:
-        df = pd.read_csv(publications_csv)
+        df = pd.read_csv(publications_csv, dtype=_ID_DTYPES)
         doi_series = df["DOI"].fillna("").astype(str).map(_normalize_doi)
         matches = df.index[doi_series == normalized_doi]
         if len(matches) == 0:
@@ -781,7 +807,7 @@ def collect_all_citations(input_csv: str, output_csv: str) -> None:
     output_csv
         Path for the citations output CSV.
     """
-    df = pd.read_csv(input_csv)
+    df = pd.read_csv(input_csv, dtype=_ID_DTYPES)
 
     crossref_citations: list[int | None] = []
     scholar_citations: list[int | None] = []
@@ -861,53 +887,74 @@ def populate_scholar_cluster_ids(
     input_csv: str,
     output_csv: str,
     overwrite_existing: bool = False,
+    min_similarity: float = 0.75,
 ) -> None:
-    """Populate scholar_cluster_id values by searching Google Scholar by title.
+    """Fill scholar_cluster_id for every DOI in the publications CSV.
+
+    For each row missing a cluster ID, searches Scholar by DOI (falling back
+    to the row's title) and validates the hit against the title, exactly like
+    ``scholar-lookup`` but in bulk over the whole file.  Only confident matches
+    are written; rows with no confident match are left blank and reported so
+    you can fill them by hand.
 
     Parameters
     ----------
     input_csv
-        Path to publications CSV containing `title` and optional `scholar_cluster_id`.
+        Publications CSV containing `DOI`, `title`, and optional
+        `scholar_cluster_id`.
     output_csv
-        Path to write updated CSV.
+        Path to write the updated CSV.
     overwrite_existing
-        If True, re-query even when scholar_cluster_id is already present.
+        If True, re-query even rows that already have a cluster ID.
+    min_similarity
+        Minimum title similarity (0-1) for a match to be trusted.
     """
-    df = pd.read_csv(input_csv)
+    df = pd.read_csv(input_csv, dtype=_ID_DTYPES)
 
-    if "title" not in df.columns:
-        raise ValueError("Input CSV must contain a 'title' column.")
+    if "title" not in df.columns and "DOI" not in df.columns:
+        raise ValueError("Input CSV must contain a 'DOI' or 'title' column.")
 
     if "scholar_cluster_id" not in df.columns:
         df["scholar_cluster_id"] = ""
+    df["scholar_cluster_id"] = df["scholar_cluster_id"].astype("object")
 
     updated = 0
     skipped_existing = 0
     failed = 0
 
-    for index, row in tqdm.tqdm(df.iterrows(), total=len(df), desc="Scholar IDs"):
-        title = str(row.get("title", "")).strip()
-        existing = str(row.get("scholar_cluster_id", "")).strip()
+    try:
+        for index, row in tqdm.tqdm(df.iterrows(), total=len(df), desc="Scholar IDs"):
+            doi = str(row.get("DOI", "")).strip()
+            title = str(row.get("title", "")).strip()
+            existing = str(row.get("scholar_cluster_id", "")).strip()
 
-        if not title or title.lower() == "nan":
-            failed += 1
-            continue
+            if title.lower() == "nan":
+                title = ""
+            if doi.lower() == "nan":
+                doi = ""
+            if not doi and not title:
+                failed += 1
+                continue
 
-        has_existing = existing and existing.lower() != "nan"
-        if has_existing and not overwrite_existing:
-            skipped_existing += 1
-            continue
+            has_existing = existing and existing.lower() != "nan"
+            if has_existing and not overwrite_existing:
+                skipped_existing += 1
+                continue
 
-        cluster_id = _search_scholar_cluster(title)
-        if cluster_id:
-            df.at[index, "scholar_cluster_id"] = cluster_id
-            updated += 1
-        else:
-            failed += 1
+            try:
+                _, best = _match_scholar(doi, title, min_similarity)
+            except Exception as exc:  # a transient Scholar/Selenium error on one
+                print(f"  Warning: Scholar lookup failed for {doi or title!r}: {exc}")
+                best = None            # row must not abort the whole run
+            if best is not None and best[1] >= min_similarity:
+                df.at[index, "scholar_cluster_id"] = best[0]["cluster_id"]
+                updated += 1
+            else:
+                failed += 1
 
-        time.sleep(1.0)
-
-    close_scholar_driver()
+            time.sleep(1.0)
+    finally:
+        close_scholar_driver()
 
     pathlib.Path(output_csv).parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(output_csv, index=False)
@@ -915,4 +962,4 @@ def populate_scholar_cluster_ids(
     print(f"\nSaved scholar cluster IDs to {output_csv}")
     print(f"Updated rows:            {updated}")
     print(f"Skipped (had existing): {skipped_existing}")
-    print(f"No match / no title:    {failed}")
+    print(f"No confident match:     {failed}")

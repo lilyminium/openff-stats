@@ -21,7 +21,8 @@ openff-stats add-github-repo openforcefield/openff-toolkit
 openff-stats add-zenodo 10.5281/zenodo.18842670
 
 # Google Scholar lookup by DOI (find/store scholar_cluster_id)
-openff-stats scholar-lookup "10.1021/acs.jpcb.4c01558" --save
+openff-stats scholar-lookup "10.1021/acs.jpcb.4c01558" --save   # one DOI
+openff-stats scholar-clusters                                   # fill all missing, bulk
 
 # Collect all stats (citations, downloads, zenodo, github stars, plot)
 openff-stats run-all
@@ -43,7 +44,6 @@ openff-stats discover-packages
 openff-stats discover-dependents          # conda-forge reverse deps of openff-toolkit
 openff-stats discover-zenodo
 openff-stats discover-github-repos        # GitHub code search; requires GITHUB_TOKEN
-openff-stats scholar-clusters             # bulk-fill scholar_cluster_id by title
 ```
 
 All commands accept `--help` and most accept `--input`/`--output` path overrides.
@@ -76,7 +76,7 @@ files and writes stats to `data/`. Discovery is optional and only ever writes
 
 - `inputs/publications.csv` → `publications.py` → `data/citations.csv`
   - Scholar scraping uses a shared headless Firefox driver (`_scholar_driver` global in `publications.py`); lazy-initialized, closed after collection
-  - `scholar_cluster_id` (Google Scholar's internal ID) is needed for Scholar citation counts. Find it by DOI with `scholar-lookup` (searches Scholar, validates the hit against the Crossref title before saving — parses the cluster ID from each result link's `data-clk` `d=<id>` field), or bulk-fill by title with `scholar-clusters`
+  - `scholar_cluster_id` (Google Scholar's internal ID) is needed for Scholar citation counts. Find it by DOI with `scholar-lookup` (one DOI) or `scholar-clusters` (bulk-fill every missing one); both share `_match_scholar()` — search Scholar by DOI, fall back to the title, validate the hit against the title, and parse the cluster ID from each result link's `data-clk` `d=<id>` field before accepting it
   - `force_field_paper` column controls per-subset summary stats printed at the end of `citations`
 
 - `inputs/packages.csv` → `downloads.py` → `data/downloads.csv` + `data/downloads_yearly.csv`
