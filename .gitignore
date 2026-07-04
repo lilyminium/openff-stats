@@ -161,3 +161,10 @@ cython_debug/
 
 .DS_Store
 .claude
+
+# Local working notes (session workflow, not project docs)
+PLAN.md
+STATUS.md
+
+# Discovery output for human review — scratch by design, never committed
+candidates/

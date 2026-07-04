@@ -41,6 +41,9 @@ jobs:
         conda list
 
     - name: Run data collection
+      env:
+        # Lets run-all refresh GitHub star counts for the curated repo list.
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: openff-stats run-all
 
     - name: Deploy data to main
