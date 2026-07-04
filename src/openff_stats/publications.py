@@ -238,29 +238,13 @@ def _match_scholar(
     title: str,
     min_similarity: float = 0.75,
 ) -> tuple[list[dict], tuple[dict, float] | None]:
-    """Find the Scholar result for a paper, searching by DOI then title.
+    """Find a paper on Scholar by DOI, then by title if no DOI hit matches.
 
-    Searches Scholar for the quoted DOI string first (its results are papers
-    that mention the DOI, so the paper itself is not guaranteed to appear),
-    then falls back to a title search when no candidate matches *title*
-    confidently.  Every candidate is scored against *title*, so a wrong hit is
-    never accepted.  Leaves the shared driver open for the caller to reuse.
-
-    Parameters
-    ----------
-    doi
-        DOI to search for (may be empty to search by title only).
-    title
-        Reference title (from the curated CSV or Crossref) used to validate
-        candidates.
-    min_similarity
-        Title similarity below which the DOI search is treated as a miss and
-        the title fallback is tried.
-
-    Returns
-    -------
-    tuple[list[dict], tuple[dict, float] | None]
-        All candidates seen and the best (result, similarity) pair, or None.
+    A DOI-string search returns papers that *mention* the DOI, so the paper
+    itself is not guaranteed to appear; the title fallback covers that.  Every
+    candidate is scored against *title*, so a wrong hit is never accepted.
+    Returns ``(all_candidates, best_or_None)`` and leaves the shared driver
+    open for the caller to reuse.
     """
     normalized = _normalize_doi(doi) if doi else ""
     candidates = _search_scholar(f'"{normalized}"') if normalized else []
@@ -646,28 +630,23 @@ def add_publication_by_doi(
         raise ValueError(f"Could not fetch Crossref metadata for DOI: {normalized_doi}")
 
     input_path = pathlib.Path(input_csv)
+    columns = ["DOI", "title", "authors", "year", "scholar_cluster_id", "chemrxiv_id"]
     if input_path.exists():
         df = pd.read_csv(input_path, dtype=_ID_DTYPES)
     else:
-        df = pd.DataFrame()
-
-    required_columns = ["DOI", "title", "authors", "year", "scholar_cluster_id", "chemrxiv_id"]
-    for column in required_columns:
+        df = pd.DataFrame(columns=columns)
+    for column in columns:
         if column not in df.columns:
             df[column] = ""
 
-    existing_index = None
-    if not df.empty and "DOI" in df.columns:
-        doi_series = df["DOI"].fillna("").astype(str).map(_normalize_doi)
-        matches = df.index[doi_series == normalized_doi]
-        if len(matches) > 0:
-            existing_index = matches[0]
+    doi_series = df["DOI"].fillna("").astype(str).map(_normalize_doi)
+    matches = df.index[doi_series == normalized_doi]
 
-    if existing_index is not None:
+    if len(matches) > 0:
         if update_existing:
-            df.at[existing_index, "title"] = meta.get("title") or ""
-            df.at[existing_index, "authors"] = meta.get("authors") or ""
-            df.at[existing_index, "year"] = meta.get("year") or ""
+            df.at[matches[0], "title"] = meta.get("title") or ""
+            df.at[matches[0], "authors"] = meta.get("authors") or ""
+            df.at[matches[0], "year"] = meta.get("year") or ""
             print(f"Updated existing DOI row: {normalized_doi}")
         else:
             print(f"DOI already present, no changes made: {normalized_doi}")
@@ -677,12 +656,7 @@ def add_publication_by_doi(
         new_row["title"] = meta.get("title") or ""
         new_row["authors"] = meta.get("authors") or ""
         new_row["year"] = meta.get("year") or ""
-
-        chemrxiv_id = _search_chemrxiv_by_title(new_row["title"])
-        new_row["chemrxiv_id"] = chemrxiv_id or ""
-        if "scholar_cluster_id" in new_row:
-            new_row["scholar_cluster_id"] = ""
-
+        new_row["chemrxiv_id"] = _search_chemrxiv_by_title(new_row["title"]) or ""
         df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
         print(f"Added DOI row: {normalized_doi}")
 
@@ -709,6 +683,39 @@ def add_publication_by_doi(
                 f"still added; fill scholar_cluster_id later with "
                 f"`openff-stats scholar-lookup {normalized_doi} --save`."
             )
+
+
+def _print_scholar_candidates(candidates: list[dict], reference_title: str) -> None:
+    """Print each candidate with its similarity to *reference_title* and cluster URL."""
+    print(f"\n{'cluster_id':>22}  {'cited_by':>8}  {'match':>5}  title / link")
+    for result in candidates:
+        similarity = _title_similarity(result["title"], reference_title)
+        cited = result["cited_by"] if result["cited_by"] is not None else "-"
+        print(
+            f"{result['cluster_id'] or '-':>22}  {cited:>8}  "
+            f"{similarity:>5.2f}  {result['title'][:70]}"
+        )
+        if result["cluster_id"]:
+            print(f"{'':>40}{scholar_cluster_url(result['cluster_id'])}")
+
+
+def _save_scholar_cluster(publications_csv: str, doi: str, cluster_id: str) -> None:
+    """Write *cluster_id* into the row of *publications_csv* whose DOI matches *doi*."""
+    normalized = _normalize_doi(doi)
+    df = pd.read_csv(publications_csv, dtype=_ID_DTYPES)
+    matches = df.index[df["DOI"].fillna("").astype(str).map(_normalize_doi) == normalized]
+    if len(matches) == 0:
+        print(
+            f"DOI {normalized} is not in {publications_csv} — add it first with "
+            f"`openff-stats add-publication-doi {normalized}`."
+        )
+        return
+    if "scholar_cluster_id" not in df.columns:
+        df["scholar_cluster_id"] = ""
+    df["scholar_cluster_id"] = df["scholar_cluster_id"].astype("object")
+    df.loc[matches, "scholar_cluster_id"] = cluster_id
+    df.to_csv(publications_csv, index=False)
+    print(f"Saved scholar_cluster_id to {publications_csv}.")
 
 
 def scholar_lookup(
@@ -771,16 +778,7 @@ def scholar_lookup(
             _open_in_browser([doi_url(normalized_doi)])
         return None
 
-    print(f"\n{'cluster_id':>22}  {'cited_by':>8}  {'match':>5}  title / link")
-    for result in candidates:
-        similarity = _title_similarity(result["title"], crossref_title)
-        print(
-            f"{result['cluster_id'] or '-':>22}  "
-            f"{result['cited_by'] if result['cited_by'] is not None else '-':>8}  "
-            f"{similarity:>5.2f}  {result['title'][:70]}"
-        )
-        if result["cluster_id"]:
-            print(f"{'':>40}{scholar_cluster_url(result['cluster_id'])}")
+    _print_scholar_candidates(candidates, crossref_title)
 
     if best is None or best[1] < min_similarity:
         print(
@@ -803,21 +801,7 @@ def scholar_lookup(
         _open_in_browser([doi_url(normalized_doi), scholar_cluster_url(result["cluster_id"])])
 
     if save:
-        df = pd.read_csv(publications_csv, dtype=_ID_DTYPES)
-        doi_series = df["DOI"].fillna("").astype(str).map(_normalize_doi)
-        matches = df.index[doi_series == normalized_doi]
-        if len(matches) == 0:
-            print(
-                f"DOI {normalized_doi} is not in {publications_csv} — add it "
-                f"first with `openff-stats add-publication-doi {normalized_doi}`."
-            )
-        else:
-            if "scholar_cluster_id" not in df.columns:
-                df["scholar_cluster_id"] = ""
-            df["scholar_cluster_id"] = df["scholar_cluster_id"].astype("object")
-            df.loc[matches, "scholar_cluster_id"] = result["cluster_id"]
-            df.to_csv(publications_csv, index=False)
-            print(f"Saved scholar_cluster_id to {publications_csv}.")
+        _save_scholar_cluster(publications_csv, normalized_doi, result["cluster_id"])
 
     return result["cluster_id"]
 
