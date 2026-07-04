@@ -9,8 +9,9 @@ The source lists in inputs/ are manually curated. Add new sources with:
   openff-stats add-zenodo 10.5281/zenodo.18842670
 
 Google Scholar lookup by DOI (find/store the Scholar cluster ID):
-  openff-stats scholar-lookup 10.1021/acs.jpcb.4c01558 [--save]   (one DOI)
+  openff-stats scholar-lookup 10.1021/acs.jpcb.4c01558 [--save] [--open]
   openff-stats scholar-clusters                                   (fill all DOIs)
+  openff-stats verify-doi 10.1021/acs.jpcb.4c01558   (check a DOI resolves)
 
 Data collection commands (read curated inputs/, write data/):
   openff-stats citations
@@ -140,14 +141,25 @@ def discover_publications(
         "the publication is added even if Scholar fails)."
     ),
 )
+@click.option(
+    "--verify/--no-verify",
+    "verify",
+    default=True,
+    show_default=True,
+    help="Check the DOI resolves via doi.org before adding.",
+)
 def add_publication_doi(
     doi: str,
     input_csv: str,
     output_csv: str,
     update_existing: bool,
     fetch_scholar: bool,
+    verify: bool,
 ) -> None:
-    """Add a publication to the curated CSV from a DOI via Crossref metadata."""
+    """Add a publication to the curated CSV from a DOI via Crossref metadata.
+
+    The DOI is checked against doi.org first (skip with --no-verify).
+    """
     from openff_stats.publications import add_publication_by_doi
 
     try:
@@ -157,6 +169,7 @@ def add_publication_doi(
             output_csv=output_csv,
             update_existing=update_existing,
             fetch_scholar=fetch_scholar,
+            verify=verify,
         )
     except ValueError as exc:
         raise click.ClickException(str(exc))
@@ -219,16 +232,53 @@ def add_zenodo_cmd(id_or_doi: str, inputs_csv: str) -> None:
     default=False,
     help="Write the matched cluster ID into the publications CSV.",
 )
-def scholar_lookup_cmd(doi: str, publications_csv: str, save: bool) -> None:
+@click.option(
+    "--open",
+    "open_links",
+    is_flag=True,
+    default=False,
+    help="Open the DOI page and the matched Scholar cluster page in a browser.",
+)
+def scholar_lookup_cmd(doi: str, publications_csv: str, save: bool, open_links: bool) -> None:
     """Look up the Google Scholar cluster ID (and citations) for a DOI.
 
     Searches Scholar for the DOI, falling back to the Crossref title; every
-    candidate is printed with its title similarity, and only a confident
-    match is saved.
+    candidate is printed with its title similarity and a clickable Scholar
+    URL, and only a confident match is saved.  Use --open to launch the DOI
+    and Scholar pages in a browser for hands-on verification.
     """
     from openff_stats.publications import scholar_lookup
 
-    scholar_lookup(doi, publications_csv=publications_csv, save=save)
+    scholar_lookup(doi, publications_csv=publications_csv, save=save, open_links=open_links)
+
+
+@cli.command("verify-doi")
+@click.argument("doi")
+@click.option(
+    "--open",
+    "open_link",
+    is_flag=True,
+    default=False,
+    help="Also open the DOI page in a browser.",
+)
+def verify_doi_cmd(doi: str, open_link: bool) -> None:
+    """Check that a DOI resolves and print its registered title/publisher.
+
+    Uses doi.org content negotiation (works for Crossref- and DataCite-
+    registered DOIs).  Exits non-zero if the DOI does not resolve.
+    """
+    from openff_stats.publications import verify_doi, doi_url, _open_in_browser
+
+    resolution = verify_doi(doi)
+    if resolution is None:
+        raise click.ClickException(f"DOI does not resolve: {doi}")
+
+    click.echo(f"Resolves:  {doi_url(doi)}")
+    click.echo(f"Title:     {resolution['title']}")
+    click.echo(f"Publisher: {resolution['publisher']}")
+    click.echo(f"Type:      {resolution['type']}")
+    if open_link:
+        _open_in_browser([doi_url(doi)])
 
 
 @cli.command("discover-packages")

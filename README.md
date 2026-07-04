@@ -72,6 +72,24 @@ the candidates when nothing matches confidently so you can pick one by hand
 (paste the ID into the `scholar_cluster_id` column); `scholar-clusters` leaves
 those rows blank and reports the count.
 
+### Verifying a DOI or a match by its link
+
+`scholar-lookup` prints a clickable `https://doi.org/…` link and a
+`https://scholar.google.com/scholar?cluster=…` link for each candidate, so you
+can open them and eyeball the match. Add `--open` to launch the DOI page and
+the best-match Scholar page in your browser automatically.
+
+To just check that a DOI resolves and see what it points to (its registered
+title and publisher, via doi.org — no scraping):
+
+```bash
+openff-stats verify-doi "10.1021/acs.jpcb.4c01558"
+```
+
+`add-publication-doi` runs this resolution check automatically before adding a
+paper, so a typo'd or dead DOI is rejected rather than stored (skip with
+`--no-verify`).
+
 Manual alternative: search the title on <https://scholar.google.com>, click
 **Cited by** on the right result, and copy the number after `cluster=` (or
 `cites=`) in the URL.

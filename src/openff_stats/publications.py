@@ -283,6 +283,61 @@ def _normalize_doi(doi: str) -> str:
     return value.upper()
 
 
+def doi_url(doi: str) -> str:
+    """Return the doi.org resolver URL for a DOI (redirects to the publisher)."""
+    return f"https://doi.org/{_normalize_doi(doi)}"
+
+
+def scholar_cluster_url(cluster_id: str) -> str:
+    """Return the Google Scholar page URL for a cluster ID."""
+    return f"https://scholar.google.com/scholar?cluster={cluster_id}"
+
+
+def _open_in_browser(urls: list[str]) -> None:
+    """Open each URL in the default web browser (best-effort)."""
+    import webbrowser
+
+    for url in urls:
+        print(f"Opening {url}")
+        try:
+            webbrowser.open(url)
+        except Exception as exc:
+            print(f"  Could not open browser: {exc}")
+
+
+def verify_doi(doi: str) -> dict | None:
+    """Resolve a DOI via doi.org content negotiation to confirm it is real.
+
+    Asks doi.org for the DOI's registered CSL metadata (works for both
+    Crossref- and DataCite-registered DOIs, without scraping the publisher
+    page).  Returns ``{"title", "publisher", "type", "url"}`` where ``url`` is
+    the publisher landing page the DOI resolves to, or None if the DOI does
+    not resolve.
+    """
+    normalized = _normalize_doi(doi)
+    try:
+        response = requests.get(
+            f"https://doi.org/{normalized}",
+            headers={"Accept": "application/vnd.citationstyles.csl+json"},
+            timeout=30,
+        )
+        if not response.ok:
+            return None
+        data = response.json()
+    except Exception:
+        return None
+
+    title = data.get("title", "")
+    if isinstance(title, list):
+        title = title[0] if title else ""
+    return {
+        "title": title,
+        "publisher": data.get("publisher", ""),
+        "type": data.get("type", ""),
+        "url": f"https://doi.org/{normalized}",
+    }
+
+
 def _normalize_text(value: str) -> str:
     """Return lowercased text with punctuation collapsed to spaces."""
     text = re.sub(r"[^a-z0-9]+", " ", str(value).lower())
@@ -552,6 +607,7 @@ def add_publication_by_doi(
     output_csv: str = "inputs/publications.csv",
     update_existing: bool = False,
     fetch_scholar: bool = False,
+    verify: bool = True,
 ) -> None:
     """Add or update a publication entry by DOI using Crossref metadata.
 
@@ -568,10 +624,22 @@ def add_publication_by_doi(
     fetch_scholar
         If True, look up the Google Scholar cluster ID after the row is
         written (best-effort: a Scholar failure never loses the new row).
+    verify
+        If True, confirm the DOI resolves via doi.org before adding it, so a
+        typo'd or dead DOI is rejected rather than stored.
     """
     normalized_doi = _normalize_doi(doi)
     if not normalized_doi:
         raise ValueError("DOI cannot be empty.")
+
+    if verify:
+        resolution = verify_doi(normalized_doi)
+        if resolution is None:
+            raise ValueError(
+                f"DOI does not resolve via doi.org: {normalized_doi}. "
+                "Check for a typo (or retry if doi.org is down); not added."
+            )
+        print(f"DOI resolves: {resolution['title']}  [{resolution['publisher']}]")
 
     meta = _get_crossref_metadata(normalized_doi)
     if meta is None:
@@ -647,6 +715,7 @@ def scholar_lookup(
     doi: str,
     publications_csv: str = "inputs/publications.csv",
     save: bool = False,
+    open_links: bool = False,
     min_similarity: float = 0.75,
 ) -> str | None:
     """Look up a publication on Google Scholar by DOI.
@@ -655,7 +724,8 @@ def scholar_lookup(
     search (title from Crossref) when the DOI search finds no confident
     match.  Candidates are validated against the Crossref title, so a wrong
     first hit is never silently accepted.  Prints each candidate with its
-    cluster ID, "Cited by" count, and title similarity.
+    cluster ID, "Cited by" count, title similarity, and a clickable Scholar
+    URL so you can open the page and eyeball the match.
 
     Parameters
     ----------
@@ -666,6 +736,9 @@ def scholar_lookup(
     save
         If True and a confident match is found, write the cluster ID into
         the row of *publications_csv* whose DOI matches.
+    open_links
+        If True, open the DOI page and the best-match Scholar cluster page in
+        the default web browser for hands-on verification.
     min_similarity
         Minimum title similarity (0-1) for a match to be trusted.
 
@@ -684,6 +757,7 @@ def scholar_lookup(
             "Warning: no Crossref title available — Scholar hits cannot be "
             "validated, so nothing will be saved automatically."
         )
+    print(f"DOI:            {doi_url(normalized_doi)}")
 
     try:
         print(f'Searching Scholar for "{normalized_doi}" ...')
@@ -693,9 +767,11 @@ def scholar_lookup(
 
     if not candidates:
         print("No Scholar results found.")
+        if open_links:
+            _open_in_browser([doi_url(normalized_doi)])
         return None
 
-    print(f"\n{'cluster_id':>22}  {'cited_by':>8}  {'match':>5}  title")
+    print(f"\n{'cluster_id':>22}  {'cited_by':>8}  {'match':>5}  title / link")
     for result in candidates:
         similarity = _title_similarity(result["title"], crossref_title)
         print(
@@ -703,12 +779,17 @@ def scholar_lookup(
             f"{result['cited_by'] if result['cited_by'] is not None else '-':>8}  "
             f"{similarity:>5.2f}  {result['title'][:70]}"
         )
+        if result["cluster_id"]:
+            print(f"{'':>40}{scholar_cluster_url(result['cluster_id'])}")
 
     if best is None or best[1] < min_similarity:
         print(
             f"\nNo candidate reached the similarity threshold ({min_similarity}). "
-            "If one of the above is correct, set scholar_cluster_id manually."
+            "If one of the above is correct, open its link above to check, then "
+            "set scholar_cluster_id manually."
         )
+        if open_links:
+            _open_in_browser([doi_url(normalized_doi)])
         return None
 
     result, similarity = best
@@ -716,6 +797,10 @@ def scholar_lookup(
         f"\nBest match (similarity {similarity:.2f}): cluster_id="
         f"{result['cluster_id']}, cited by {result['cited_by']}"
     )
+    print(f"  {doi_url(normalized_doi)}")
+    print(f"  {scholar_cluster_url(result['cluster_id'])}")
+    if open_links:
+        _open_in_browser([doi_url(normalized_doi), scholar_cluster_url(result["cluster_id"])])
 
     if save:
         df = pd.read_csv(publications_csv, dtype=_ID_DTYPES)
