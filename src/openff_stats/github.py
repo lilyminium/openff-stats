@@ -30,6 +30,8 @@ import time
 import pandas as pd
 import requests
 
+from openff_stats import curated
+
 GITHUB_SEARCH_URL = "https://api.github.com/search/code"
 
 # File-size buckets (bytes) used to shard a query that hits the 1 000-result
@@ -117,27 +119,14 @@ def add_github_repo(repo: str, inputs_csv: str = "inputs/github_repos.csv") -> N
     except Exception as exc:
         print(f"Warning: could not validate {name} via the GitHub API ({exc}); adding anyway.")
 
-    input_path = pathlib.Path(inputs_csv)
-    if input_path.exists():
-        df = pd.read_csv(input_path)
-    else:
-        df = pd.DataFrame(columns=["repo", "url", "status", "notes"])
-    for column in ("repo", "url", "status", "notes"):
-        if column not in df.columns:
-            df[column] = ""
-
-    existing = df["repo"].fillna("").astype(str).str.strip().str.lower()
-    if (existing == name.lower()).any():
+    df = curated.load(inputs_csv, ["repo", "url", "status", "notes"])
+    if (df["repo"].fillna("").astype(str).str.strip().str.lower() == name.lower()).any():
         print(f"Repo already present, no changes made: {name}")
         return
 
-    new_row = {column: "" for column in df.columns}
-    new_row.update({"repo": name, "url": url, "status": "manual"})
-    df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
+    df = curated.append_row(df, {"repo": name, "url": url, "status": "manual"})
     df = df.sort_values("repo", key=lambda s: s.str.lower(), kind="mergesort")
-
-    input_path.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(input_path, index=False)
+    curated.save(df, inputs_csv)
     print(f"Added {name} to {inputs_csv}")
 
 

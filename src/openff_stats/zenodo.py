@@ -23,6 +23,8 @@ import pandas as pd
 import requests
 import tqdm
 
+from openff_stats import curated
+
 ZENODO_BASE = "https://zenodo.org/api"
 DATACITE_BASE = "https://api.datacite.org/dois"
 
@@ -81,30 +83,17 @@ def add_zenodo_record(id_or_doi: str, inputs_csv: str = "inputs/zenodo.csv") -> 
     row = _record_to_row(response.json())
     print(f"{row['zenodo_id']}: {row['title']} ({row['resource_type']}, {row['publication_year']})")
 
-    input_path = pathlib.Path(inputs_csv)
-    if input_path.exists():
-        df = pd.read_csv(input_path)
-    else:
-        df = pd.DataFrame(columns=list(row))
-    for column in row:
-        if column not in df.columns:
-            df[column] = ""
-
-    existing = df["zenodo_id"].fillna("").astype(str).str.strip()
-    if (existing == str(row["zenodo_id"])).any():
+    df = curated.load(inputs_csv, list(row))
+    if (df["zenodo_id"].fillna("").astype(str).str.strip() == str(row["zenodo_id"])).any():
         print(f"Record already present, no changes made: {row['zenodo_id']}")
         return
 
-    new_row = {column: "" for column in df.columns}
-    new_row.update(row)
-    df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
+    df = curated.append_row(df, row)
     df["_year_sort"] = pd.to_numeric(df["publication_year"], errors="coerce")
     df = df.sort_values(
         "_year_sort", ascending=False, na_position="last", kind="mergesort"
     ).drop(columns="_year_sort")
-
-    input_path.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(input_path, index=False)
+    curated.save(df, inputs_csv)
     print(f"Added record {row['zenodo_id']} to {inputs_csv}")
 
 

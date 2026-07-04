@@ -34,6 +34,8 @@ import pandas as pd
 import requests
 import tqdm
 
+from openff_stats import curated
+
 CROSSREF_BASE = "https://api.crossref.org/works"
 ORCID_BASE = "https://pub.orcid.org/v3.0"
 CHEMRXIV_BASE = "https://chemrxiv.org/engage/chemrxiv/public-api/v1"
@@ -629,15 +631,8 @@ def add_publication_by_doi(
     if meta is None:
         raise ValueError(f"Could not fetch Crossref metadata for DOI: {normalized_doi}")
 
-    input_path = pathlib.Path(input_csv)
     columns = ["DOI", "title", "authors", "year", "scholar_cluster_id", "chemrxiv_id"]
-    if input_path.exists():
-        df = pd.read_csv(input_path, dtype=_ID_DTYPES)
-    else:
-        df = pd.DataFrame(columns=columns)
-    for column in columns:
-        if column not in df.columns:
-            df[column] = ""
+    df = curated.load(input_csv, columns, dtype=_ID_DTYPES)
 
     doi_series = df["DOI"].fillna("").astype(str).map(_normalize_doi)
     matches = df.index[doi_series == normalized_doi]
@@ -651,13 +646,14 @@ def add_publication_by_doi(
         else:
             print(f"DOI already present, no changes made: {normalized_doi}")
     else:
-        new_row = {column: "" for column in df.columns}
-        new_row["DOI"] = normalized_doi
-        new_row["title"] = meta.get("title") or ""
-        new_row["authors"] = meta.get("authors") or ""
-        new_row["year"] = meta.get("year") or ""
-        new_row["chemrxiv_id"] = _search_chemrxiv_by_title(new_row["title"]) or ""
-        df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
+        title = meta.get("title") or ""
+        df = curated.append_row(df, {
+            "DOI": normalized_doi,
+            "title": title,
+            "authors": meta.get("authors") or "",
+            "year": meta.get("year") or "",
+            "chemrxiv_id": _search_chemrxiv_by_title(title) or "",
+        })
         print(f"Added DOI row: {normalized_doi}")
 
     df["_year_sort"] = pd.to_numeric(df["year"], errors="coerce")
@@ -670,8 +666,7 @@ def add_publication_by_doi(
         kind="mergesort",
     ).drop(columns=["_year_sort", "_doi_sort", "_title_sort"])
 
-    pathlib.Path(output_csv).parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(output_csv, index=False)
+    curated.save(df, output_csv)
     print(f"Saved updated publications CSV to {output_csv}")
 
     if fetch_scholar:
@@ -702,7 +697,7 @@ def _print_scholar_candidates(candidates: list[dict], reference_title: str) -> N
 def _save_scholar_cluster(publications_csv: str, doi: str, cluster_id: str) -> None:
     """Write *cluster_id* into the row of *publications_csv* whose DOI matches *doi*."""
     normalized = _normalize_doi(doi)
-    df = pd.read_csv(publications_csv, dtype=_ID_DTYPES)
+    df = curated.load(publications_csv, ["DOI", "scholar_cluster_id"], dtype=_ID_DTYPES)
     matches = df.index[df["DOI"].fillna("").astype(str).map(_normalize_doi) == normalized]
     if len(matches) == 0:
         print(
@@ -710,11 +705,9 @@ def _save_scholar_cluster(publications_csv: str, doi: str, cluster_id: str) -> N
             f"`openff-stats add-publication-doi {normalized}`."
         )
         return
-    if "scholar_cluster_id" not in df.columns:
-        df["scholar_cluster_id"] = ""
     df["scholar_cluster_id"] = df["scholar_cluster_id"].astype("object")
     df.loc[matches, "scholar_cluster_id"] = cluster_id
-    df.to_csv(publications_csv, index=False)
+    curated.save(df, publications_csv)
     print(f"Saved scholar_cluster_id to {publications_csv}.")
 
 
