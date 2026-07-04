@@ -5,8 +5,9 @@ Entry point: `openff-stats`
 
 Discovery commands (output candidates for human review):
   openff-stats discover-publications --orcid-csv inputs/orcids.csv
-    openff-stats add-publication-doi 10.1021/acs.jpcb.4c01558
+  openff-stats add-publication-doi 10.1021/acs.jpcb.4c01558
   openff-stats discover-packages
+  openff-stats discover-dependents
   openff-stats discover-zenodo
   openff-stats scholar-clusters --input inputs/publications.csv
 
@@ -144,7 +145,108 @@ def discover_packages(output: str) -> None:
     inputs/packages.csv.
     """
     from openff_stats.downloads import discover_packages as _discover
+
     _discover(output)
+
+
+@cli.command("discover-dependents")
+@click.option(
+    "--output",
+    default="candidates/dependents.csv",
+    show_default=True,
+    help="Path for the candidates CSV (for human review).",
+)
+@click.option(
+    "--subdir",
+    "subdirs",
+    multiple=True,
+    default=["noarch", "linux-64"],
+    show_default=True,
+    help=(
+        "conda-forge subdir(s) to scan (e.g. noarch, linux-64, osx-arm64). "
+        "May be repeated."
+    ),
+)
+@click.option(
+    "--dep",
+    "dep_name",
+    default="openff-toolkit",
+    show_default=True,
+    help="Dependency name to search for.",
+)
+def discover_dependents(output: str, subdirs: tuple[str, ...], dep_name: str) -> None:
+    """Find conda-forge packages that declare openff-toolkit as a dependency.
+
+    Downloads repodata.json for each subdir, scans all package entries, and
+    writes a candidates CSV of packages whose run-dependencies include
+    openff-toolkit.  Requires human verification before use.
+    """
+    from openff_stats.downloads import discover_dependents as _discover
+    _discover(output, list(subdirs), dep_name)
+
+
+@cli.command("dep-tree")
+@click.option(
+    "--root",
+    "roots",
+    multiple=True,
+    default=["openff-toolkit"],
+    show_default=True,
+    help="Root package(s) for the tree. May be repeated. -base variants are merged automatically.",
+)
+@click.option(
+    "--depth",
+    default=2,
+    show_default=True,
+    help="Number of BFS levels beyond the roots.",
+)
+@click.option(
+    "--subdir",
+    "subdirs",
+    multiple=True,
+    default=["noarch", "linux-64"],
+    show_default=True,
+    help="conda-forge subdir(s) to scan. May be repeated.",
+)
+@click.option(
+    "--output",
+    default="data/dep_tree.csv",
+    show_default=True,
+    help="Path for the tree CSV.",
+)
+def dep_tree(roots: tuple[str, ...], depth: int, subdirs: tuple[str, ...], output: str) -> None:
+    """Build a reverse-dependency tree rooted at openff-toolkit packages.
+
+    Fetches conda-forge repodata, BFS-expands the reverse dep graph, and
+    records Anaconda download counts for each node.  Re-plot with different
+    thresholds using plot-dep-tree without re-running this command.
+    """
+    from openff_stats.downloads import collect_dep_tree
+    collect_dep_tree(list(roots), depth, list(subdirs) or None, output)
+
+
+@cli.command("plot-dep-tree")
+@click.option(
+    "--input",
+    "dep_tree_csv",
+    default="data/dep_tree.csv",
+    show_default=True,
+    help="Path to the tree CSV produced by dep-tree.",
+)
+@click.option(
+    "--output",
+    "output_path",
+    default="data/plots/openff_dep_tree.png",
+    show_default=True,
+    help="Path to save the PNG plot.",
+)
+def plot_dep_tree_cmd(dep_tree_csv: str, output_path: str) -> None:
+    """Plot the reverse-dependency tree as a dendrogram.
+
+    Pure branch style, all nodes labelled.  Re-run without re-fetching repodata.
+    """
+    from openff_stats.plotting import plot_dep_tree
+    plot_dep_tree(dep_tree_csv, output_path)
 
 
 @cli.command("discover-zenodo")
@@ -244,6 +346,30 @@ def downloads(input_csv: str, output_csv: str, yearly_csv: str) -> None:
     collect_all_downloads(input_csv, output_csv, yearly_csv)
 
 
+@cli.command("github-stars")
+@click.option(
+    "--input",
+    "repos_csv",
+    default="data/github_repos.csv",
+    show_default=True,
+    help="Path to the GitHub repos CSV.",
+)
+@click.option(
+    "--output",
+    "output_csv",
+    default="data/github_repo_stars.csv",
+    show_default=True,
+    help="Path for the star counts output CSV.",
+)
+def github_stars(repos_csv: str, output_csv: str) -> None:
+    """Fetch GitHub star counts for all repos in the repos CSV.
+
+    Makes one API request per repo.  Requires GITHUB_TOKEN.
+    """
+    from openff_stats.github import collect_repo_stars
+    collect_repo_stars(repos_csv, output_csv)
+
+
 @cli.command("github-repos")
 @click.option(
     "--output",
@@ -306,6 +432,215 @@ def plot_downloads(yearly_csv: str, output_path: str) -> None:
     """Plot total OpenFF conda-forge downloads per year."""
     from openff_stats.plotting import plot_downloads_per_year
     plot_downloads_per_year(yearly_csv, output_path)
+
+
+@cli.command("plot-dependents")
+@click.option(
+    "--input",
+    "dependents_csv",
+    default="candidates/dependents.csv",
+    show_default=True,
+    help="Path to the dependents CSV.",
+)
+@click.option(
+    "--output",
+    "output_path",
+    default="data/plots/openff_dependents.png",
+    show_default=True,
+    help="Path to save the PNG plot.",
+)
+def plot_dependents(dependents_csv: str, output_path: str) -> None:
+    """Plot conda-forge packages that depend on openff-toolkit."""
+    from openff_stats.plotting import plot_dependents as _plot
+    _plot(dependents_csv, output_path)
+
+
+@cli.command("plot-github-tree")
+@click.option(
+    "--input",
+    "github_csv",
+    default="data/github_repos.csv",
+    show_default=True,
+    help="Path to the GitHub repos CSV.",
+)
+@click.option(
+    "--output",
+    "output_path",
+    default="data/plots/openff_github_tree.png",
+    show_default=True,
+    help="Path to save the PNG plot.",
+)
+@click.option(
+    "--exclude-org",
+    "exclude_orgs",
+    multiple=True,
+    help=(
+        "Org/user to exclude from the plot. May be repeated. "
+        "Defaults to openforcefield, lilyminium, ntBre, jaclark5."
+    ),
+)
+@click.option(
+    "--stars",
+    "stars_csv",
+    default=None,
+    show_default=True,
+    help="Path to star counts CSV (from github-stars). Scales line/font weight.",
+)
+def plot_github_tree(github_csv: str, output_path: str, exclude_orgs: tuple[str, ...], stars_csv: str | None) -> None:
+    """Plot all GitHub repos as a radial dendrogram grouped by organisation."""
+    from openff_stats.plotting import plot_github_tree as _plot
+    _plot(github_csv, output_path, list(exclude_orgs) or None, stars_csv)
+
+
+@cli.command("github-descriptions")
+@click.option("--input", "repos_csv", default="data/github_repos.csv", show_default=True)
+@click.option("--stars", "stars_csv", default="data/github_repo_stars.csv", show_default=True)
+@click.option("--output", "output_csv", default="data/github_repo_descriptions.csv", show_default=True)
+@click.option("--star-threshold", default=30, show_default=True,
+              help="Minimum stars for a repo to be included.")
+def github_descriptions(repos_csv, stars_csv, output_csv, star_threshold):
+    """Fetch GitHub descriptions and README summaries, auto-classify by topic."""
+    from openff_stats.github import collect_repo_descriptions
+    collect_repo_descriptions(repos_csv, stars_csv, output_csv, star_threshold)
+
+
+@cli.command("plot-github-stars")
+@click.option(
+    "--input", "github_csv", default="data/github_repos.csv", show_default=True
+)
+@click.option(
+    "--stars", "stars_csv", default="data/github_repo_stars.csv", show_default=True
+)
+@click.option(
+    "--output",
+    "output_path",
+    default="data/plots/openff_github_stars.png",
+    show_default=True,
+)
+@click.option(
+    "--star-threshold",
+    default=30,
+    show_default=True,
+    help="Min stars for a labelled spoke.",
+)
+@click.option("--exclude-org", "exclude_orgs", multiple=True)
+def plot_github_stars(github_csv, stars_csv, output_path, star_threshold, exclude_orgs):
+    """Radial plot: all repos as spokes, highlighted above star threshold."""
+    from openff_stats.plotting import plot_github_stars_radial
+    plot_github_stars_radial(github_csv, stars_csv, output_path, star_threshold,
+                             list(exclude_orgs) or None)
+
+
+@cli.command("plot-github-bubbles")
+@click.option("--input", "github_csv", default="data/github_repos.csv", show_default=True)
+@click.option("--stars", "stars_csv", default="data/github_repo_stars.csv", show_default=True)
+@click.option("--output", "output_path", default="data/plots/openff_github_bubbles.png", show_default=True)
+@click.option("--star-threshold", default=30, show_default=True,
+              help="Min stars to appear on outer ring.")
+@click.option("--label-threshold", default=100, show_default=True,
+              help="Min stars to show full org/repo label (below shows repo name only).")
+@click.option("--exclude-org", "exclude_orgs", multiple=True)
+@click.option("--descriptions", "descriptions_csv", default="data/github_repo_descriptions.csv",
+              show_default=True, help="Repo descriptions CSV for category coloring.")
+def plot_github_bubbles(github_csv, stars_csv, output_path, star_threshold, label_threshold,
+                        exclude_orgs, descriptions_csv):
+    """Radial bubble chart sized by stars, colored by topic category."""
+    import pathlib
+    from openff_stats.plotting import plot_github_bubbles as _plot
+    desc = descriptions_csv if pathlib.Path(descriptions_csv).exists() else None
+    _plot(github_csv, stars_csv, output_path, star_threshold, label_threshold,
+          list(exclude_orgs) or None, desc)
+
+
+@cli.command("plot-github-force")
+@click.option(
+    "--input", "github_csv", default="data/github_repos.csv", show_default=True
+)
+@click.option(
+    "--stars", "stars_csv", default="data/github_repo_stars.csv", show_default=True
+)
+@click.option(
+    "--output",
+    "output_path",
+    default="data/plots/openff_github_force.png",
+    show_default=True,
+)
+@click.option(
+    "--star-threshold", default=30, show_default=True, help="Min stars to label a node."
+)
+@click.option("--exclude-org", "exclude_orgs", multiple=True)
+def plot_github_force(github_csv, stars_csv, output_path, star_threshold, exclude_orgs):
+    """Force-directed graph of GitHub repos using openff-toolkit."""
+    from openff_stats.plotting import plot_github_force_directed
+    plot_github_force_directed(github_csv, stars_csv, output_path, star_threshold,
+                               list(exclude_orgs) or None)
+
+
+@cli.command("plot-github-lollipop")
+@click.option("--input", "github_csv", default="data/github_repos.csv", show_default=True)
+@click.option("--stars", "stars_csv", default="data/github_repo_stars.csv", show_default=True)
+@click.option("--output", "output_path", default="data/plots/openff_github_lollipop.png", show_default=True)
+@click.option("--star-threshold", default=30, show_default=True, help="Min stars to include.")
+@click.option("--exclude-org", "exclude_orgs", multiple=True)
+def plot_github_lollipop(github_csv, stars_csv, output_path, star_threshold, exclude_orgs):
+    """Lollipop chart of repos above a star threshold."""
+    from openff_stats.plotting import plot_github_lollipop as _plot
+    _plot(github_csv, stars_csv, output_path, star_threshold,
+          list(exclude_orgs) or None)
+
+
+@cli.command("plot-github-treemap")
+@click.option(
+    "--input",
+    "github_csv",
+    default="data/github_repos.csv",
+    show_default=True,
+    help="Path to the GitHub repos CSV.",
+)
+@click.option(
+    "--output",
+    "output_path",
+    default="data/plots/openff_github_treemap.png",
+    show_default=True,
+    help="Path to save the PNG plot.",
+)
+@click.option(
+    "--min-repos",
+    default=2,
+    show_default=True,
+    help="Minimum repos for an org to get its own tile (others grouped as 'other').",
+)
+def plot_github_treemap(github_csv: str, output_path: str, min_repos: int) -> None:
+    """Plot a treemap of GitHub organisations by repo count."""
+    from openff_stats.plotting import plot_github_treemap as _plot
+    _plot(github_csv, output_path, min_repos)
+
+
+@cli.command("plot-github-orgs")
+@click.option(
+    "--input",
+    "github_csv",
+    default="data/github_repos.csv",
+    show_default=True,
+    help="Path to the GitHub repos CSV.",
+)
+@click.option(
+    "--output",
+    "output_path",
+    default="data/plots/openff_github_orgs.png",
+    show_default=True,
+    help="Path to save the PNG plot.",
+)
+@click.option(
+    "--top-n",
+    default=20,
+    show_default=True,
+    help="Number of top organisations to show.",
+)
+def plot_github_orgs(github_csv: str, output_path: str, top_n: int) -> None:
+    """Plot top GitHub organisations by number of repos using openff-toolkit."""
+    from openff_stats.plotting import plot_github_orgs as _plot
+    _plot(github_csv, output_path, top_n)
 
 
 # ---------------------------------------------------------------------------

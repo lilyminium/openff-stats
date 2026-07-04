@@ -12,8 +12,6 @@ inputs/zenodo.csv columns:
   zenodo_id, doi, title
 """
 
-from __future__ import annotations
-
 import pathlib
 import time
 
@@ -30,7 +28,7 @@ DATACITE_BASE = "https://api.datacite.org/dois"
 # ---------------------------------------------------------------------------
 
 def _search_zenodo(base_params: dict, max_records: int = 400) -> list[dict]:
-    """Execute a Zenodo search with pagination and API-compatibility fallbacks."""
+    """Execute a Zenodo search with pagination."""
     url = f"{ZENODO_BASE}/records"
     # Zenodo unauthenticated requests currently allow max page size of 25.
     size = 25
@@ -38,26 +36,12 @@ def _search_zenodo(base_params: dict, max_records: int = 400) -> list[dict]:
     results: list[dict] = []
 
     while len(results) < max_records:
-        params_with_page = {**base_params, "size": size, "page": page}
-        attempts = [
-            {**params_with_page, "sort": "newest"},
-            {**params_with_page, "sort": "mostrecent"},
-            params_with_page,
-        ]
-
-        response = None
-        last_error: Exception | None = None
-        for params in attempts:
-            try:
-                candidate = requests.get(url, params=params, timeout=60)
-                candidate.raise_for_status()
-                response = candidate
-                break
-            except Exception as exc:
-                last_error = exc
-
-        if response is None:
-            print(f"  Warning: Zenodo search failed ({params_with_page}): {last_error}")
+        params = {**base_params, "size": size, "page": page, "sort": "newest"}
+        try:
+            response = requests.get(url, params=params, timeout=60)
+            response.raise_for_status()
+        except Exception as exc:
+            print(f"  Warning: Zenodo search failed ({params}): {exc}")
             break
 
         page_hits = response.json().get("hits", {}).get("hits", [])

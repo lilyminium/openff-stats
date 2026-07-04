@@ -13,8 +13,6 @@ inputs/publications.csv columns:
   (scholar_cluster_id and chemrxiv_id may be blank if not applicable)
 """
 
-from __future__ import annotations
-
 from difflib import SequenceMatcher
 import re
 import time
@@ -277,21 +275,6 @@ def _is_preprint_doi(doi: str) -> bool:
     )
 
 
-def _extract_preprint_version(doi: str) -> int:
-    """Extract a numeric preprint version from DOI suffixes (default: 0)."""
-    doi_upper = str(doi).upper()
-    patterns = (
-        r"/V(\d+)$",
-        r"\.V(\d+)$",
-        r"-V(\d+)$",
-    )
-    for pattern in patterns:
-        match = re.search(pattern, doi_upper)
-        if match:
-            return int(match.group(1))
-    return 0
-
-
 def _same_publication_candidate(row_a: pd.Series, row_b: pd.Series) -> bool:
     """Return True if rows look like duplicate versions of the same publication."""
     title_score = _title_similarity(row_a.get("title", ""), row_b.get("title", ""))
@@ -313,19 +296,13 @@ def _choose_preferred_record(group: pd.DataFrame) -> pd.Series:
     """Pick the best record among duplicate versions of the same publication."""
     candidates = group.copy()
     candidates["is_preprint"] = candidates["DOI"].apply(_is_preprint_doi)
-    candidates["preprint_version"] = candidates["DOI"].apply(_extract_preprint_version)
     candidates["year_numeric"] = pd.to_numeric(candidates["year"], errors="coerce").fillna(0)
 
     published = candidates[~candidates["is_preprint"]]
     if not published.empty:
-        sorted_rows = published.sort_values(["year_numeric"], ascending=[False])
-        return sorted_rows.iloc[0]
+        return published.sort_values("year_numeric", ascending=False).iloc[0]
 
-    sorted_rows = candidates.sort_values(
-        ["preprint_version", "year_numeric"],
-        ascending=[False, False],
-    )
-    return sorted_rows.iloc[0]
+    return candidates.sort_values("year_numeric", ascending=False).iloc[0]
 
 
 def _deduplicate_publications(df: pd.DataFrame) -> pd.DataFrame:
@@ -356,7 +333,7 @@ def _deduplicate_publications(df: pd.DataFrame) -> pd.DataFrame:
     for group in groups:
         group_df = df.iloc[group]
         preferred = _choose_preferred_record(group_df)
-        selected_rows.append(preferred.drop(labels=["is_preprint", "preprint_version", "year_numeric"], errors="ignore"))
+        selected_rows.append(preferred.drop(labels=["is_preprint", "year_numeric"], errors="ignore"))
 
     deduped = pd.DataFrame(selected_rows).reset_index(drop=True)
     dropped_count = len(df) - len(deduped)
@@ -671,10 +648,8 @@ def collect_all_citations(input_csv: str, output_csv: str) -> None:
     keep_cols = ["DOI", "title", "authors", "year"]
     df = df[keep_cols].copy()  # only keep core metadata + new citation columns
 
-    df["crossref_citations"] = crossref_citations
-    df["crossref_citations"] = df["crossref_citations"].astype(int)
-    df["scholar_citations"] = scholar_citations
-    df["scholar_citations"] = df["scholar_citations"].astype(int)
+    df["crossref_citations"] = pd.to_numeric(crossref_citations, errors="coerce").astype("Int64")
+    df["scholar_citations"] = pd.to_numeric(scholar_citations, errors="coerce").astype("Int64")
     df["chemrxiv_views"] = chemrxiv_views
     df["chemrxiv_downloads"] = chemrxiv_downloads
     df["chemrxiv_citations"] = chemrxiv_citations
