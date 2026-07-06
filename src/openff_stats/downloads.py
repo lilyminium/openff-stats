@@ -4,8 +4,10 @@ Conda-forge package discovery and download statistics collection.
 Workflow:
   1. discover-packages     → outputs a candidates CSV for human review
   2. discover-dependents   → outputs packages that depend on openff-toolkit
-  2. (human edits inputs/packages.csv to verify the list)
-  3. downloads             → reads inputs/packages.csv, collects stats, writes data/
+  2. (human edits inputs/packages/<group>.csv to verify the list; the
+     filename is the group classification, e.g. openff.csv, competitor.csv)
+  3. downloads             → reads inputs/packages/, collects stats, writes
+     data/ with per-group download sums
 """
 
 import pathlib
@@ -17,6 +19,8 @@ import pandas as pd
 import requests
 import tqdm
 
+from openff_stats import curated
+
 # Hardcoded competitor packages to always include in discovery output
 COMPETITOR_PACKAGES = ["ambertools", "parmed"]
 
@@ -27,7 +31,7 @@ def discover_packages(output_file: str) -> pd.DataFrame:
     """Fetch conda-forge channeldata and return all openff-* packages plus competitors.
 
     Writes a candidates CSV for human review. The human should verify the list
-    and save it to inputs/packages.csv.
+    and save it to inputs/packages/<group>.csv.
 
     Parameters
     ----------
@@ -59,7 +63,7 @@ def discover_packages(output_file: str) -> pd.DataFrame:
         print(f"  {pkg}")
     print(f"\nAlso included competitors: {', '.join(COMPETITOR_PACKAGES)}")
     print(f"\nWrote {len(df)} candidates to {output_file}")
-    print("Review this file and save verified entries to inputs/packages.csv")
+    print("Review this file and save verified entries to inputs/packages/<group>.csv")
 
     return df
 
@@ -114,35 +118,38 @@ def get_condastats_monthly(package: str) -> pd.DataFrame | None:
 
 
 def collect_all_downloads(
-    input_csv: str,
+    inputs_dir: str,
     output_csv: str,
     yearly_csv: str,
 ) -> None:
-    """Collect download stats for all packages in the input CSV.
+    """Collect download stats for all curated packages.
 
-    Reads inputs/packages.csv (columns: package, category) and writes:
-      - output_csv: per-package totals from both methods
+    Reads every CSV in inputs/packages/ (filename = group, e.g. openff.csv;
+    column: package) and writes:
+      - output_csv: per-package totals from both methods, with group
       - yearly_csv: per-package per-year counts from condastats
+
+    Prints cumulative download sums per group.
 
     Parameters
     ----------
-    input_csv
-        Path to the curated packages CSV (inputs/packages.csv).
+    inputs_dir
+        Directory of curated package group CSVs (a single CSV also works).
     output_csv
         Path for the per-package totals output CSV.
     yearly_csv
         Path for the per-package per-year output CSV.
     """
-    packages_df = pd.read_csv(input_csv)
+    packages_df = curated.load_groups(inputs_dir, ["package"])
 
     totals_rows: list[dict] = []
     all_monthly: list[pd.DataFrame] = []
 
     for _, row in tqdm.tqdm(packages_df.iterrows(), total=len(packages_df), desc="Packages"):
         pkg = row["package"]
-        cat = row["category"]
+        group = row["group"]
 
-        print(f"\n{pkg} ({cat})")
+        print(f"\n{pkg} ({group})")
 
         anaconda_total = get_anaconda_downloads(pkg)
         monthly_df = get_condastats_monthly(pkg)
@@ -150,12 +157,12 @@ def collect_all_downloads(
         condastats_total: int | None = None
         if monthly_df is not None:
             condastats_total = int(monthly_df["counts"].sum())
-            monthly_df["category"] = cat
+            monthly_df["group"] = group
             all_monthly.append(monthly_df)
 
         totals_rows.append({
             "package": pkg,
-            "category": cat,
+            "group": group,
             "anaconda_total": anaconda_total,
             "condastats_total": condastats_total,
         })
@@ -166,16 +173,20 @@ def collect_all_downloads(
     totals_df.to_csv(output_csv, index=False)
     print(f"\nSaved per-package totals to {output_csv}")
 
-    openff_anaconda = totals_df[totals_df.category == "openff"]["anaconda_total"].sum()
-    openff_condastats = totals_df[totals_df.category == "openff"]["condastats_total"].sum()
-    print(f"Total openff downloads (Anaconda):   {openff_anaconda:,.0f}")
-    print(f"Total openff downloads (condastats): {openff_condastats:,.0f}")
+    print("\nConda-forge download sums per group:")
+    for group_name, subset in totals_df.groupby("group"):
+        anaconda = subset["anaconda_total"].sum()
+        condastats = subset["condastats_total"].sum()
+        print(
+            f"  {group_name}: {anaconda:,.0f} (Anaconda), "
+            f"{condastats:,.0f} (condastats), {len(subset)} packages"
+        )
 
     # Write yearly breakdown
     if all_monthly:
         combined = pd.concat(all_monthly, ignore_index=True)
         yearly = (
-            combined.groupby(["package", "category", "year"])["counts"]
+            combined.groupby(["package", "group", "year"])["counts"]
             .sum()
             .reset_index()
             .rename(columns={"counts": "condastats_downloads"})
@@ -313,7 +324,7 @@ def discover_dependents(
     print(f"\nFound {len(df)} conda-forge packages depending on {dep_name!r}")
     print(f"Wrote candidates to {output_file}")
     print(
-        "NOTE: Review this file and copy verified entries to inputs/packages.csv "
+        "NOTE: Review this file and copy verified entries to inputs/packages/<group>.csv "
         "(set category to 'dependent' or similar)."
     )
     return df

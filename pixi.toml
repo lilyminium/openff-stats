@@ -1,0 +1,25 @@
+[workspace]
+name = "openff-stats"
+version = "0.1.0"
+channels = ["conda-forge"]
+platforms = ["osx-arm64", "linux-64"]
+
+[dependencies]
+python = ">=3.10"
+click = "*"
+pandas = "*"
+requests = "*"
+tqdm = "*"
+condastats = "*"
+selenium = "*"
+geckodriver = ">=0.37.0,<0.38"
+
+[pypi-dependencies]
+openff-stats = { path = ".", editable = true }
+
+[tasks]
+run-all = "openff-stats run-all"
+citations = "openff-stats citations"
+downloads = "openff-stats downloads"
+zenodo-citations = "openff-stats zenodo-citations"
+github-stars = "openff-stats github-stars"

@@ -1,5 +1,10 @@
 """Shared helpers for the manually curated inputs/ CSVs.
 
+Every input kind lives in a directory of CSVs where the *filename* is the
+group classification: e.g. inputs/publications/force-field.csv holds the
+force-field papers, inputs/zenodo/qcsubmit.csv the qcsubmit Zenodo records.
+``load_groups`` reads a whole directory and tags rows with their group.
+
 Every ``add-*`` command follows the same recipe: load the curated CSV (or
 start an empty one), skip if the row is already present, append the new row,
 sort, and save.  These helpers cover the load/append/save boilerplate; each
@@ -23,6 +28,31 @@ def load(path: str, columns: list[str], **read_kwargs) -> pd.DataFrame:
         if column not in df.columns:
             df[column] = ""
     return df
+
+
+def load_groups(directory: str, columns: list[str], **read_kwargs) -> pd.DataFrame:
+    """Read every ``*.csv`` in *directory*, tagging rows with ``group``.
+
+    The group is the filename stem (``force-field.csv`` → ``force-field``).
+    Accepts a single CSV path too (its stem becomes the group), so ``--input``
+    overrides keep working.  Returns an empty frame with *columns* + ``group``
+    if nothing is found.
+    """
+    path = pathlib.Path(directory)
+    files = [path] if path.is_file() else sorted(path.glob("*.csv")) if path.is_dir() else []
+    frames = []
+    for file_path in files:
+        df = load(str(file_path), columns, **read_kwargs)
+        df["group"] = file_path.stem
+        frames.append(df)
+    if not frames:
+        return pd.DataFrame(columns=[*columns, "group"])
+    return pd.concat(frames, ignore_index=True)
+
+
+def group_path(directory: str, group: str) -> str:
+    """Return the CSV path for *group* within *directory*."""
+    return str(pathlib.Path(directory) / f"{group}.csv")
 
 
 def append_row(df: pd.DataFrame, row: dict) -> pd.DataFrame:

@@ -1,18 +1,20 @@
 """
 Zenodo record curation and DataCite citation count collection.
 
-The curated list is inputs/zenodo.csv; maintain it with:
-  openff-stats add-zenodo ID_OR_DOI
+The curated lists live in inputs/zenodo/ — one CSV per group classification
+(filename = group, e.g. qcsubmit.csv); maintain them with:
+  openff-stats add-zenodo ID_OR_DOI [--group NAME]
        → fetches record metadata from the Zenodo API, appends a row
 
 Collection:
   openff-stats zenodo-citations
        → queries DataCite for citation counts, writes data/zenodo_citations.csv
+         with per-group totals
 
 Optional bulk discovery (candidates/ for human review):
   openff-stats discover-zenodo
 
-inputs/zenodo.csv columns:
+inputs/zenodo/<group>.csv columns:
   zenodo_id, doi, title, creators, publication_year, resource_type
 """
 
@@ -65,15 +67,23 @@ def _parse_zenodo_id(id_or_doi: str) -> str:
     )
 
 
-def add_zenodo_record(id_or_doi: str, inputs_csv: str = "inputs/zenodo.csv") -> None:
-    """Add a Zenodo record to the curated CSV via the Zenodo API.
+def add_zenodo_record(
+    id_or_doi: str,
+    inputs_dir: str = "inputs/zenodo",
+    group: str = "general",
+) -> None:
+    """Add a Zenodo record to the curated group CSV via the Zenodo API.
 
     Parameters
     ----------
     id_or_doi
         Numeric record ID, Zenodo DOI (10.5281/zenodo.NNN), or record URL.
-    inputs_csv
-        Path to the curated Zenodo CSV.
+    inputs_dir
+        Directory of group CSVs (filename = group classification).
+    group
+        Group file to append to (``<inputs_dir>/<group>.csv``).  The
+        duplicate check spans every group file, so a record can only live in
+        one group.
     """
     record_id = _parse_zenodo_id(id_or_doi)
     response = requests.get(f"{ZENODO_BASE}/records/{record_id}", timeout=60)
@@ -83,11 +93,18 @@ def add_zenodo_record(id_or_doi: str, inputs_csv: str = "inputs/zenodo.csv") -> 
     row = _record_to_row(response.json())
     print(f"{row['zenodo_id']}: {row['title']} ({row['resource_type']}, {row['publication_year']})")
 
-    df = curated.load(inputs_csv, list(row))
-    if (df["zenodo_id"].fillna("").astype(str).str.strip() == str(row["zenodo_id"])).any():
-        print(f"Record already present, no changes made: {row['zenodo_id']}")
+    all_groups = curated.load_groups(inputs_dir, list(row))
+    existing = all_groups["zenodo_id"].fillna("").astype(str).str.strip() == str(row["zenodo_id"])
+    if existing.any():
+        found_group = all_groups.loc[existing, "group"].iloc[0]
+        print(
+            f"Record already present in group '{found_group}', "
+            f"no changes made: {row['zenodo_id']}"
+        )
         return
 
+    inputs_csv = curated.group_path(inputs_dir, group)
+    df = curated.load(inputs_csv, list(row))
     df = curated.append_row(df, row)
     df["_year_sort"] = pd.to_numeric(df["publication_year"], errors="coerce")
     df = df.sort_values(
@@ -179,7 +196,7 @@ def discover_zenodo(output_file: str) -> pd.DataFrame:
 
     print(f"Wrote {len(df)} candidates to {output_file}")
     print(
-        "Review this file and save verified entries to inputs/zenodo.csv\n"
+        "Review this file and save verified entries to inputs/zenodo/<group>.csv\n"
         "(keep zenodo_id, doi, and title columns)."
     )
     return df
@@ -217,48 +234,63 @@ def get_datacite_citations(doi: str) -> dict:
         return {"citation_count": 0, "citations_over_time": []}
 
 
-def collect_zenodo_citations(input_csv: str, output_csv: str) -> None:
-    """Collect DataCite citation counts for all Zenodo records in the input CSV.
+def collect_zenodo_citations(inputs_dir: str, output_csv: str) -> None:
+    """Collect DataCite citation counts for all curated Zenodo records.
 
-    Reads inputs/zenodo.csv (columns: zenodo_id, doi, title) and writes
-    data/zenodo_citations.csv with citation count and per-year columns.
+    Reads every CSV in inputs/zenodo/ (filename = group; columns: zenodo_id,
+    doi, title) and writes data/zenodo_citations.csv in long form: one row
+    per record-year with ``year``/``citations`` columns, plus the record's
+    total ``citation_count`` (the sum of its per-year counts) repeated on
+    each row.  Records with no citations keep a single row with blank
+    ``year``.  Prints cumulative sums per group and overall.
 
     Parameters
     ----------
-    input_csv
-        Path to the curated Zenodo CSV.
+    inputs_dir
+        Directory of curated Zenodo group CSVs (a single CSV also works).
     output_csv
         Path for the citations output CSV.
     """
-    df = pd.read_csv(input_csv)
+    records = curated.load_groups(
+        inputs_dir,
+        ["zenodo_id", "doi", "title", "creators", "publication_year", "resource_type"],
+    )
 
-    citation_counts: list[int] = []
-    all_years: set[str] = set()
-    yearly_data: list[dict] = []
-
-    for _, row in tqdm.tqdm(df.iterrows(), total=len(df), desc="Zenodo records"):
-        doi = str(row.get("doi", "")).strip()
+    rows: list[dict] = []
+    for _, record in tqdm.tqdm(records.iterrows(), total=len(records), desc="Zenodo records"):
+        doi = str(record.get("doi", "")).strip()
         result = get_datacite_citations(doi) if doi else {"citation_count": 0, "citations_over_time": []}
-
-        citation_counts.append(result["citation_count"])
 
         per_year: dict[str, int] = {}
         for entry in result["citations_over_time"]:
             yr = str(entry.get("year", ""))
-            total = entry.get("total", 0) or 0
-            per_year[yr] = total
-            all_years.add(yr)
-        yearly_data.append(per_year)
+            per_year[yr] = entry.get("total", 0) or 0
+        total = sum(per_year.values())
+
+        meta = record.to_dict()
+        if per_year:
+            for yr in sorted(per_year):
+                rows.append(
+                    {**meta, "year": yr, "citations": per_year[yr], "citation_count": total}
+                )
+        else:
+            rows.append({**meta, "year": "", "citations": 0, "citation_count": 0})
 
         time.sleep(0.1)
 
-    df["citation_count"] = citation_counts
+    df = pd.DataFrame(rows)
 
-    # Add one column per year (sorted)
-    for year in sorted(all_years):
-        df[f"citations_{year}"] = [d.get(year, 0) for d in yearly_data]
+    # group first, then the record metadata and counts
+    df = df[["group", *[c for c in df.columns if c != "group"]]]
 
     pathlib.Path(output_csv).parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(output_csv, index=False)
+
+    per_record = df.drop_duplicates(subset="zenodo_id")
     print(f"\nSaved Zenodo citation counts to {output_csv}")
-    print(f"Total citations (DataCite): {sum(citation_counts)}")
+    print(f"Total citations (DataCite): {int(per_record['citation_count'].sum())}")
+    for group_name, subset in per_record.groupby("group"):
+        print(
+            f"  {group_name}: {int(subset['citation_count'].sum())} citations "
+            f"({len(subset)} records)"
+        )

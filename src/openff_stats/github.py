@@ -1,17 +1,20 @@
 """
-GitHub repo tracking: curated list in inputs/github_repos.csv plus optional
+GitHub repo tracking: curated lists in inputs/github_repos/ plus optional
 code-search discovery.
 
-The curated list (columns: repo, url, status, notes) is the source of truth.
-`status` is `manual` (human-added), `auto` (seeded from discovery), or
-`exclude` (kept in the file for the record but skipped by collection/plots).
+Each CSV in inputs/github_repos/ is one group — the filename is the package
+the repos import (e.g. openff-toolkit.csv).  Columns: repo, url, status,
+notes.  `status` is `manual` (human-added), `auto` (seeded from discovery),
+or `exclude` (kept in the file for the record but skipped by collection).
 
 Workflow:
-  openff-stats add-github-repo OWNER/REPO   → append to inputs/github_repos.csv
-  openff-stats discover-github-repos        → code search, writes
+  openff-stats add-github-repo OWNER/REPO [--group NAME]
+                                            → append to inputs/github_repos/<group>.csv
+  openff-stats discover-github-repos --package X --import-name Y
+                                            → code search, writes
                                               candidates/github_repos.csv for
                                               human review (new repos first)
-  openff-stats github-stars                 → star counts for the curated list
+  openff-stats github-stars                 → star counts + per-group import sums
 
 Discovery uses sharded queries to work around GitHub's hard 1000-result cap on
 any single code-search request: when a query returns >= 1000 hits the search
@@ -45,27 +48,38 @@ _SIZE_BUCKETS = [
     ">150000",
 ]
 
-# Each entry covers a different way the toolkit may appear in a repo.
-_BASE_QUERIES = [
-    # Runtime imports
-    "import openff.toolkit language:python",
-    "from openff.toolkit language:python",
-    "import openff.toolkit extension:ipynb",
-    "from openff.toolkit extension:ipynb",
-    # Declared dependencies
-    "openff-toolkit filename:setup.cfg",
-    "openff-toolkit filename:pyproject.toml",
-    "openff-toolkit filename:requirements.txt",
-    "openff-toolkit filename:environment.yml",
-    "openff-toolkit filename:setup.py",
-]
+def _build_queries(package_name: str, import_name: str) -> list[str]:
+    """Code-search queries covering the ways a package may appear in a repo.
+
+    Runtime-import queries use *import_name* (e.g. ``openff.toolkit``);
+    declared-dependency queries use *package_name* (e.g. ``openff-toolkit``).
+    """
+    return [
+        # Runtime imports
+        f"import {import_name} language:python",
+        f"from {import_name} language:python",
+        f"import {import_name} extension:ipynb",
+        f"from {import_name} extension:ipynb",
+        # Declared dependencies
+        f"{package_name} filename:setup.cfg",
+        f"{package_name} filename:pyproject.toml",
+        f"{package_name} filename:requirements.txt",
+        f"{package_name} filename:environment.yml",
+        f"{package_name} filename:setup.py",
+        f"{package_name} filename:pixi.toml",
+    ]
 
 
-def load_curated_repos(inputs_csv: str) -> pd.DataFrame:
-    """Load the curated repos CSV, dropping rows with status == 'exclude'."""
-    df = pd.read_csv(inputs_csv)
+def load_curated_repos(inputs_dir: str) -> pd.DataFrame:
+    """Load the curated repo group CSVs, dropping rows with status == 'exclude'.
+
+    Reads every CSV in *inputs_dir* (filename = group classification, i.e.
+    which package the repos import; a single CSV also works) and tags rows
+    with ``group``.
+    """
+    df = curated.load_groups(inputs_dir, ["repo", "url", "status", "notes"])
     if "status" in df.columns:
-        excluded = df["status"].fillna("").str.strip().str.lower() == "exclude"
+        excluded = df["status"].fillna("").astype(str).str.strip().str.lower() == "exclude"
         if excluded.any():
             print(f"Skipping {excluded.sum()} repo(s) with status=exclude.")
         df = df[~excluded]
@@ -86,8 +100,12 @@ def _normalize_repo_name(repo: str) -> str:
     return value
 
 
-def add_github_repo(repo: str, inputs_csv: str = "inputs/github_repos.csv") -> None:
-    """Add a repo to the curated CSV, validating it via the GitHub API.
+def add_github_repo(
+    repo: str,
+    inputs_dir: str = "inputs/github_repos",
+    group: str = "openff-toolkit",
+) -> None:
+    """Add a repo to the curated group CSV, validating it via the GitHub API.
 
     Works without GITHUB_TOKEN (unauthenticated requests are fine at this
     volume); if the API is unreachable the repo is appended anyway after a
@@ -97,8 +115,11 @@ def add_github_repo(repo: str, inputs_csv: str = "inputs/github_repos.csv") -> N
     ----------
     repo
         Repo as ``owner/repo`` or a github.com URL.
-    inputs_csv
-        Path to the curated repos CSV.
+    inputs_dir
+        Directory of group CSVs (filename = the package the repos import).
+    group
+        Group file to append to (``<inputs_dir>/<group>.csv``).  The
+        duplicate check spans every group file.
     """
     name = _normalize_repo_name(repo)
     url = f"https://github.com/{name}"
@@ -119,11 +140,18 @@ def add_github_repo(repo: str, inputs_csv: str = "inputs/github_repos.csv") -> N
     except Exception as exc:
         print(f"Warning: could not validate {name} via the GitHub API ({exc}); adding anyway.")
 
-    df = curated.load(inputs_csv, ["repo", "url", "status", "notes"])
-    if (df["repo"].fillna("").astype(str).str.strip().str.lower() == name.lower()).any():
-        print(f"Repo already present, no changes made: {name}")
+    columns = ["repo", "url", "status", "notes"]
+    all_groups = curated.load_groups(inputs_dir, columns)
+    existing = (
+        all_groups["repo"].fillna("").astype(str).str.strip().str.lower() == name.lower()
+    )
+    if existing.any():
+        found_group = all_groups.loc[existing, "group"].iloc[0]
+        print(f"Repo already present in group '{found_group}', no changes made: {name}")
         return
 
+    inputs_csv = curated.group_path(inputs_dir, group)
+    df = curated.load(inputs_csv, columns)
     df = curated.append_row(df, {"repo": name, "url": url, "status": "manual"})
     df = df.sort_values("repo", key=lambda s: s.str.lower(), kind="mergesort")
     curated.save(df, inputs_csv)
@@ -284,33 +312,36 @@ def _search(
     return all_repos
 
 
-def collect_repo_stars(repos_csv: str, output_csv: str) -> pd.DataFrame:
-    """Fetch star counts for every repo in *repos_csv* via the GitHub Repos API.
+def collect_repo_stars(inputs_dir: str, output_csv: str) -> pd.DataFrame:
+    """Fetch star counts for every curated repo via the GitHub Repos API.
 
     Makes one request per repo.  Skips repos that return a non-200 status
-    (private, deleted, or renamed) and records stars=0 for them.
+    (private, deleted, or renamed) and records stars=0 for them.  Prints
+    per-group sums (the group = which package the repos import, so the repo
+    count per group is the "GitHub repo imports" number).
 
     Requires the ``GITHUB_TOKEN`` environment variable.
 
     Parameters
     ----------
-    repos_csv
-        Path to the GitHub repos CSV (columns: ``repo``, ``url``).
+    inputs_dir
+        Directory of curated repo group CSVs (a single CSV also works).
     output_csv
-        Path to write the results CSV (columns: ``repo``, ``stars``).
+        Path to write the results CSV (columns: ``group``, ``repo``, ``stars``).
 
     Returns
     -------
     pd.DataFrame
-        DataFrame with columns ``repo`` and ``stars``.
+        DataFrame with columns ``group``, ``repo``, and ``stars``.
     """
     import tqdm
 
     headers = _get_headers()
-    df = load_curated_repos(repos_csv)
+    df = load_curated_repos(inputs_dir)
     rows = []
 
-    for repo in tqdm.tqdm(df["repo"], desc="Fetching stars"):
+    for _, curated_row in tqdm.tqdm(df.iterrows(), total=len(df), desc="Fetching stars"):
+        repo = curated_row["repo"]
         url = f"https://api.github.com/repos/{repo}"
         while True:
             r = requests.get(url, headers=headers, timeout=30)
@@ -324,7 +355,7 @@ def collect_repo_stars(repos_csv: str, output_csv: str) -> pd.DataFrame:
                 continue
 
             stars = r.json().get("stargazers_count", 0) if r.status_code == 200 else 0
-            rows.append({"repo": repo, "stars": stars})
+            rows.append({"group": curated_row["group"], "repo": repo, "stars": stars})
             break
 
         time.sleep(0.05)  # stay clear of secondary rate limits
@@ -333,6 +364,9 @@ def collect_repo_stars(repos_csv: str, output_csv: str) -> pd.DataFrame:
     pathlib.Path(output_csv).parent.mkdir(parents=True, exist_ok=True)
     result.to_csv(output_csv, index=False)
     print(f"\nSaved star counts for {len(result)} repos to {output_csv}")
+    print("\nGitHub repo imports per group:")
+    for group_name, subset in result.groupby("group"):
+        print(f"  {group_name}: {len(subset)} repos, {int(subset['stars'].sum()):,} total stars")
     return result
 
 
@@ -426,7 +460,7 @@ def collect_repo_descriptions(
     For each qualifying repo:
     - Uses the GitHub Repos API ``description`` field.
     - Falls back to (or supplements with) the first paragraph of the README.
-    - Auto-classifies into a topic category that the user can edit before replotting.
+    - Auto-classifies into a topic category that the user can edit.
 
     Requires the ``GITHUB_TOKEN`` environment variable.
 
@@ -453,7 +487,7 @@ def collect_repo_descriptions(
 
     repos_df = load_curated_repos(repos_csv)
     stars_df = pd.read_csv(stars_csv)
-    merged = repos_df.merge(stars_df, on="repo", how="left")
+    merged = repos_df.merge(stars_df[["repo", "stars"]], on="repo", how="left")
     merged["stars"] = merged["stars"].fillna(0).astype(int)
     target = merged[merged["stars"] >= star_threshold].sort_values(
         "stars", ascending=False
@@ -496,22 +530,24 @@ def collect_repo_descriptions(
     pathlib.Path(output_csv).parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(output_csv, index=False)
     print(f"\nSaved {len(df)} repo descriptions to {output_csv}")
-    print("Review and edit the 'category' column before replotting.")
+    print("Review and edit the 'category' column.")
     return df
 
 
 def discover_github_repos(
     output_csv: str = "candidates/github_repos.csv",
-    inputs_csv: str = "inputs/github_repos.csv",
+    inputs_dir: str = "inputs/github_repos",
+    package_name: str = "openff-toolkit",
+    import_name: str = "openff.toolkit",
 ) -> pd.DataFrame:
-    """Search GitHub for repositories that import or depend on openff.toolkit.
+    """Search GitHub for repositories that import or depend on a package.
 
     Runs a set of sharded code-search queries and unions the results, working
     around the 1 000-result cap that GitHub imposes on any single query.
     Writes a candidates CSV for human review; repos not already in the curated
     list are flagged ``new`` and sorted first, so review is a quick scan of
-    the top rows.  Merge approved rows into inputs/github_repos.csv (or use
-    ``add-github-repo``).
+    the top rows.  Merge approved rows into inputs/github_repos/<group>.csv
+    (or use ``add-github-repo --group``).
 
     Requires the ``GITHUB_TOKEN`` environment variable.
 
@@ -519,8 +555,15 @@ def discover_github_repos(
     ----------
     output_csv
         Path to write the candidates CSV (columns: ``repo``, ``url``, ``new``).
-    inputs_csv
-        Path to the curated repos CSV used to flag which candidates are new.
+    inputs_dir
+        Directory of curated repo group CSVs used to flag which candidates
+        are new (checked across every group).
+    package_name
+        Distribution name on conda-forge/PyPI (e.g. ``openff-toolkit``); used
+        in the dependency-file queries.
+    import_name
+        Python import path (e.g. ``openff.toolkit``); used in the
+        import-statement queries.
 
     Returns
     -------
@@ -530,17 +573,15 @@ def discover_github_repos(
     headers = _get_headers()
     all_repos: dict[str, str] = {}
 
-    for query in _BASE_QUERIES:
+    for query in _build_queries(package_name, import_name):
         repos = _search(query, headers)
         new_count = sum(1 for k in repos if k not in all_repos)
         all_repos.update(repos)
         print(f"  running total: {len(all_repos)} repos (+{new_count} new)\n")
         time.sleep(2)
 
-    known: set[str] = set()
-    if pathlib.Path(inputs_csv).exists():
-        curated = pd.read_csv(inputs_csv)
-        known = set(curated["repo"].fillna("").astype(str).str.strip().str.lower())
+    known_df = curated.load_groups(inputs_dir, ["repo"])
+    known = set(known_df["repo"].fillna("").astype(str).str.strip().str.lower())
 
     df = pd.DataFrame(
         [
@@ -554,7 +595,7 @@ def discover_github_repos(
     pathlib.Path(output_csv).parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(output_csv, index=False)
     n_new = int(df["new"].sum()) if not df.empty else 0
-    print(f"Saved {len(df)} repos to {output_csv} ({n_new} not yet in {inputs_csv}).")
+    print(f"Saved {len(df)} repos to {output_csv} ({n_new} not yet in {inputs_dir}).")
     print("Review the new rows, then add approved repos to the curated list.")
 
     return df

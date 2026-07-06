@@ -1,8 +1,9 @@
 """
 Publication curation and citation count collection.
 
-The curated list is inputs/publications.csv; maintain it with:
-  openff-stats add-publication-doi DOI [--scholar]
+The curated lists live in inputs/publications/ — one CSV per group
+classification (filename = group, e.g. force-field.csv); maintain them with:
+  openff-stats add-publication-doi DOI [--scholar] [--group NAME]
        → fetches Crossref metadata, appends a row (optionally fills the
          Scholar cluster ID too)
   openff-stats scholar-lookup DOI [--save]
@@ -20,8 +21,8 @@ Collection:
 Optional bulk discovery (candidates/ for human review):
   openff-stats discover-publications --orcid-csv inputs/orcids.csv
 
-inputs/publications.csv columns:
-  DOI, force_field_paper, title, authors, year, scholar_cluster_id, chemrxiv_id
+inputs/publications/<group>.csv columns:
+  DOI, title, authors, year, scholar_cluster_id, chemrxiv_id
   (scholar_cluster_id and chemrxiv_id may be blank if not applicable)
 """
 
@@ -39,6 +40,8 @@ from openff_stats import curated
 CROSSREF_BASE = "https://api.crossref.org/works"
 ORCID_BASE = "https://pub.orcid.org/v3.0"
 CHEMRXIV_BASE = "https://chemrxiv.org/engage/chemrxiv/public-api/v1"
+OPENALEX_BASE = "https://api.openalex.org/works"
+SEMANTIC_SCHOLAR_BASE = "https://api.semanticscholar.org/graph/v1/paper"
 
 # scholar_cluster_id / chemrxiv_id are long numeric IDs.  A Scholar cluster ID
 # has up to 20 digits, so if pandas infers the column as float64 (which happens
@@ -87,14 +90,27 @@ def close_scholar_driver() -> None:
         _scholar_driver = None
 
 
+_last_scholar_request = 0.0
+
+# Never send more than 2 Scholar requests per second, whatever the caller does
+_SCHOLAR_MIN_INTERVAL = 0.5
+
+
 def _scholar_get(url: str) -> str | None:
     """Navigate to url with the shared driver and return page source.
 
+    Rate-limited to at most one request per _SCHOLAR_MIN_INTERVAL seconds.
     Returns None if a CAPTCHA is detected.
     """
     import random
 
+    global _last_scholar_request
+
     driver = _get_scholar_driver()
+    wait = _SCHOLAR_MIN_INTERVAL - (time.monotonic() - _last_scholar_request)
+    if wait > 0:
+        time.sleep(wait)
+    _last_scholar_request = time.monotonic()
     driver.get(url)
     time.sleep(random.uniform(1.5, 3.0))
     source = driver.page_source
@@ -581,7 +597,7 @@ def discover_publications(
     print(f"\nWrote {len(df)} candidate publications to {output_file}")
     print(
         "NOTE: Not all papers will be OpenFF-related.\n"
-        "Review this file and save only verified OpenFF entries to inputs/publications.csv\n"
+        "Review this file and save only verified OpenFF entries to inputs/publications/<group>.csv\n"
         "(keep or fill in scholar_cluster_id and chemrxiv_id columns as needed)."
     )
     return df
@@ -589,8 +605,8 @@ def discover_publications(
 
 def add_publication_by_doi(
     doi: str,
-    input_csv: str = "inputs/publications.csv",
-    output_csv: str = "inputs/publications.csv",
+    inputs_dir: str = "inputs/publications",
+    group: str = "general",
     update_existing: bool = False,
     fetch_scholar: bool = False,
     verify: bool = True,
@@ -601,12 +617,15 @@ def add_publication_by_doi(
     ----------
     doi
         DOI (plain or doi.org URL).
-    input_csv
-        Path to existing publications CSV.
-    output_csv
-        Path to write updated publications CSV.
+    inputs_dir
+        Directory of group CSVs (filename = group classification).
+    group
+        Group file to append to (``<inputs_dir>/<group>.csv``).  The
+        duplicate check spans every group file, so a DOI can only live in
+        one group.
     update_existing
-        If True, update title/authors/year when DOI already exists.
+        If True, update title/authors/year when DOI already exists (in its
+        own group file, wherever that is).
     fetch_scholar
         If True, look up the Google Scholar cluster ID after the row is
         written (best-effort: a Scholar failure never loses the new row).
@@ -632,19 +651,31 @@ def add_publication_by_doi(
         raise ValueError(f"Could not fetch Crossref metadata for DOI: {normalized_doi}")
 
     columns = ["DOI", "title", "authors", "year", "scholar_cluster_id", "chemrxiv_id"]
-    df = curated.load(input_csv, columns, dtype=_ID_DTYPES)
 
+    # Duplicate check across every group file in the directory.
+    all_groups = curated.load_groups(inputs_dir, columns, dtype=_ID_DTYPES)
+    all_dois = all_groups["DOI"].fillna("").astype(str).map(_normalize_doi)
+    existing_groups = all_groups.loc[all_dois == normalized_doi, "group"].tolist()
+
+    output_csv = curated.group_path(
+        inputs_dir, existing_groups[0] if existing_groups else group
+    )
+    df = curated.load(output_csv, columns, dtype=_ID_DTYPES)
     doi_series = df["DOI"].fillna("").astype(str).map(_normalize_doi)
     matches = df.index[doi_series == normalized_doi]
 
-    if len(matches) > 0:
+    if existing_groups:
         if update_existing:
             df.at[matches[0], "title"] = meta.get("title") or ""
             df.at[matches[0], "authors"] = meta.get("authors") or ""
             df.at[matches[0], "year"] = meta.get("year") or ""
-            print(f"Updated existing DOI row: {normalized_doi}")
+            print(f"Updated existing DOI row ({existing_groups[0]}): {normalized_doi}")
         else:
-            print(f"DOI already present, no changes made: {normalized_doi}")
+            print(
+                f"DOI already present in group '{existing_groups[0]}', "
+                f"no changes made: {normalized_doi}"
+            )
+            return
     else:
         title = meta.get("title") or ""
         df = curated.append_row(df, {
@@ -671,7 +702,7 @@ def add_publication_by_doi(
 
     if fetch_scholar:
         try:
-            scholar_lookup(normalized_doi, publications_csv=output_csv, save=True)
+            scholar_lookup(normalized_doi, inputs_dir=inputs_dir, save=True)
         except Exception as exc:
             print(
                 f"Warning: Scholar lookup failed ({exc}). The publication was "
@@ -694,26 +725,32 @@ def _print_scholar_candidates(candidates: list[dict], reference_title: str) -> N
             print(f"{'':>40}{scholar_cluster_url(result['cluster_id'])}")
 
 
-def _save_scholar_cluster(publications_csv: str, doi: str, cluster_id: str) -> None:
-    """Write *cluster_id* into the row of *publications_csv* whose DOI matches *doi*."""
+def _save_scholar_cluster(inputs_dir: str, doi: str, cluster_id: str) -> None:
+    """Write *cluster_id* into whichever group CSV in *inputs_dir* holds *doi*."""
+    import pathlib
+
     normalized = _normalize_doi(doi)
-    df = curated.load(publications_csv, ["DOI", "scholar_cluster_id"], dtype=_ID_DTYPES)
-    matches = df.index[df["DOI"].fillna("").astype(str).map(_normalize_doi) == normalized]
-    if len(matches) == 0:
-        print(
-            f"DOI {normalized} is not in {publications_csv} — add it first with "
-            f"`openff-stats add-publication-doi {normalized}`."
-        )
+    path = pathlib.Path(inputs_dir)
+    files = [path] if path.is_file() else sorted(path.glob("*.csv")) if path.is_dir() else []
+    for file_path in files:
+        df = curated.load(str(file_path), ["DOI", "scholar_cluster_id"], dtype=_ID_DTYPES)
+        matches = df.index[df["DOI"].fillna("").astype(str).map(_normalize_doi) == normalized]
+        if len(matches) == 0:
+            continue
+        df["scholar_cluster_id"] = df["scholar_cluster_id"].astype("object")
+        df.loc[matches, "scholar_cluster_id"] = cluster_id
+        curated.save(df, str(file_path))
+        print(f"Saved scholar_cluster_id to {file_path}.")
         return
-    df["scholar_cluster_id"] = df["scholar_cluster_id"].astype("object")
-    df.loc[matches, "scholar_cluster_id"] = cluster_id
-    curated.save(df, publications_csv)
-    print(f"Saved scholar_cluster_id to {publications_csv}.")
+    print(
+        f"DOI {normalized} is not in {inputs_dir} — add it first with "
+        f"`openff-stats add-publication-doi {normalized}`."
+    )
 
 
 def scholar_lookup(
     doi: str,
-    publications_csv: str = "inputs/publications.csv",
+    inputs_dir: str = "inputs/publications",
     save: bool = False,
     open_links: bool = False,
     min_similarity: float = 0.75,
@@ -731,11 +768,12 @@ def scholar_lookup(
     ----------
     doi
         DOI (plain or doi.org URL).
-    publications_csv
-        Curated publications CSV, updated when *save* is True.
+    inputs_dir
+        Directory of curated publication group CSVs, updated when *save* is
+        True (a single CSV path also works).
     save
         If True and a confident match is found, write the cluster ID into
-        the row of *publications_csv* whose DOI matches.
+        whichever group CSV holds the DOI.
     open_links
         If True, open the DOI page and the best-match Scholar cluster page in
         the default web browser for hands-on verification.
@@ -794,7 +832,7 @@ def scholar_lookup(
         _open_in_browser([doi_url(normalized_doi), scholar_cluster_url(result["cluster_id"])])
 
     if save:
-        _save_scholar_cluster(publications_csv, normalized_doi, result["cluster_id"])
+        _save_scholar_cluster(inputs_dir, normalized_doi, result["cluster_id"])
 
     return result["cluster_id"]
 
@@ -813,6 +851,42 @@ def get_crossref_citations(doi: str) -> int | None:
     except Exception as exc:
         print(f"  Warning: Crossref citation lookup failed for {doi}: {exc}")
         return None
+
+
+def get_openalex_citations(doi: str) -> int | None:
+    """Return the OpenAlex 'cited_by_count' for a DOI."""
+    url = f"{OPENALEX_BASE}/https://doi.org/{doi}?select=cited_by_count&mailto={MAILTO}"
+    try:
+        response = requests.get(url, timeout=30)
+        response.raise_for_status()
+        return int(response.json()["cited_by_count"])
+    except Exception as exc:
+        print(f"  Warning: OpenAlex citation lookup failed for {doi}: {exc}")
+        return None
+
+
+def get_semantic_scholar_citations(doi: str) -> int | None:
+    """Return the Semantic Scholar 'citationCount' for a DOI.
+
+    Returns None if the paper is not in the corpus (404) or on failure;
+    retries briefly when rate-limited (429).
+    """
+    url = f"{SEMANTIC_SCHOLAR_BASE}/DOI:{doi}?fields=citationCount"
+    try:
+        for _ in range(3):
+            response = requests.get(url, timeout=30)
+            if response.status_code == 429:
+                time.sleep(5.0)
+                continue
+            if response.status_code == 404:
+                print(f"  Note: {doi} not in Semantic Scholar corpus")
+                return None
+            response.raise_for_status()
+            return int(response.json()["citationCount"])
+        print(f"  Warning: Semantic Scholar rate-limited for {doi}")
+    except Exception as exc:
+        print(f"  Warning: Semantic Scholar citation lookup failed for {doi}: {exc}")
+    return None
 
 
 def get_scholar_citations(cluster_id: str) -> int | None:
@@ -856,22 +930,30 @@ def get_chemrxiv_metrics(record_id: str) -> dict:
         return {}
 
 
-def collect_all_citations(input_csv: str, output_csv: str) -> None:
-    """Collect citation counts for all papers in the input CSV.
+def collect_all_citations(inputs_dir: str, output_csv: str) -> None:
+    """Collect citation counts for all papers in the curated group CSVs.
 
-    Reads inputs/publications.csv (columns: DOI, title, scholar_cluster_id,
-    chemrxiv_id) and writes data/citations.csv with per-source citation counts.
+    Reads every CSV in inputs/publications/ (filename = group; columns: DOI,
+    title, scholar_cluster_id, chemrxiv_id) and writes data/citations.csv
+    with per-source citation counts and the group of each paper.  Prints
+    cumulative sums per group and overall.
 
     Parameters
     ----------
-    input_csv
-        Path to the curated publications CSV.
+    inputs_dir
+        Directory of curated publication group CSVs (a single CSV also works).
     output_csv
         Path for the citations output CSV.
     """
-    df = pd.read_csv(input_csv, dtype=_ID_DTYPES)
+    df = curated.load_groups(
+        inputs_dir,
+        ["DOI", "title", "authors", "year", "scholar_cluster_id", "chemrxiv_id"],
+        dtype=_ID_DTYPES,
+    )
 
     crossref_citations: list[int | None] = []
+    openalex_citations: list[int | None] = []
+    semantic_scholar_citations: list[int | None] = []
     scholar_citations: list[int | None] = []
     chemrxiv_views: list[int | None] = []
     chemrxiv_downloads: list[int | None] = []
@@ -886,10 +968,31 @@ def collect_all_citations(input_csv: str, output_csv: str) -> None:
         crossref_citations.append(get_crossref_citations(doi) if doi else None)
         time.sleep(0.1)
 
+        # OpenAlex
+        openalex_citations.append(get_openalex_citations(doi) if doi else None)
+        time.sleep(0.1)
+
+        # Semantic Scholar
+        semantic_scholar_citations.append(
+            get_semantic_scholar_citations(doi) if doi else None
+        )
+        time.sleep(0.1)
+
         # Google Scholar
         if scholar_id and scholar_id.lower() not in ("", "nan"):
-            scholar_citations.append(get_scholar_citations(scholar_id))
-            time.sleep(1.0)  # Scholar needs more breathing room
+            count = get_scholar_citations(scholar_id)
+            for _ in range(5):  # max retries, with a cooldown before each
+                if count is not None:
+                    break
+                time.sleep(15.0)
+                count = get_scholar_citations(scholar_id)
+            if count is None:
+                print(
+                    f"  Warning: Scholar count blank for {doi} "
+                    f"(cluster {scholar_id}) after all retries"
+                )
+            scholar_citations.append(count)
+            time.sleep(10.0)  # Scholar needs more breathing room
         else:
             scholar_citations.append(None)
 
@@ -905,13 +1008,21 @@ def collect_all_citations(input_csv: str, output_csv: str) -> None:
             chemrxiv_downloads.append(None)
             chemrxiv_citations.append(None)
 
-    is_ff_paper = df.get("force_field_paper", pd.Series(False, index=df.index)).fillna(False).astype(bool)
-
-    keep_cols = ["DOI", "title", "authors", "year"]
+    keep_cols = ["group", "DOI", "title", "authors", "year"]
     df = df[keep_cols].copy()  # only keep core metadata + new citation columns
 
-    df["crossref_citations"] = pd.to_numeric(crossref_citations, errors="coerce").astype("Int64")
-    df["scholar_citations"] = pd.to_numeric(scholar_citations, errors="coerce").astype("Int64")
+    df["crossref_citations"] = pd.to_numeric(
+        pd.Series(crossref_citations, index=df.index), errors="coerce"
+    ).astype("Int64")
+    df["openalex_citations"] = pd.to_numeric(
+        pd.Series(openalex_citations, index=df.index), errors="coerce"
+    ).astype("Int64")
+    df["semantic_scholar_citations"] = pd.to_numeric(
+        pd.Series(semantic_scholar_citations, index=df.index), errors="coerce"
+    ).astype("Int64")
+    df["scholar_citations"] = pd.to_numeric(
+        pd.Series(scholar_citations, index=df.index), errors="coerce"
+    ).astype("Int64")
     df["chemrxiv_views"] = chemrxiv_views
     df["chemrxiv_downloads"] = chemrxiv_downloads
     df["chemrxiv_citations"] = chemrxiv_citations
@@ -922,106 +1033,110 @@ def collect_all_citations(input_csv: str, output_csv: str) -> None:
     df.to_csv(output_csv, index=False)
     print(f"\nSaved citation counts to {output_csv}")
 
-    def _sum(col: list) -> int:
-        return sum(x for x in col if x is not None)
+    count_cols = [
+        ("crossref_citations", "Crossref citations"),
+        ("openalex_citations", "OpenAlex citations"),
+        ("semantic_scholar_citations", "Semantic Scholar citations"),
+        ("scholar_citations", "Scholar citations"),
+        ("chemrxiv_views", "ChemRxiv views"),
+        ("chemrxiv_downloads", "ChemRxiv downloads"),
+        ("chemrxiv_citations", "ChemRxiv citations"),
+    ]
 
-    def _sum_masked(col: list, mask) -> int:
-        return sum(x for x, m in zip(col, mask) if x is not None and m)
+    def _print_totals(label: str, subset: pd.DataFrame) -> None:
+        print(f"\n--- {label} ({len(subset)} papers) ---")
+        for col, name in count_cols:
+            total = pd.to_numeric(subset[col], errors="coerce").sum()
+            print(f"Total {name + ':':28s}{int(total) if pd.notna(total) else 0}")
 
-    ff_mask = is_ff_paper.tolist()
-
-    print(f"\n--- All publications ---")
-    print(f"Total Crossref citations:    {_sum(crossref_citations)}")
-    print(f"Total Scholar citations:     {_sum(scholar_citations)}")
-    print(f"Total ChemRxiv views:        {_sum(chemrxiv_views)}")
-    print(f"Total ChemRxiv downloads:    {_sum(chemrxiv_downloads)}")
-    print(f"Total ChemRxiv citations:    {_sum(chemrxiv_citations)}")
-
-    print(f"\n--- Force field papers only ---")
-    print(f"FF paper Crossref citations: {_sum_masked(crossref_citations, ff_mask)}")
-    print(f"FF paper Scholar citations:  {_sum_masked(scholar_citations, ff_mask)}")
-    print(f"FF paper ChemRxiv views:     {_sum_masked(chemrxiv_views, ff_mask)}")
-    print(f"FF paper ChemRxiv downloads: {_sum_masked(chemrxiv_downloads, ff_mask)}")
-    print(f"FF paper ChemRxiv citations: {_sum_masked(chemrxiv_citations, ff_mask)}")
+    _print_totals("All publications", df)
+    for group_name, subset in df.groupby("group"):
+        _print_totals(f"Group: {group_name}", subset)
 
 
 def populate_scholar_cluster_ids(
-    input_csv: str,
-    output_csv: str,
+    inputs_dir: str,
     overwrite_existing: bool = False,
     min_similarity: float = 0.75,
 ) -> None:
-    """Fill scholar_cluster_id for every DOI in the publications CSV.
+    """Fill scholar_cluster_id for every DOI in the curated group CSVs.
 
     For each row missing a cluster ID, searches Scholar by DOI (falling back
     to the row's title) and validates the hit against the title, exactly like
-    ``scholar-lookup`` but in bulk over the whole file.  Only confident matches
-    are written; rows with no confident match are left blank and reported so
-    you can fill them by hand.
+    ``scholar-lookup`` but in bulk over every group file.  Only confident
+    matches are written; rows with no confident match are left blank and
+    reported so you can fill them by hand.  Each group CSV is updated in
+    place.
 
     Parameters
     ----------
-    input_csv
-        Publications CSV containing `DOI`, `title`, and optional
+    inputs_dir
+        Directory of curated publication group CSVs (a single CSV also
+        works), each containing `DOI`, `title`, and optional
         `scholar_cluster_id`.
-    output_csv
-        Path to write the updated CSV.
     overwrite_existing
         If True, re-query even rows that already have a cluster ID.
     min_similarity
         Minimum title similarity (0-1) for a match to be trusted.
     """
-    df = pd.read_csv(input_csv, dtype=_ID_DTYPES)
-
-    if "title" not in df.columns and "DOI" not in df.columns:
-        raise ValueError("Input CSV must contain a 'DOI' or 'title' column.")
-
-    if "scholar_cluster_id" not in df.columns:
-        df["scholar_cluster_id"] = ""
-    df["scholar_cluster_id"] = df["scholar_cluster_id"].astype("object")
+    path = pathlib.Path(inputs_dir)
+    files = [path] if path.is_file() else sorted(path.glob("*.csv")) if path.is_dir() else []
+    if not files:
+        raise ValueError(f"No publication CSVs found at {inputs_dir}.")
 
     updated = 0
     skipped_existing = 0
     failed = 0
 
     try:
-        for index, row in tqdm.tqdm(df.iterrows(), total=len(df), desc="Scholar IDs"):
-            doi = str(row.get("DOI", "")).strip()
-            title = str(row.get("title", "")).strip()
-            existing = str(row.get("scholar_cluster_id", "")).strip()
+        for file_path in files:
+            df = pd.read_csv(file_path, dtype=_ID_DTYPES)
 
-            if title.lower() == "nan":
-                title = ""
-            if doi.lower() == "nan":
-                doi = ""
-            if not doi and not title:
-                failed += 1
-                continue
+            if "title" not in df.columns and "DOI" not in df.columns:
+                raise ValueError(f"{file_path} must contain a 'DOI' or 'title' column.")
 
-            has_existing = existing and existing.lower() != "nan"
-            if has_existing and not overwrite_existing:
-                skipped_existing += 1
-                continue
+            if "scholar_cluster_id" not in df.columns:
+                df["scholar_cluster_id"] = ""
+            df["scholar_cluster_id"] = df["scholar_cluster_id"].astype("object")
 
-            try:
-                _, best = _match_scholar(doi, title, min_similarity)
-            except Exception as exc:  # a transient Scholar/Selenium error on one
-                print(f"  Warning: Scholar lookup failed for {doi or title!r}: {exc}")
-                best = None            # row must not abort the whole run
-            if best is not None and best[1] >= min_similarity:
-                df.at[index, "scholar_cluster_id"] = best[0]["cluster_id"]
-                updated += 1
-            else:
-                failed += 1
+            for index, row in tqdm.tqdm(
+                df.iterrows(), total=len(df), desc=f"Scholar IDs ({file_path.stem})"
+            ):
+                doi = str(row.get("DOI", "")).strip()
+                title = str(row.get("title", "")).strip()
+                existing = str(row.get("scholar_cluster_id", "")).strip()
 
-            time.sleep(1.0)
+                if title.lower() == "nan":
+                    title = ""
+                if doi.lower() == "nan":
+                    doi = ""
+                if not doi and not title:
+                    failed += 1
+                    continue
+
+                has_existing = existing and existing.lower() != "nan"
+                if has_existing and not overwrite_existing:
+                    skipped_existing += 1
+                    continue
+
+                try:
+                    _, best = _match_scholar(doi, title, min_similarity)
+                except Exception as exc:  # a transient Scholar/Selenium error on one
+                    print(f"  Warning: Scholar lookup failed for {doi or title!r}: {exc}")
+                    best = None            # row must not abort the whole run
+                if best is not None and best[1] >= min_similarity:
+                    df.at[index, "scholar_cluster_id"] = best[0]["cluster_id"]
+                    updated += 1
+                else:
+                    failed += 1
+
+                time.sleep(1.0)
+
+            df.to_csv(file_path, index=False)
+            print(f"Saved scholar cluster IDs to {file_path}")
     finally:
         close_scholar_driver()
 
-    pathlib.Path(output_csv).parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(output_csv, index=False)
-
-    print(f"\nSaved scholar cluster IDs to {output_csv}")
-    print(f"Updated rows:            {updated}")
+    print(f"\nUpdated rows:            {updated}")
     print(f"Skipped (had existing): {skipped_existing}")
     print(f"No confident match:     {failed}")
