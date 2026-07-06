@@ -1,47 +1,71 @@
 # data/
 
-Output files from the openff-stats pipeline. Last updated: 2026-03-04.
+Output files from the openff-stats pipeline. Last updated: 2026-07-06.
+See the top-level README's "Methodology and caveats" section for how each
+number is measured. Every table below is broken down by group — the group
+is the `inputs/<kind>/<group>.csv` file a source is curated in.
 
 ## Files
 
 | File | Description |
 |------|-------------|
-| `citations.csv` | Per-paper citation counts (Crossref, Google Scholar, ChemRxiv) |
-| `downloads.csv` | Total conda-forge downloads per package |
+| `citations.csv` | Per-paper citation counts (Crossref, OpenAlex, Semantic Scholar, Google Scholar, ChemRxiv), with group |
+| `zenodo_citations.csv` | DataCite citations for Zenodo records, long form (one row per record-year; `citation_count` = record total) |
+| `downloads.csv` | Total conda-forge downloads per package (Anaconda API + condastats) |
 | `downloads_yearly.csv` | Per-package per-year downloads (condastats) |
-| `plots/` | Generated figures (e.g. downloads per year bar chart) |
+| `github_repo_stars.csv` | Star counts for the curated repos, with group (group = package imported) |
+| `dep_tree.csv` | conda-forge reverse-dependency tree rooted at openff-toolkit |
 
 ## Citation counts
 
-> **Note:** Google Scholar counts are manually verified and tend to be higher than Crossref
-> (Scholar includes grey literature and preprints). Numbers fluctuate over time.
+> **Note:** Google Scholar counts are manually spot-checked and tend to be
+> the highest (Scholar includes grey literature and preprints); OpenAlex
+> typically sits between Crossref and Scholar. Numbers fluctuate over time.
 
-### All publications (27 papers)
+### Per group (28 papers)
 
-| Source | Total citations |
-|--------|----------------|
-| Crossref | 991 |
-| Google Scholar | 1,468 |
+| Group | Papers | Crossref | OpenAlex | Semantic Scholar | Google Scholar |
+|-------|--------|----------|----------|------------------|----------------|
+| force-field | 4 | 463 | 591 | 342 | 690 |
+| general | 24 | 667 | 738 | 556 | 962 |
+| **Total** | **28** | **1,130** | **1,329** | **898** | **1,652** |
 
-### Force field papers only (SMIRNOFF · Parsley · Sage · AshGC)
+Semantic Scholar covers 22/28 papers; Google Scholar resolved 27/28 on the
+last run. The curated list has since grown to 36 papers; the newest
+additions are counted from the next `openff-stats citations` run.
+
+### Force field papers (SMIRNOFF · Parsley · Sage · AshGC)
 
 | Paper | Year | Crossref | Scholar |
 |-------|------|----------|---------|
-| Escaping Atom Types (SMIRNOFF) | 2018 | 145 | 223 |
-| Parsley v1.0.0 | 2021 | 124 | 191 |
-| Sage 2.0.0 | 2023 | 143 | 207 |
-| Sage 2.3.0 + AshGC | 2026 | 0 | 1 |
-| **Total** | | **412** | **622** |
+| Escaping Atom Types (SMIRNOFF) | 2018 | 154 | 239 |
+| Parsley v1.0.0 | 2021 | 133 | 204 |
+| Sage 2.0.0 | 2023 | 176 | 244 |
+| Sage 2.3.0 + AshGC | 2026 | 0 | 3 |
+| **Total** | | **463** | **690** |
+
+## Zenodo citations (DataCite)
+
+| Group | Records | Citations |
+|-------|---------|-----------|
+| general | 233 | 23 |
+| qcsubmit | 18 | 7 |
+| yammbs | 1 | 1 |
+| **Total** | **252** | **31** |
 
 ## Download counts
 
-OpenFF conda-forge packages (excludes competitor packages tracked for comparison).
-
-| Method | Total downloads |
-|--------|----------------|
-| Anaconda API (`anaconda_total`) | 6,302,479 |
-| condastats API (`condastats_total`) | 8,817,118 |
+| Group | Packages | Anaconda API | condastats |
+|-------|----------|--------------|------------|
+| openff | 15 | 7,254,585 | 10,072,572 |
+| competitor | 2 | 4,941,993 | 5,155,888 |
 
 > **Caveat:** These numbers vastly overcount real installs. OpenFF packages depend on each
 > other, so a single user install pulls in many packages simultaneously. CI/CD pipelines
 > also contribute heavily. The true user count is likely 5–10× lower than these figures.
+
+## GitHub repos importing OpenFF packages
+
+| Group (package imported) | Repos | Stars |
+|--------------------------|-------|-------|
+| openff-toolkit | 607 | 13,567 |
