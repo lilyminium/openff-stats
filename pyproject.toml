@@ -12,8 +12,6 @@ dependencies = [
     "requests",
     "tqdm",
     "condastats",
-    "seaborn",
-    "matplotlib",
     "selenium",
 ]
 

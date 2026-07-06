@@ -3,23 +3,36 @@ openff-stats command-line interface.
 
 Entry point: `openff-stats`
 
-Discovery commands (output candidates for human review):
-  openff-stats discover-publications --orcid-csv inputs/orcids.csv
-    openff-stats add-publication-doi 10.1021/acs.jpcb.4c01558
-  openff-stats discover-packages
-  openff-stats discover-zenodo
-  openff-stats scholar-clusters --input inputs/publications.csv
+The source lists in inputs/ are manually curated.  Each kind is a directory
+of CSVs where the filename is the group classification (e.g.
+inputs/publications/force-field.csv).  Add new sources with:
+  openff-stats add-doi DOI... [--file dois.txt] [--group NAME]
+                                                  (auto-routes Zenodo vs paper)
+  openff-stats add-publication-doi 10.1021/acs.jpcb.4c01558 [--scholar] [--group NAME]
+  openff-stats add-github-repo owner/repo [--group PACKAGE]
+  openff-stats add-zenodo 10.5281/zenodo.18842670 [--group NAME]
+
+Google Scholar lookup by DOI (find/store the Scholar cluster ID):
+  openff-stats scholar-lookup 10.1021/acs.jpcb.4c01558 [--save] [--open]
+  openff-stats scholar-clusters                                   (fill all DOIs)
+  openff-stats verify-doi 10.1021/acs.jpcb.4c01558   (check a DOI resolves)
 
 Data collection commands (read curated inputs/, write data/):
   openff-stats citations
   openff-stats downloads
   openff-stats zenodo-citations
-  openff-stats github-repos         (requires GH_API_TOKEN env var)
+  openff-stats github-stars         (requires GITHUB_TOKEN env var)
+  openff-stats github-descriptions  (requires GITHUB_TOKEN env var)
 
-Visualisation:
-  openff-stats plot-downloads
+Optional bulk discovery (writes candidates/ for human review; never
+feeds collection directly):
+  openff-stats discover-publications --orcid-csv inputs/orcids.csv
+  openff-stats discover-packages
+  openff-stats discover-dependents
+  openff-stats discover-zenodo
+  openff-stats discover-github-repos (requires GITHUB_TOKEN env var)
 
-Run everything (except discovery):
+Run all collection (never discovery):
   openff-stats run-all
 """
 
@@ -69,7 +82,7 @@ def discover_publications(
     """Discover publications via ORCID + Crossref and write a candidates CSV.
 
     The output requires human verification before being saved to
-    inputs/publications.csv. Not all papers found will be OpenFF-related.
+    inputs/publications/<group>.csv. Not all papers found will be OpenFF-related.
     Publications are sorted by the number of authors that overlap with
     the provided ORCID list, as more overlaps indicate OpenFF publications.
     """
@@ -99,18 +112,17 @@ def discover_publications(
 @cli.command("add-publication-doi")
 @click.argument("doi")
 @click.option(
-    "--input",
-    "input_csv",
-    default="inputs/publications.csv",
+    "--inputs-dir",
+    "inputs_dir",
+    default="inputs/publications",
     show_default=True,
-    help="Path to existing publications CSV.",
+    help="Directory of curated publication group CSVs.",
 )
 @click.option(
-    "--output",
-    "output_csv",
-    default="inputs/publications.csv",
+    "--group",
+    default="general",
     show_default=True,
-    help="Path to write updated publications CSV.",
+    help="Group file to append to (filename = classification, e.g. force-field).",
 )
 @click.option(
     "--update-existing",
@@ -118,16 +130,269 @@ def discover_publications(
     default=False,
     help="Update title/authors/year if DOI is already present.",
 )
-def add_publication_doi(doi: str, input_csv: str, output_csv: str, update_existing: bool) -> None:
-    """Add a publication to the curated CSV from a DOI via Crossref metadata."""
+@click.option(
+    "--scholar",
+    "fetch_scholar",
+    is_flag=True,
+    default=False,
+    help=(
+        "Also look up the Google Scholar cluster ID (Selenium; best-effort — "
+        "the publication is added even if Scholar fails)."
+    ),
+)
+@click.option(
+    "--verify/--no-verify",
+    "verify",
+    default=True,
+    show_default=True,
+    help="Check the DOI resolves via doi.org before adding.",
+)
+def add_publication_doi(
+    doi: str,
+    inputs_dir: str,
+    group: str,
+    update_existing: bool,
+    fetch_scholar: bool,
+    verify: bool,
+) -> None:
+    """Add a publication to a curated group CSV from a DOI via Crossref metadata.
+
+    The DOI is checked against doi.org first (skip with --no-verify); the
+    duplicate check spans every group file in the directory.
+    """
     from openff_stats.publications import add_publication_by_doi
 
-    add_publication_by_doi(
-        doi=doi,
-        input_csv=input_csv,
-        output_csv=output_csv,
-        update_existing=update_existing,
+    try:
+        add_publication_by_doi(
+            doi=doi,
+            inputs_dir=inputs_dir,
+            group=group,
+            update_existing=update_existing,
+            fetch_scholar=fetch_scholar,
+            verify=verify,
+        )
+    except ValueError as exc:
+        raise click.ClickException(str(exc))
+
+
+@cli.command("add-github-repo")
+@click.argument("repo")
+@click.option(
+    "--inputs-dir",
+    "inputs_dir",
+    default="inputs/github_repos",
+    show_default=True,
+    help="Directory of curated repo group CSVs.",
+)
+@click.option(
+    "--group",
+    default="openff-toolkit",
+    show_default=True,
+    help="Group file to append to (filename = the package the repo imports).",
+)
+def add_github_repo_cmd(repo: str, inputs_dir: str, group: str) -> None:
+    """Add a GitHub repo (OWNER/REPO or URL) to a curated group CSV.
+
+    Validates the repo via the GitHub API (no token required) and appends it
+    with status=manual.  The duplicate check spans every group file.
+    """
+    from openff_stats.github import add_github_repo
+
+    try:
+        add_github_repo(repo, inputs_dir, group)
+    except ValueError as exc:
+        raise click.ClickException(str(exc))
+
+
+@cli.command("add-zenodo")
+@click.argument("id_or_doi")
+@click.option(
+    "--inputs-dir",
+    "inputs_dir",
+    default="inputs/zenodo",
+    show_default=True,
+    help="Directory of curated Zenodo group CSVs.",
+)
+@click.option(
+    "--group",
+    default="general",
+    show_default=True,
+    help="Group file to append to (filename = classification, e.g. qcsubmit).",
+)
+def add_zenodo_cmd(id_or_doi: str, inputs_dir: str, group: str) -> None:
+    """Add a Zenodo record (numeric ID, DOI, or URL) to a curated group CSV.
+
+    The duplicate check spans every group file.
+    """
+    from openff_stats.zenodo import add_zenodo_record
+
+    try:
+        add_zenodo_record(id_or_doi, inputs_dir, group)
+    except ValueError as exc:
+        raise click.ClickException(str(exc))
+
+
+@cli.command("add-doi")
+@click.argument("dois", nargs=-1)
+@click.option(
+    "--file",
+    "doi_file",
+    type=click.Path(exists=True, dir_okay=False),
+    default=None,
+    help="Text file with one DOI per line (blank lines and # comments skipped).",
+)
+@click.option(
+    "--publications-dir",
+    default="inputs/publications",
+    show_default=True,
+    help="Directory of curated publication group CSVs (non-Zenodo DOIs go here).",
+)
+@click.option(
+    "--zenodo-dir",
+    default="inputs/zenodo",
+    show_default=True,
+    help="Directory of curated Zenodo group CSVs (10.5281/zenodo.* DOIs go here).",
+)
+@click.option(
+    "--group",
+    default="general",
+    show_default=True,
+    help="Group file to append to in either directory (filename = classification).",
+)
+@click.option(
+    "--scholar",
+    "fetch_scholar",
+    is_flag=True,
+    default=False,
+    help="Also look up the Google Scholar cluster ID for publications (Selenium; best-effort).",
+)
+def add_doi(
+    dois: tuple[str, ...],
+    doi_file: str | None,
+    publications_dir: str,
+    zenodo_dir: str,
+    group: str,
+    fetch_scholar: bool,
+) -> None:
+    """Add DOIs to the right curated group CSV, auto-detecting Zenodo DOIs.
+
+    DOIs with the 10.5281/zenodo. prefix are Zenodo records and go to
+    inputs/zenodo/<group>.csv; everything else is treated as a publication
+    and added via Crossref metadata to inputs/publications/<group>.csv.
+    Pass DOIs as arguments and/or a --file with one DOI per line.
+    Already-present DOIs are skipped (checked across all groups), so
+    re-running is safe; failures don't stop the batch.
+    """
+    import pathlib
+
+    import requests
+
+    from openff_stats.publications import _normalize_doi, add_publication_by_doi
+    from openff_stats.zenodo import add_zenodo_record
+
+    all_dois = list(dois)
+    if doi_file:
+        for line in pathlib.Path(doi_file).read_text().splitlines():
+            line = line.strip()
+            if line and not line.startswith("#"):
+                all_dois.append(line)
+    if not all_dois:
+        raise click.ClickException("No DOIs given. Pass DOIs as arguments and/or --file.")
+
+    counts = {"publication": 0, "zenodo": 0}
+    failures: list[tuple[str, str]] = []
+    for doi in all_dois:
+        normalized = _normalize_doi(doi)
+        kind = "zenodo" if normalized.lower().startswith("10.5281/zenodo.") else "publication"
+        click.echo(f"\n{normalized}  →  {kind} ({group})")
+        try:
+            if kind == "zenodo":
+                add_zenodo_record(doi, zenodo_dir, group)
+            else:
+                add_publication_by_doi(
+                    doi=doi,
+                    inputs_dir=publications_dir,
+                    group=group,
+                    fetch_scholar=fetch_scholar,
+                )
+            counts[kind] += 1
+        except (ValueError, requests.RequestException) as exc:
+            failures.append((normalized, str(exc)))
+            click.echo(f"  FAILED: {exc}")
+
+    click.echo(
+        f"\nProcessed {counts['publication']} publication(s) and "
+        f"{counts['zenodo']} Zenodo record(s); {len(failures)} failed."
     )
+    if failures:
+        raise click.ClickException(
+            "Failed DOIs:\n" + "\n".join(f"  {d}: {msg}" for d, msg in failures)
+        )
+
+
+@cli.command("scholar-lookup")
+@click.argument("doi")
+@click.option(
+    "--input",
+    "inputs_dir",
+    default="inputs/publications",
+    show_default=True,
+    help="Directory of publication group CSVs to update when --save is given.",
+)
+@click.option(
+    "--save",
+    is_flag=True,
+    default=False,
+    help="Write the matched cluster ID into the publications CSV.",
+)
+@click.option(
+    "--open",
+    "open_links",
+    is_flag=True,
+    default=False,
+    help="Open the DOI page and the matched Scholar cluster page in a browser.",
+)
+def scholar_lookup_cmd(doi: str, inputs_dir: str, save: bool, open_links: bool) -> None:
+    """Look up the Google Scholar cluster ID (and citations) for a DOI.
+
+    Searches Scholar for the DOI, falling back to the Crossref title; every
+    candidate is printed with its title similarity and a clickable Scholar
+    URL, and only a confident match is saved (into whichever group CSV holds
+    the DOI).  Use --open to launch the DOI and Scholar pages in a browser
+    for hands-on verification.
+    """
+    from openff_stats.publications import scholar_lookup
+
+    scholar_lookup(doi, inputs_dir=inputs_dir, save=save, open_links=open_links)
+
+
+@cli.command("verify-doi")
+@click.argument("doi")
+@click.option(
+    "--open",
+    "open_link",
+    is_flag=True,
+    default=False,
+    help="Also open the DOI page in a browser.",
+)
+def verify_doi_cmd(doi: str, open_link: bool) -> None:
+    """Check that a DOI resolves and print its registered title/publisher.
+
+    Uses doi.org content negotiation (works for Crossref- and DataCite-
+    registered DOIs).  Exits non-zero if the DOI does not resolve.
+    """
+    from openff_stats.publications import verify_doi, doi_url, _open_in_browser
+
+    resolution = verify_doi(doi)
+    if resolution is None:
+        raise click.ClickException(f"DOI does not resolve: {doi}")
+
+    click.echo(f"Resolves:  {doi_url(doi)}")
+    click.echo(f"Title:     {resolution['title']}")
+    click.echo(f"Publisher: {resolution['publisher']}")
+    click.echo(f"Type:      {resolution['type']}")
+    if open_link:
+        _open_in_browser([doi_url(doi)])
 
 
 @cli.command("discover-packages")
@@ -141,10 +406,87 @@ def discover_packages(output: str) -> None:
     """Discover openff-* packages on conda-forge and write a candidates CSV.
 
     The output requires human verification before being saved to
-    inputs/packages.csv.
+    inputs/packages/<group>.csv.
     """
     from openff_stats.downloads import discover_packages as _discover
+
     _discover(output)
+
+
+@cli.command("discover-dependents")
+@click.option(
+    "--output",
+    default="candidates/dependents.csv",
+    show_default=True,
+    help="Path for the candidates CSV (for human review).",
+)
+@click.option(
+    "--subdir",
+    "subdirs",
+    multiple=True,
+    default=["noarch", "linux-64"],
+    show_default=True,
+    help=(
+        "conda-forge subdir(s) to scan (e.g. noarch, linux-64, osx-arm64). "
+        "May be repeated."
+    ),
+)
+@click.option(
+    "--dep",
+    "dep_name",
+    default="openff-toolkit",
+    show_default=True,
+    help="Dependency name to search for.",
+)
+def discover_dependents(output: str, subdirs: tuple[str, ...], dep_name: str) -> None:
+    """Find conda-forge packages that declare openff-toolkit as a dependency.
+
+    Downloads repodata.json for each subdir, scans all package entries, and
+    writes a candidates CSV of packages whose run-dependencies include
+    openff-toolkit.  Requires human verification before use.
+    """
+    from openff_stats.downloads import discover_dependents as _discover
+    _discover(output, list(subdirs), dep_name)
+
+
+@cli.command("dep-tree")
+@click.option(
+    "--root",
+    "roots",
+    multiple=True,
+    default=["openff-toolkit"],
+    show_default=True,
+    help="Root package(s) for the tree. May be repeated. -base variants are merged automatically.",
+)
+@click.option(
+    "--depth",
+    default=2,
+    show_default=True,
+    help="Number of BFS levels beyond the roots.",
+)
+@click.option(
+    "--subdir",
+    "subdirs",
+    multiple=True,
+    default=["noarch", "linux-64"],
+    show_default=True,
+    help="conda-forge subdir(s) to scan. May be repeated.",
+)
+@click.option(
+    "--output",
+    default="data/dep_tree.csv",
+    show_default=True,
+    help="Path for the tree CSV.",
+)
+def dep_tree(roots: tuple[str, ...], depth: int, subdirs: tuple[str, ...], output: str) -> None:
+    """Build a reverse-dependency tree rooted at openff-toolkit packages.
+
+    Fetches conda-forge repodata, BFS-expands the reverse dep graph, and
+    records Anaconda download counts for each node.  Re-plot with different
+    thresholds using plot-dep-tree without re-running this command.
+    """
+    from openff_stats.downloads import collect_dep_tree
+    collect_dep_tree(list(roots), depth, list(subdirs) or None, output)
 
 
 @cli.command("discover-zenodo")
@@ -158,7 +500,7 @@ def discover_zenodo(output: str) -> None:
     """Search Zenodo for OpenFF records and write a candidates CSV.
 
     The output requires human verification before being saved to
-    inputs/zenodo.csv.
+    inputs/zenodo/<group>.csv.
     """
     from openff_stats.zenodo import discover_zenodo as _discover
     _discover(output)
@@ -171,10 +513,10 @@ def discover_zenodo(output: str) -> None:
 @cli.command("citations")
 @click.option(
     "--input",
-    "input_csv",
-    default="inputs/publications.csv",
+    "inputs_dir",
+    default="inputs/publications",
     show_default=True,
-    help="Path to the curated publications CSV.",
+    help="Directory of curated publication group CSVs (filename = group).",
 )
 @click.option(
     "--output",
@@ -183,26 +525,22 @@ def discover_zenodo(output: str) -> None:
     show_default=True,
     help="Path for the citations output CSV.",
 )
-def citations(input_csv: str, output_csv: str) -> None:
-    """Collect citation counts from Crossref, Google Scholar, and ChemRxiv."""
+def citations(inputs_dir: str, output_csv: str) -> None:
+    """Collect citation counts from Crossref, Google Scholar, and ChemRxiv.
+
+    Prints cumulative sums per group (group = input filename) and overall.
+    """
     from openff_stats.publications import collect_all_citations
-    collect_all_citations(input_csv, output_csv)
+    collect_all_citations(inputs_dir, output_csv)
 
 
 @cli.command("scholar-clusters")
 @click.option(
     "--input",
-    "input_csv",
-    default="inputs/publications.csv",
+    "inputs_dir",
+    default="inputs/publications",
     show_default=True,
-    help="Path to publications CSV containing title and scholar_cluster_id columns.",
-)
-@click.option(
-    "--output",
-    "output_csv",
-    default="inputs/publications.csv",
-    show_default=True,
-    help="Path to write updated CSV with scholar_cluster_id values.",
+    help="Directory of publication group CSVs (updated in place).",
 )
 @click.option(
     "--overwrite-existing",
@@ -210,19 +548,24 @@ def citations(input_csv: str, output_csv: str) -> None:
     default=False,
     help="Re-query rows that already have scholar_cluster_id values.",
 )
-def scholar_clusters(input_csv: str, output_csv: str, overwrite_existing: bool) -> None:
-    """Populate scholar_cluster_id values by searching Google Scholar by title."""
+def scholar_clusters(inputs_dir: str, overwrite_existing: bool) -> None:
+    """Fill scholar_cluster_id for every DOI in the publication CSVs (bulk).
+
+    Runs the same DOI-first, title-validated lookup as `scholar-lookup` over
+    every row of every group file, filling only the blanks (use
+    --overwrite-existing to redo all).
+    """
     from openff_stats.publications import populate_scholar_cluster_ids
-    populate_scholar_cluster_ids(input_csv, output_csv, overwrite_existing)
+    populate_scholar_cluster_ids(inputs_dir, overwrite_existing)
 
 
 @cli.command("downloads")
 @click.option(
     "--input",
-    "input_csv",
-    default="inputs/packages.csv",
+    "inputs_dir",
+    default="inputs/packages",
     show_default=True,
-    help="Path to the curated packages CSV.",
+    help="Directory of curated package group CSVs (filename = group).",
 )
 @click.option(
     "--output",
@@ -238,37 +581,105 @@ def scholar_clusters(input_csv: str, output_csv: str, overwrite_existing: bool) 
     show_default=True,
     help="Path for the per-package per-year output CSV.",
 )
-def downloads(input_csv: str, output_csv: str, yearly_csv: str) -> None:
-    """Collect conda-forge download stats via Anaconda scraping and condastats."""
+def downloads(inputs_dir: str, output_csv: str, yearly_csv: str) -> None:
+    """Collect conda-forge download stats via Anaconda scraping and condastats.
+
+    Prints cumulative download sums per group (group = input filename).
+    """
     from openff_stats.downloads import collect_all_downloads
-    collect_all_downloads(input_csv, output_csv, yearly_csv)
+    collect_all_downloads(inputs_dir, output_csv, yearly_csv)
 
 
-@cli.command("github-repos")
+@cli.command("github-stars")
+@click.option(
+    "--input",
+    "inputs_dir",
+    default="inputs/github_repos",
+    show_default=True,
+    help="Directory of curated repo group CSVs (filename = imported package).",
+)
 @click.option(
     "--output",
     "output_csv",
-    default="data/github_repos.csv",
+    default="data/github_repo_stars.csv",
     show_default=True,
-    help="Path for the GitHub repos output CSV.",
+    help="Path for the star counts output CSV.",
 )
-def github_repos(output_csv: str) -> None:
-    """Search GitHub for repos that import or depend on openff.toolkit.
+def github_stars(inputs_dir: str, output_csv: str) -> None:
+    """Fetch GitHub star counts for all curated repos.
 
-    Uses sharded code-search queries to work around GitHub's 1000-result cap.
-    Requires the GH_API_TOKEN environment variable to be set.
+    Makes one API request per repo.  Prints per-group sums (repo count =
+    GitHub repo imports, plus total stars).  Requires GITHUB_TOKEN.
     """
-    from openff_stats.github import collect_github_repos
-    collect_github_repos(output_csv)
+    from openff_stats.github import collect_repo_stars
+    collect_repo_stars(inputs_dir, output_csv)
+
+
+@cli.command("discover-github-repos")
+@click.option(
+    "--output",
+    "output_csv",
+    default="candidates/github_repos.csv",
+    show_default=True,
+    help="Path for the candidates CSV (for human review).",
+)
+@click.option(
+    "--inputs",
+    "inputs_dir",
+    default="inputs/github_repos",
+    show_default=True,
+    help="Directory of curated repo group CSVs used to flag which candidates are new.",
+)
+@click.option(
+    "--package",
+    "package_name",
+    default="openff-toolkit",
+    show_default=True,
+    help="Distribution name on conda-forge/PyPI; used in dependency-file queries.",
+)
+@click.option(
+    "--import-name",
+    "import_name",
+    default="openff.toolkit",
+    show_default=True,
+    help="Python import path; used in import-statement queries.",
+)
+def discover_github_repos_cmd(
+    output_csv: str, inputs_dir: str, package_name: str, import_name: str
+) -> None:
+    """Search GitHub for repos that import or depend on a package.
+
+    By default searches for openff-toolkit: import queries use --import-name
+    (`from openff.toolkit import ...`), dependency-file queries use --package
+    (`openff-toolkit` in pyproject.toml, environment.yml, ...).  Uses sharded
+    code-search queries to work around GitHub's 1000-result cap.  Writes a
+    candidates CSV with new repos flagged and sorted first; merge approved
+    rows into inputs/github_repos/<group>.csv.  Requires GITHUB_TOKEN.
+    """
+    from openff_stats.github import discover_github_repos
+    discover_github_repos(output_csv, inputs_dir, package_name, import_name)
+
+
+@cli.command("github-repos", hidden=True)
+@click.option("--output", "output_csv", default="candidates/github_repos.csv")
+@click.option("--inputs", "inputs_dir", default="inputs/github_repos")
+def github_repos_deprecated(output_csv: str, inputs_dir: str) -> None:
+    """Deprecated alias for discover-github-repos."""
+    click.echo(
+        "`github-repos` is deprecated; use `discover-github-repos`. "
+        f"Output now goes to {output_csv} for human review."
+    )
+    from openff_stats.github import discover_github_repos
+    discover_github_repos(output_csv, inputs_dir)
 
 
 @cli.command("zenodo-citations")
 @click.option(
     "--input",
-    "input_csv",
-    default="inputs/zenodo.csv",
+    "inputs_dir",
+    default="inputs/zenodo",
     show_default=True,
-    help="Path to the curated Zenodo CSV.",
+    help="Directory of curated Zenodo group CSVs (filename = group).",
 )
 @click.option(
     "--output",
@@ -277,35 +688,29 @@ def github_repos(output_csv: str) -> None:
     show_default=True,
     help="Path for the Zenodo citation counts output CSV.",
 )
-def zenodo_citations(input_csv: str, output_csv: str) -> None:
-    """Collect citation counts for Zenodo records via the DataCite API."""
+def zenodo_citations(inputs_dir: str, output_csv: str) -> None:
+    """Collect citation counts for Zenodo records via the DataCite API.
+
+    Prints cumulative sums per group (group = input filename) and overall.
+    """
     from openff_stats.zenodo import collect_zenodo_citations
-    collect_zenodo_citations(input_csv, output_csv)
+    collect_zenodo_citations(inputs_dir, output_csv)
 
 
 # ---------------------------------------------------------------------------
 # Visualisation
 # ---------------------------------------------------------------------------
 
-@cli.command("plot-downloads")
-@click.option(
-    "--input",
-    "yearly_csv",
-    default="data/downloads_yearly.csv",
-    show_default=True,
-    help="Path to the yearly downloads CSV.",
-)
-@click.option(
-    "--output",
-    "output_path",
-    default="data/plots/openff_downloads_per_year.png",
-    show_default=True,
-    help="Path to save the PNG plot.",
-)
-def plot_downloads(yearly_csv: str, output_path: str) -> None:
-    """Plot total OpenFF conda-forge downloads per year."""
-    from openff_stats.plotting import plot_downloads_per_year
-    plot_downloads_per_year(yearly_csv, output_path)
+@cli.command("github-descriptions")
+@click.option("--input", "repos_csv", default="inputs/github_repos", show_default=True)
+@click.option("--stars", "stars_csv", default="data/github_repo_stars.csv", show_default=True)
+@click.option("--output", "output_csv", default="data/github_repo_descriptions.csv", show_default=True)
+@click.option("--star-threshold", default=30, show_default=True,
+              help="Minimum stars for a repo to be included.")
+def github_descriptions(repos_csv, stars_csv, output_csv, star_threshold):
+    """Fetch GitHub descriptions and README summaries, auto-classify by topic."""
+    from openff_stats.github import collect_repo_descriptions
+    collect_repo_descriptions(repos_csv, stars_csv, output_csv, star_threshold)
 
 
 # ---------------------------------------------------------------------------
@@ -314,16 +719,20 @@ def plot_downloads(yearly_csv: str, output_path: str) -> None:
 
 @cli.command("run-all")
 @click.option(
-    "--publications-input", default="inputs/publications.csv", show_default=True,
-    help="Curated publications CSV.",
+    "--publications-input", default="inputs/publications", show_default=True,
+    help="Directory of curated publication group CSVs.",
 )
 @click.option(
-    "--packages-input", default="inputs/packages.csv", show_default=True,
-    help="Curated packages CSV.",
+    "--packages-input", default="inputs/packages", show_default=True,
+    help="Directory of curated package group CSVs.",
 )
 @click.option(
-    "--zenodo-input", default="inputs/zenodo.csv", show_default=True,
-    help="Curated Zenodo CSV.",
+    "--zenodo-input", default="inputs/zenodo", show_default=True,
+    help="Directory of curated Zenodo group CSVs.",
+)
+@click.option(
+    "--github-input", default="inputs/github_repos", show_default=True,
+    help="Directory of curated GitHub repo group CSVs.",
 )
 @click.option(
     "--refresh-scholar-clusters",
@@ -338,19 +747,22 @@ def plot_downloads(yearly_csv: str, output_path: str) -> None:
     "--skip-github",
     is_flag=True,
     default=False,
-    help="Skip the GitHub repo search (useful if GH_API_TOKEN is not set).",
+    help="Skip GitHub star collection (useful if GITHUB_TOKEN is not set).",
 )
 def run_all(
     publications_input: str,
     packages_input: str,
     zenodo_input: str,
+    github_input: str,
     refresh_scholar_clusters: bool,
     skip_github: bool,
 ) -> None:
-    """Run the full data-collection pipeline (citations, downloads, zenodo, plot).
+    """Run the full data-collection pipeline (citations, downloads, zenodo).
 
-    Reads the three curated input files and writes all outputs to data/.
-    Discovery steps are NOT run here — they require separate human verification.
+    Reads the curated input files and writes all outputs to data/.
+    Discovery steps are NOT run here — they require separate human
+    verification.  GitHub descriptions are also manual (`github-descriptions`
+    needs its category column reviewed).
     """
     import os
     import pathlib
@@ -361,14 +773,12 @@ def run_all(
     )
     from openff_stats.downloads import collect_all_downloads
     from openff_stats.zenodo import collect_zenodo_citations
-    from openff_stats.plotting import plot_downloads_per_year
 
     # --- Citations ---
     if pathlib.Path(publications_input).exists():
         if refresh_scholar_clusters:
             click.echo("\n=== Scholar cluster IDs ===")
             populate_scholar_cluster_ids(
-                publications_input,
                 publications_input,
                 overwrite_existing=True,
             )
@@ -396,26 +806,20 @@ def run_all(
     else:
         click.echo(f"Skipping Zenodo citations: {zenodo_input} not found.")
 
-    # --- GitHub repos ---
+    # --- GitHub stars (for the curated repo list) ---
     if skip_github:
-        click.echo("\nSkipping GitHub repo search (--skip-github).")
-    elif not os.environ.get("GH_API_TOKEN"):
+        click.echo("\nSkipping GitHub stars (--skip-github).")
+    elif not pathlib.Path(github_input).exists():
+        click.echo(f"Skipping GitHub stars: {github_input} not found.")
+    elif not os.environ.get("GITHUB_TOKEN"):
         click.echo(
-            "\nSkipping GitHub repo search: GH_API_TOKEN is not set. "
-            "Run `openff-stats github-repos` manually once the token is available, "
-            "or re-run with GH_API_TOKEN set."
+            "\nSkipping GitHub stars: GITHUB_TOKEN is not set. "
+            "Run `openff-stats github-stars` manually once the token is "
+            "available, or re-run with GITHUB_TOKEN set."
         )
     else:
-        click.echo("\n=== GitHub repos ===")
-        from openff_stats.github import collect_github_repos
-        collect_github_repos("data/github_repos.csv")
-
-    # --- Plot ---
-    yearly_csv = "data/downloads_yearly.csv"
-    if pathlib.Path(yearly_csv).exists():
-        click.echo("\n=== Download plot ===")
-        plot_downloads_per_year(yearly_csv, "data/plots/openff_downloads_per_year.png")
-    else:
-        click.echo(f"Skipping plot: {yearly_csv} not found.")
+        click.echo("\n=== GitHub stars ===")
+        from openff_stats.github import collect_repo_stars
+        collect_repo_stars(github_input, "data/github_repo_stars.csv")
 
     click.echo("\nDone.")
