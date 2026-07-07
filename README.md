@@ -374,10 +374,11 @@ spot-check (openff-units) showed the two systems agree within a few percent
 for old `.tar.bz2`-era versions, but the API counters undercount every
 `.conda`-era version by ~1.5–1.8× — modern `.conda` artifacts are served
 via a separate host (`conda-static.anaconda.org`), whose traffic the
-log-derived dataset counts but the per-file counters largely miss. In the
-other direction, the API counter reads higher for low-install packages with
-many files (it counts every HTTP GET at the origin, including mirror syncs
-and bots). Since the dataset is aggregated monthly and Anaconda has revised
+log-derived dataset (condastats) counts but the per-file counters
+(anaconda) largely miss. In the other direction, the API counter (anaconda)
+reads higher for low-install packages with many files: it counts every HTTP
+GET at the origin, including mirror syncs and bots, which the log-derived
+dataset (condastats) does not attribute to installs. Since the dataset is aggregated monthly and Anaconda has revised
 its history (a CDN double-count in mid-2024 was corrected, and previously
 missed `.conda` downloads were backfilled from June 2022), always cite
 downloads as "N as of YYYY-MM per anaconda-package-data" rather than as a
