@@ -1,0 +1,5 @@
+package,import_name,search_mode
+openff-toolkit,openff.toolkit,full
+openff-qcsubmit,openff.qcsubmit,full
+descent,descent,environment-only
+yammbs,yammbs,full

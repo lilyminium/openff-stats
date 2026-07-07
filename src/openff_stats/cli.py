@@ -22,6 +22,7 @@ Data collection commands (read curated inputs/, write data/):
   openff-stats downloads
   openff-stats zenodo-citations
   openff-stats github-stars         (requires GITHUB_TOKEN env var)
+  openff-stats classify-repos       (re-tag an existing stars CSV, no token needed)
   openff-stats github-descriptions  (requires GITHUB_TOKEN env var)
 
 Optional bulk discovery (writes candidates/ for human review; never
@@ -30,7 +31,12 @@ feeds collection directly):
   openff-stats discover-packages
   openff-stats discover-dependents
   openff-stats discover-zenodo
-  openff-stats discover-github-repos (requires GITHUB_TOKEN env var)
+
+GitHub repo discovery is different: it verifies each candidate against its
+matched files and writes straight to data/github_repos/<package>.csv (no
+candidates/ review step). With no --package it sweeps every row of
+inputs/github_packages.csv:
+  openff-stats discover-github-repos [--package X --import-name Y] (requires GITHUB_TOKEN env var)
 
 Run all collection (never discovery):
   openff-stats run-all
@@ -180,7 +186,7 @@ def add_publication_doi(
 @click.option(
     "--inputs-dir",
     "inputs_dir",
-    default="inputs/github_repos",
+    default="data/github_repos",
     show_default=True,
     help="Directory of curated repo group CSVs.",
 )
@@ -594,7 +600,7 @@ def downloads(inputs_dir: str, output_csv: str, yearly_csv: str) -> None:
 @click.option(
     "--input",
     "inputs_dir",
-    default="inputs/github_repos",
+    default="data/github_repos",
     show_default=True,
     help="Directory of curated repo group CSVs (filename = imported package).",
 )
@@ -615,62 +621,164 @@ def github_stars(inputs_dir: str, output_csv: str) -> None:
     collect_repo_stars(inputs_dir, output_csv)
 
 
+@cli.command("classify-repos")
+@click.option(
+    "--input",
+    "input_csv",
+    default="data/github_repo_stars.csv",
+    show_default=True,
+    help="Path to an existing star counts CSV to re-tag in place.",
+)
+@click.option(
+    "--blacklist",
+    "blacklist_csv",
+    default="inputs/github_owner_blacklist.csv",
+    show_default=True,
+    help="Owner blacklist CSV (columns: owner, reason).",
+)
+def classify_repos_cmd(input_csv: str, blacklist_csv: str) -> None:
+    """Re-tag an existing stars CSV with owner validity, without re-fetching from GitHub.
+
+    Overwrites any existing valid/reason columns and prints per-group totals
+    (repos, valid repos, stars, valid stars).  If the CSV has a ``fork_of``
+    column, also re-applies the fork rule (only the highest-starred member of
+    a fork family counts as valid).
+    """
+    import pandas as pd
+    from openff_stats.github import (
+        apply_fork_rule,
+        classify_repos,
+        load_github_packages,
+        load_owner_blacklist,
+    )
+
+    df = pd.read_csv(input_csv)
+    blacklist = load_owner_blacklist(blacklist_csv)
+    df = classify_repos(df, blacklist)
+    if "fork_of" in df.columns:
+        df = apply_fork_rule(df, group_priority=list(load_github_packages()))
+    df.to_csv(input_csv, index=False)
+    print(f"Re-tagged {len(df)} repos in {input_csv}")
+    for group_name, subset in df.groupby("group"):
+        n_valid = int(subset["valid"].sum())
+        valid_stars = int(subset.loc[subset["valid"], "stars"].sum())
+        print(
+            f"  {group_name}: {len(subset)} repos ({n_valid} valid), "
+            f"{int(subset['stars'].sum()):,} stars ({valid_stars:,} valid)"
+        )
+
+
 @cli.command("discover-github-repos")
 @click.option(
     "--output",
     "output_csv",
-    default="candidates/github_repos.csv",
-    show_default=True,
-    help="Path for the candidates CSV (for human review).",
-)
-@click.option(
-    "--inputs",
-    "inputs_dir",
-    default="inputs/github_repos",
-    show_default=True,
-    help="Directory of curated repo group CSVs used to flag which candidates are new.",
+    default=None,
+    help=(
+        "Path for the verified repos CSV (only valid alongside --package; "
+        "defaults to data/github_repos/<package>.csv)."
+    ),
 )
 @click.option(
     "--package",
     "package_name",
-    default="openff-toolkit",
-    show_default=True,
-    help="Distribution name on conda-forge/PyPI; used in dependency-file queries.",
+    default=None,
+    help=(
+        "Distribution name on conda-forge/PyPI; used in dependency-file "
+        "queries. Omit to sweep every package in --packages-csv instead."
+    ),
 )
 @click.option(
     "--import-name",
     "import_name",
-    default="openff.toolkit",
+    default=None,
+    help=(
+        "Python import path; used in import-statement queries. Looked up "
+        "from --packages-csv if omitted (requires --package)."
+    ),
+)
+@click.option(
+    "--packages-csv",
+    "packages_csv",
+    default="inputs/github_packages.csv",
     show_default=True,
-    help="Python import path; used in import-statement queries.",
+    help="CSV of package,import_name pairs swept when --package is omitted.",
+)
+@click.option(
+    "--include-requirements",
+    is_flag=True,
+    default=False,
+    help=(
+        "Also search requirements.txt files. Off by default: GitHub matches "
+        "hyphenated tokens (gradient-descent matches 'descent'), so this "
+        "query mostly adds tens of thousands of shard-paged hits."
+    ),
 )
 def discover_github_repos_cmd(
-    output_csv: str, inputs_dir: str, package_name: str, import_name: str
+    output_csv: str | None,
+    package_name: str | None,
+    import_name: str | None,
+    packages_csv: str,
+    include_requirements: bool,
 ) -> None:
-    """Search GitHub for repos that import or depend on a package.
+    """Search GitHub for, and verify, repos that import or depend on a package.
 
-    By default searches for openff-toolkit: import queries use --import-name
-    (`from openff.toolkit import ...`), dependency-file queries use --package
-    (`openff-toolkit` in pyproject.toml, environment.yml, ...).  Uses sharded
-    code-search queries to work around GitHub's 1000-result cap.  Writes a
-    candidates CSV with new repos flagged and sorted first; merge approved
-    rows into inputs/github_repos/<group>.csv.  Requires GITHUB_TOKEN.
+    Each candidate repo is verified against the files that actually matched
+    (dependency manifest, .py import, or .ipynb code-cell import) and tagged
+    status=auto/exclude accordingly — no human review step, unlike the other
+    discover-* commands.  Uses sharded code-search queries to work around
+    GitHub's 1000-result cap.  Requires GITHUB_TOKEN.
+
+    With no --package, sweeps every row of --packages-csv sequentially, each
+    writing its own data/github_repos/<package>.csv.  With --package but no
+    --import-name, the import name is looked up from --packages-csv (error if
+    not listed there).  With both --package and --import-name given
+    explicitly, runs a one-off discovery for that pair (and, if the pair
+    isn't in --packages-csv, suggests adding it there for future sweeps).
     """
-    from openff_stats.github import discover_github_repos
-    discover_github_repos(output_csv, inputs_dir, package_name, import_name)
+    from openff_stats.github import discover_github_repos, load_github_packages
 
+    packages = load_github_packages(packages_csv)
 
-@cli.command("github-repos", hidden=True)
-@click.option("--output", "output_csv", default="candidates/github_repos.csv")
-@click.option("--inputs", "inputs_dir", default="inputs/github_repos")
-def github_repos_deprecated(output_csv: str, inputs_dir: str) -> None:
-    """Deprecated alias for discover-github-repos."""
-    click.echo(
-        "`github-repos` is deprecated; use `discover-github-repos`. "
-        f"Output now goes to {output_csv} for human review."
+    if package_name is None:
+        if output_csv is not None:
+            raise click.UsageError("--output requires --package (a sweep writes one file per package).")
+        if not packages:
+            raise click.ClickException(f"No packages found in {packages_csv}.")
+        for pkg, spec in packages.items():
+            click.echo(f"\n=== {pkg} ({spec['import_name']}, {spec['search_mode']}) ===")
+            discover_github_repos(
+                pkg,
+                spec["import_name"],
+                include_requirements=include_requirements,
+                search_mode=spec["search_mode"],
+            )
+        return
+
+    search_mode = "full"
+    if import_name is None:
+        if package_name not in packages:
+            raise click.ClickException(
+                f"--import-name not given and {package_name!r} is not listed in "
+                f"{packages_csv}. Pass --import-name explicitly, or add a row "
+                f"'{package_name},<import_name>' to {packages_csv}."
+            )
+        import_name = packages[package_name]["import_name"]
+        search_mode = packages[package_name]["search_mode"]
+    elif package_name in packages:
+        search_mode = packages[package_name]["search_mode"]
+    else:
+        click.echo(
+            f"Tip: add '{package_name},{import_name}' to {packages_csv} to "
+            "include it in future no-argument sweeps."
+        )
+
+    discover_github_repos(
+        package_name,
+        import_name,
+        output_csv,
+        include_requirements=include_requirements,
+        search_mode=search_mode,
     )
-    from openff_stats.github import discover_github_repos
-    discover_github_repos(output_csv, inputs_dir)
 
 
 @cli.command("zenodo-citations")
@@ -702,7 +810,7 @@ def zenodo_citations(inputs_dir: str, output_csv: str) -> None:
 # ---------------------------------------------------------------------------
 
 @cli.command("github-descriptions")
-@click.option("--input", "repos_csv", default="inputs/github_repos", show_default=True)
+@click.option("--input", "repos_csv", default="data/github_repos", show_default=True)
 @click.option("--stars", "stars_csv", default="data/github_repo_stars.csv", show_default=True)
 @click.option("--output", "output_csv", default="data/github_repo_descriptions.csv", show_default=True)
 @click.option("--star-threshold", default=30, show_default=True,
@@ -731,7 +839,7 @@ def github_descriptions(repos_csv, stars_csv, output_csv, star_threshold):
     help="Directory of curated Zenodo group CSVs.",
 )
 @click.option(
-    "--github-input", default="inputs/github_repos", show_default=True,
+    "--github-input", default="data/github_repos", show_default=True,
     help="Directory of curated GitHub repo group CSVs.",
 )
 @click.option(
