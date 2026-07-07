@@ -56,10 +56,16 @@ additions are counted from the next `openff-stats citations` run.
 
 ## Download counts
 
-| Group | Packages | Anaconda API | condastats |
-|-------|----------|--------------|------------|
-| openff | 15 | 7,254,585 | 10,072,572 |
-| competitor | 2 | 4,941,993 | 5,155,888 |
+Quote the **condastats** column, with its reference date — e.g. "10.1M
+downloads as of 2026-07 per anaconda-package-data". The Anaconda API
+counters undercount modern `.conda`-format downloads by ~1.5× (and
+overcount mirror/bot traffic on low-volume packages); see the methodology
+section of the top-level README for the spot-check.
+
+| Group | Packages | condastats (as of 2026-07) | Anaconda API |
+|-------|----------|----------------------------|--------------|
+| openff | 15 | 10,072,572 | 7,254,585 |
+| competitor | 2 | 5,155,888 | 4,941,993 |
 
 > **Caveat:** These numbers vastly overcount real installs. OpenFF packages depend on each
 > other, so a single user install pulls in many packages simultaneously. CI/CD pipelines
