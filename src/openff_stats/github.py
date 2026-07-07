@@ -1,25 +1,34 @@
 """
-GitHub repo tracking: curated lists in inputs/github_repos/ plus optional
-code-search discovery.
+GitHub repo tracking: script-generated lists in data/github_repos/ plus a
+manual add path.
 
-Each CSV in inputs/github_repos/ is one group — the filename is the package
+Each CSV in data/github_repos/ is one group — the filename is the package
 the repos import (e.g. openff-toolkit.csv).  Columns: repo, url, status,
-notes.  `status` is `manual` (human-added), `auto` (seeded from discovery),
-or `exclude` (kept in the file for the record but skipped by collection).
+notes.  `status` is `manual` (human-added via add-github-repo), `auto`
+(passed verification during discovery), or `exclude` (kept in the file for
+the record — failed verification or blacklisted — but skipped by
+collection).
 
 Workflow:
   openff-stats add-github-repo OWNER/REPO [--group NAME]
-                                            → append to inputs/github_repos/<group>.csv
-  openff-stats discover-github-repos --package X --import-name Y
-                                            → code search, writes
-                                              candidates/github_repos.csv for
-                                              human review (new repos first)
+                                            → append to data/github_repos/<group>.csv
+  openff-stats discover-github-repos [--package X --import-name Y]
+                                            → code search + per-file
+                                              verification, writes
+                                              data/github_repos/<package>.csv
+                                              directly (status=auto/exclude,
+                                              no human review step).  With no
+                                              --package, sweeps every row of
+                                              inputs/github_packages.csv.
   openff-stats github-stars                 → star counts + per-group import sums
 
 Discovery uses sharded queries to work around GitHub's hard 1000-result cap on
 any single code-search request: when a query returns >= 1000 hits the search
 is automatically re-run split across file-size buckets, and the results are
-unioned.  Buckets recurse up to depth 2 before giving up on that shard.
+unioned.  Buckets recurse up to depth 2 before giving up on that shard.  Each
+resulting candidate repo is then verified against the files that actually
+matched (dependency manifests, .py imports, or .ipynb code-cell imports —
+see `_verify_repo`) before being tagged auto/exclude.
 
 Discovery and star collection require the GITHUB_TOKEN environment variable
 (a personal access token; no special scopes needed for public repos).
@@ -48,26 +57,50 @@ _SIZE_BUCKETS = [
     ">150000",
 ]
 
-def _build_queries(package_name: str, import_name: str) -> list[str]:
+def _build_queries(
+    package_name: str,
+    import_name: str,
+    include_requirements: bool = False,
+    search_mode: str = "full",
+) -> list[str]:
     """Code-search queries covering the ways a package may appear in a repo.
 
     Runtime-import queries use *import_name* (e.g. ``openff.toolkit``);
     declared-dependency queries use *package_name* (e.g. ``openff-toolkit``).
+    The ``requirements.txt`` query is opt-in: GitHub tokenizes on punctuation,
+    so short package names match tens of thousands of hyphenated lookalikes
+    (``gradient-descent`` matches a ``descent`` search) and the query mostly
+    adds sharded paging time.
+
+    ``search_mode="environment-only"`` restricts the search to conda
+    environment files — the last-resort mode for generic package names where
+    even the other manifest and import queries are dominated by same-token
+    noise (see inputs/github_packages.csv).
     """
-    return [
-        # Runtime imports
-        f"import {import_name} language:python",
-        f"from {import_name} language:python",
-        f"import {import_name} extension:ipynb",
-        f"from {import_name} extension:ipynb",
-        # Declared dependencies
+    if search_mode == "environment-only":
+        return [
+            f"{package_name} filename:environment.yml",
+            f"{package_name} filename:environment.yaml",
+        ]
+    queries = [
+        # Declared dependencies first: high-precision, cheap to verify
         f"{package_name} filename:setup.cfg",
         f"{package_name} filename:pyproject.toml",
-        f"{package_name} filename:requirements.txt",
         f"{package_name} filename:environment.yml",
         f"{package_name} filename:setup.py",
         f"{package_name} filename:pixi.toml",
     ]
+    if include_requirements:
+        queries.append(f"{package_name} filename:requirements.txt")
+    queries += [
+        # Runtime imports second: noisy for generic import names, verified
+        # from search text-match fragments
+        f"import {import_name} language:python",
+        f"from {import_name} language:python",
+        f"import {import_name} extension:ipynb",
+        f"from {import_name} extension:ipynb",
+    ]
+    return queries
 
 
 def load_curated_repos(inputs_dir: str) -> pd.DataFrame:
@@ -102,7 +135,7 @@ def _normalize_repo_name(repo: str) -> str:
 
 def add_github_repo(
     repo: str,
-    inputs_dir: str = "inputs/github_repos",
+    inputs_dir: str = "data/github_repos",
     group: str = "openff-toolkit",
 ) -> None:
     """Add a repo to the curated group CSV, validating it via the GitHub API.
@@ -186,7 +219,9 @@ def _gh_search(query: str, page: int, headers: dict[str, str]) -> dict:
     while True:
         r = requests.get(
             GITHUB_SEARCH_URL,
-            headers=headers,
+            # text-match fragments let candidates be verified without
+            # fetching each matched file
+            headers={**headers, "Accept": "application/vnd.github.text-match+json"},
             params={"q": query, "per_page": 100, "page": page},
             timeout=30,
         )
@@ -204,7 +239,7 @@ def _gh_search(query: str, page: int, headers: dict[str, str]) -> dict:
             return {}
 
         if r.status_code in (403, 429) or remaining == 0:
-            wait = max(reset_at - time.time(), 0) + 3
+            wait = min(max(reset_at - time.time(), 0) + 3, 120)  # cap: bogus reset stamps must not sleep for hours
             print(f"    Rate limited — sleeping {wait:.0f}s …")
             time.sleep(wait)
             continue
@@ -218,10 +253,27 @@ def _gh_search(query: str, page: int, headers: dict[str, str]) -> dict:
         return r.json()
 
 
+def _merge_repos(base: dict[str, dict], extra: dict[str, dict]) -> None:
+    """Merge *extra*'s ``{full_name: {"url", "paths"}}`` info into *base*, in place.
+
+    Parameters
+    ----------
+    base
+        Mapping to merge into; mutated in place.
+    extra
+        Mapping of the same shape to merge from.
+    """
+    for full_name, info in extra.items():
+        entry = base.setdefault(full_name, {"url": info["url"], "paths": {}})
+        for path, path_info in info["paths"].items():
+            existing = entry["paths"].setdefault(path, {"url": path_info["url"], "fragments": []})
+            existing["fragments"].extend(path_info["fragments"])
+
+
 def _fetch_all_pages(
     query: str,
     headers: dict[str, str],
-) -> tuple[dict[str, str], int]:
+) -> tuple[dict[str, dict], int]:
     """Exhaust all pages for a query (maximum 1 000 results from the API).
 
     Parameters
@@ -233,11 +285,11 @@ def _fetch_all_pages(
 
     Returns
     -------
-    tuple[dict[str, str], int]
-        Mapping of ``{full_name: html_url}`` and the ``total_count`` reported
-        by the API for the first page.
+    tuple[dict[str, dict], int]
+        Mapping of ``{full_name: {"url": html_url, "paths": {path: contents_api_url}}}``
+        and the ``total_count`` reported by the API for the first page.
     """
-    repos: dict[str, str] = {}
+    repos: dict[str, dict] = {}
     total_count = 0
 
     for page in range(1, 11):  # 10 pages × 100 results = 1 000 max
@@ -249,7 +301,10 @@ def _fetch_all_pages(
 
         for item in items:
             repo = item["repository"]
-            repos[repo["full_name"]] = repo["html_url"]
+            entry = repos.setdefault(repo["full_name"], {"url": repo["html_url"], "paths": {}})
+            fragments = [m.get("fragment", "") for m in item.get("text_matches", [])]
+            path_entry = entry["paths"].setdefault(item["path"], {"url": item["url"], "fragments": []})
+            path_entry["fragments"].extend(fragments)
 
         if len(items) < 100:
             break
@@ -263,7 +318,7 @@ def _search(
     query: str,
     headers: dict[str, str],
     depth: int = 0,
-) -> dict[str, str]:
+) -> dict[str, dict]:
     """Return all repos matching *query*, sharding by file size if needed.
 
     When ``total_count >= 1 000`` (the GitHub API cap) the query is re-run
@@ -281,8 +336,9 @@ def _search(
 
     Returns
     -------
-    dict[str, str]
-        Mapping of ``{full_name: html_url}`` for every matching repo found.
+    dict[str, dict]
+        Mapping of ``{full_name: {"url": html_url, "paths": {...}}}`` for
+        every matching repo found.
     """
     pad = "  " * depth
     repos, total = _fetch_all_pages(query, headers)
@@ -303,22 +359,133 @@ def _search(
         return repos
 
     print(f"  {pad}  → sharding into {len(_SIZE_BUCKETS)} size buckets …")
-    all_repos = dict(repos)
+    all_repos: dict[str, dict] = {}
+    _merge_repos(all_repos, repos)
     for bucket in _SIZE_BUCKETS:
         sub = _search(f"{query} size:{bucket}", headers, depth=depth + 1)
-        all_repos.update(sub)
+        _merge_repos(all_repos, sub)
         time.sleep(1)
 
     return all_repos
+
+
+def load_owner_blacklist(path: str = "inputs/github_owner_blacklist.csv") -> dict[str, str]:
+    """Load the owner blacklist as ``{owner_lowercase: reason}``.
+
+    Parameters
+    ----------
+    path
+        CSV with columns ``owner``, ``reason``.
+    """
+    df = pd.read_csv(path)
+    return {
+        str(owner).strip().lower(): str(reason) for owner, reason in zip(df["owner"], df["reason"])
+    }
+
+
+def classify_repos(df: pd.DataFrame, blacklist: dict[str, str]) -> pd.DataFrame:
+    """Tag each repo ``valid``/``reason`` based on whether its owner is blacklisted.
+
+    Repos owned by the OpenFF org/maintainers (self) or by conda-forge (meta,
+    packaging) are excluded from external-adoption counts via ``valid=False``.
+
+    Parameters
+    ----------
+    df
+        DataFrame with a ``repo`` column (``owner/name``).
+    blacklist
+        Mapping of ``{owner_lowercase: reason}``, e.g. from `load_owner_blacklist`.
+
+    Returns
+    -------
+    pd.DataFrame
+        *df* with ``valid`` (bool) and ``reason`` (str, ``""`` when valid) columns added.
+    """
+    df = df.copy()
+    owners = df["repo"].astype(str).str.split("/", n=1).str[0].str.lower()
+    reasons = owners.map(blacklist)
+    df["valid"] = reasons.isna()
+    df["reason"] = reasons.fillna("")
+    return df
+
+
+def apply_fork_rule(df: pd.DataFrame, group_priority: list[str] | None = None) -> pd.DataFrame:
+    """Invalidate cross-group duplicates and forks of higher-starred repos.
+
+    Two passes, neither of which touches rows that are already invalid
+    (their ``self``/``meta``/... reason is left alone):
+
+    1. **Duplicates** — the same repo listed in more than one group only
+       counts once: the row in the highest-priority group (the order of
+       *group_priority*, e.g. the row order of inputs/github_packages.csv;
+       file order when not given) keeps its validity, every other row
+       becomes ``valid=False``, ``reason="duplicate"``.
+    2. **Forks** — among the remaining one-row-per-repo set, repos are
+       grouped by fork family (``fork_of`` for forks, else the repo's own
+       name).  The member with the highest star count keeps its existing
+       ``valid``/``reason``; every other member is set ``valid=False``,
+       ``reason="fork"``.  A fork whose family has no other tracked member
+       is left as-is.
+
+    Parameters
+    ----------
+    df
+        DataFrame with ``group``, ``repo``, ``fork_of``, ``stars``,
+        ``valid``, and ``reason`` columns (as produced by
+        `collect_repo_stars`).
+    group_priority
+        Group names in decreasing priority, deciding which group keeps a
+        duplicated repo.
+
+    Returns
+    -------
+    pd.DataFrame
+        *df* with ``valid``/``reason`` updated for demoted rows.
+    """
+    df = df.copy()
+
+    if group_priority:
+        priority = {g: i for i, g in enumerate(group_priority)}
+        rank = df["group"].map(lambda g: priority.get(g, len(priority)))
+        order = rank.sort_values(kind="mergesort").index
+    else:
+        order = df.index
+
+    primary_rows: dict[str, int] = {}
+    for idx in order:
+        key = str(df.at[idx, "repo"]).lower()
+        if key in primary_rows:
+            if df.at[idx, "valid"]:
+                df.at[idx, "valid"] = False
+                df.at[idx, "reason"] = "duplicate"
+        else:
+            primary_rows[key] = idx
+
+    primary = df.loc[list(primary_rows.values())]
+    fork_of = primary["fork_of"].fillna("").astype(str)
+    family = fork_of.where(fork_of != "", primary["repo"]).str.lower()
+    winners = set(primary.groupby(family)["stars"].idxmax())
+    for idx in primary.index:
+        if idx in winners or not df.at[idx, "valid"]:
+            continue
+        df.at[idx, "valid"] = False
+        df.at[idx, "reason"] = "fork"
+    return df
 
 
 def collect_repo_stars(inputs_dir: str, output_csv: str) -> pd.DataFrame:
     """Fetch star counts for every curated repo via the GitHub Repos API.
 
     Makes one request per repo.  Skips repos that return a non-200 status
-    (private, deleted, or renamed) and records stars=0 for them.  Prints
-    per-group sums (the group = which package the repos import, so the repo
-    count per group is the "GitHub repo imports" number).
+    (private, deleted, or renamed) and records stars=0 for them.  Records a
+    ``fork_of`` column (the fork-network root's ``full_name``, from the API's
+    ``source`` field; ``""`` for non-forks).  Classifies each repo's owner
+    against `load_owner_blacklist` — ``valid=False`` marks self-owned (OpenFF
+    org/maintainers) or packaging (conda-forge) repos — then applies
+    `apply_fork_rule` so only the highest-starred member of a fork family
+    counts as valid.  Both are excluded from external-adoption counts.
+    Prints per-group sums (the group = which package the repos import, so
+    the repo count per group is the "GitHub repo imports" number).
 
     Requires the ``GITHUB_TOKEN`` environment variable.
 
@@ -327,12 +494,14 @@ def collect_repo_stars(inputs_dir: str, output_csv: str) -> pd.DataFrame:
     inputs_dir
         Directory of curated repo group CSVs (a single CSV also works).
     output_csv
-        Path to write the results CSV (columns: ``group``, ``repo``, ``stars``).
+        Path to write the results CSV (columns: ``group``, ``repo``,
+        ``stars``, ``fork_of``, ``valid``, ``reason``).
 
     Returns
     -------
     pd.DataFrame
-        DataFrame with columns ``group``, ``repo``, and ``stars``.
+        DataFrame with columns ``group``, ``repo``, ``stars``, ``fork_of``,
+        ``valid``, and ``reason``.
     """
     import tqdm
 
@@ -349,24 +518,44 @@ def collect_repo_stars(inputs_dir: str, output_csv: str) -> pd.DataFrame:
             reset_at = int(r.headers.get("X-RateLimit-Reset", 0))
 
             if r.status_code in (403, 429) or remaining == 0:
-                wait = max(reset_at - time.time(), 0) + 3
+                wait = min(max(reset_at - time.time(), 0) + 3, 120)  # cap: bogus reset stamps must not sleep for hours
                 print(f"\n  Rate limited — sleeping {wait:.0f}s …")
                 time.sleep(wait)
                 continue
 
-            stars = r.json().get("stargazers_count", 0) if r.status_code == 200 else 0
-            rows.append({"group": curated_row["group"], "repo": repo, "stars": stars})
+            fork_of = ""
+            if r.status_code == 200:
+                data = r.json()
+                stars = data.get("stargazers_count", 0)
+                if data.get("fork"):
+                    fork_of = (data.get("source") or {}).get("full_name") or ""
+            else:
+                stars = 0
+
+            rows.append({
+                "group": curated_row["group"],
+                "repo": repo,
+                "stars": stars,
+                "fork_of": fork_of,
+            })
             break
 
         time.sleep(0.05)  # stay clear of secondary rate limits
 
     result = pd.DataFrame(rows)
+    result = classify_repos(result, load_owner_blacklist())
+    result = apply_fork_rule(result, group_priority=list(load_github_packages()))
     pathlib.Path(output_csv).parent.mkdir(parents=True, exist_ok=True)
     result.to_csv(output_csv, index=False)
     print(f"\nSaved star counts for {len(result)} repos to {output_csv}")
     print("\nGitHub repo imports per group:")
     for group_name, subset in result.groupby("group"):
-        print(f"  {group_name}: {len(subset)} repos, {int(subset['stars'].sum()):,} total stars")
+        n_valid = int(subset["valid"].sum())
+        valid_stars = int(subset.loc[subset["valid"], "stars"].sum())
+        print(
+            f"  {group_name}: {len(subset)} repos ({n_valid} valid), "
+            f"{int(subset['stars'].sum()):,} stars ({valid_stars:,} valid)"
+        )
     return result
 
 
@@ -504,7 +693,7 @@ def collect_repo_descriptions(
             remaining = int(r.headers.get("X-RateLimit-Remaining", 1))
             reset_at = int(r.headers.get("X-RateLimit-Reset", 0))
             if r.status_code in (403, 429) or remaining == 0:
-                wait = max(reset_at - time.time(), 0) + 3
+                wait = min(max(reset_at - time.time(), 0) + 3, 120)  # cap: bogus reset stamps must not sleep for hours
                 print(f"\n  Rate limited — sleeping {wait:.0f}s …")
                 time.sleep(wait)
                 continue
@@ -534,68 +723,311 @@ def collect_repo_descriptions(
     return df
 
 
+def load_github_packages(path: str = "inputs/github_packages.csv") -> dict[str, dict]:
+    """Load the packages swept by discover-github-repos, with per-package settings.
+
+    Parameters
+    ----------
+    path
+        CSV with columns ``package`` (distribution name), ``import_name``
+        (Python import path), and optionally ``search_mode`` — one row per
+        package that gets GitHub repo discovery.  ``search_mode`` is ``full``
+        (all manifest + import queries; the default when blank/absent) or
+        ``environment-only`` (conda environment files only — for packages
+        like ``descent`` whose generic name makes every other query drown in
+        same-token noise).
+
+    Returns
+    -------
+    dict[str, dict]
+        Mapping of ``{package_name: {"import_name": ..., "search_mode": ...}}``,
+        in file order.  Empty if *path* does not exist.
+    """
+    if not pathlib.Path(path).exists():
+        return {}
+    df = pd.read_csv(path)
+    modes = df["search_mode"] if "search_mode" in df.columns else [""] * len(df)
+    return {
+        str(pkg).strip(): {
+            "import_name": str(imp).strip(),
+            "search_mode": (str(mode).strip() or "full") if pd.notna(mode) else "full",
+        }
+        for pkg, imp, mode in zip(df["package"], df["import_name"], modes)
+    }
+
+
+# Manifest/dependency-declaration filenames checked during verification.
+_MANIFEST_BASENAMES = {
+    "setup.py",
+    "setup.cfg",
+    "pyproject.toml",
+    "requirements.txt",
+    "environment.yml",
+    "environment.yaml",
+    "pixi.toml",
+    "meta.yaml",
+}
+
+
+def _manifest_regex(package_name: str):
+    """Compile a regex matching a manifest line that declares *package_name* itself.
+
+    Matches an optional leading YAML-list dash, optional quotes, the package
+    name, and an optional version specifier/trailing comma — case-insensitive.
+    Rejects lines where the package name is merely a substring of a longer
+    token (e.g. a hyphenated sibling package).
+    """
+    import re
+
+    escaped = re.escape(package_name)
+    pattern = rf"""^\s*(-\s*)?["']?{escaped}["']?\s*([=<>!~^ ].*)?[,"']?\s*$"""
+    return re.compile(pattern, re.IGNORECASE)
+
+
+def _fetch_file_text(url: str, headers: dict[str, str]) -> str | None:
+    """Fetch a GitHub contents-API URL and return its decoded UTF-8 text, or None.
+
+    Retries automatically on rate-limit responses; returns None for any other
+    non-200 status or a body that isn't decodable base64/UTF-8.
+    """
+    import base64
+
+    while True:
+        r = requests.get(url, headers=headers, timeout=30)
+        remaining = int(r.headers.get("X-RateLimit-Remaining", 1))
+        reset_at = int(r.headers.get("X-RateLimit-Reset", 0))
+
+        if r.status_code in (403, 429) or remaining == 0:
+            wait = min(max(reset_at - time.time(), 0) + 3, 120)  # cap: bogus reset stamps must not sleep for hours
+            print(f"    Rate limited — sleeping {wait:.0f}s …")
+            time.sleep(wait)
+            continue
+        break
+
+    if r.status_code != 200:
+        return None
+    try:
+        return base64.b64decode(r.json()["content"]).decode("utf-8", errors="replace")
+    except Exception:
+        return None
+
+
+def _notebook_has_import(content: str, import_name: str) -> bool:
+    """Return True if a notebook's code-cell *source* (not output) imports *import_name*."""
+    import json
+
+    try:
+        notebook = json.loads(content)
+    except Exception:
+        return False
+
+    needles = (f"import {import_name}", f"from {import_name}")
+    for cell in notebook.get("cells", []):
+        if cell.get("cell_type") != "code":
+            continue
+        source = cell.get("source", "")
+        if isinstance(source, list):
+            source = "".join(source)
+        if any(needle in source for needle in needles):
+            return True
+    return False
+
+
+def _verify_repo(
+    package_name: str,
+    import_name: str,
+    paths: dict[str, str],
+    headers: dict[str, str],
+) -> tuple[str, str]:
+    """Verify a candidate repo against its matched files; return (status, notes).
+
+    Stops at the first positive piece of evidence, checked in order
+    (highest-precision first):
+
+    1. Matched dependency-manifest paths (`_MANIFEST_BASENAMES`) are fetched
+       and checked line-by-line (inline ``#`` comments stripped first)
+       against `_manifest_regex` for *package_name* — this rejects
+       substring-only matches like a ``gradient-descent`` line matching a
+       ``descent`` search.
+    2. Matched ``.py`` / ``.ipynb`` paths are checked against the search's
+       text-match fragments for a real ``import <import_name>`` /
+       ``from <import_name>`` statement — GitHub's code search matches
+       *tokens*, not phrases, so a hit alone is not evidence for generic
+       import names.  Fragment checks need no extra requests, and base64
+       notebook outputs can never contain the space in ``import x``.
+    3. A ``.py`` path that produced no fragments is fetched once and checked
+       with the same import regex; ``.ipynb`` likewise via
+       `_notebook_has_import` (code-cell *source* only, not cached outputs).
+
+    A repo with no evidence from any matched file is marked ``exclude``.
+
+    Parameters
+    ----------
+    package_name
+        Distribution name to look for in dependency manifests.
+    import_name
+        Python import path to look for in import statements.
+    paths
+        Mapping of ``{matched file path: {"url": contents-API URL,
+        "fragments": [text-match fragments]}}`` for this repo.
+    headers
+        Request headers including the auth token.
+
+    Returns
+    -------
+    tuple[str, str]
+        ``(status, notes)`` where ``status`` is ``"auto"`` or ``"exclude"``.
+    """
+    import re
+
+    manifest_regex = _manifest_regex(package_name)
+    manifest_paths = sorted(
+        p for p in paths if pathlib.PurePosixPath(p).name.lower() in _MANIFEST_BASENAMES
+    )
+    for path in manifest_paths:
+        # Pre-screen on the search's text-match fragments: only fetch the
+        # file when a fragment line already looks like a dependency
+        # declaration.  Queries like "descent filename:requirements.txt"
+        # match tens of thousands of gradient-descent-style files, and
+        # fetching each one would take hours and the whole core API quota.
+        fragments = paths[path]["fragments"]
+        fragment_hit = any(
+            manifest_regex.match(line.split("#", 1)[0])
+            for frag in fragments
+            for line in frag.splitlines()
+        )
+        if fragments and not fragment_hit:
+            continue
+        content = _fetch_file_text(paths[path]["url"], headers)
+        time.sleep(0.5)
+        if content is None:
+            continue
+        for line in content.splitlines():
+            if manifest_regex.match(line.split("#", 1)[0]):
+                return "auto", f"{package_name} in {path}"
+
+    import_regex = re.compile(
+        rf"(^|[^\w.])(import|from)\s+{re.escape(import_name)}\b", re.MULTILINE
+    )
+
+    code_paths = sorted(p for p in paths if p.endswith((".py", ".ipynb")))
+    for path in code_paths:
+        if any(import_regex.search(frag) for frag in paths[path]["fragments"]):
+            suffix = " (notebook)" if path.endswith(".ipynb") else ""
+            return "auto", f"import in {path}{suffix}"
+
+    # Fallback for hits whose fragments missed the import line: one fetch each
+    for path in code_paths:
+        if paths[path]["fragments"]:
+            continue
+        content = _fetch_file_text(paths[path]["url"], headers)
+        time.sleep(0.5)
+        if content is None:
+            continue
+        if path.endswith(".py") and import_regex.search(content):
+            return "auto", f"import in {path}"
+        if path.endswith(".ipynb") and _notebook_has_import(content, import_name):
+            return "auto", f"import in {path} (notebook)"
+
+    return "exclude", "no dependency or import evidence"
+
+
 def discover_github_repos(
-    output_csv: str = "candidates/github_repos.csv",
-    inputs_dir: str = "inputs/github_repos",
     package_name: str = "openff-toolkit",
     import_name: str = "openff.toolkit",
+    output_csv: str | None = None,
+    include_requirements: bool = False,
+    search_mode: str = "full",
 ) -> pd.DataFrame:
-    """Search GitHub for repositories that import or depend on a package.
+    """Search GitHub for, and verify, repos that import or depend on a package.
 
-    Runs a set of sharded code-search queries and unions the results, working
-    around the 1 000-result cap that GitHub imposes on any single query.
-    Writes a candidates CSV for human review; repos not already in the curated
-    list are flagged ``new`` and sorted first, so review is a quick scan of
-    the top rows.  Merge approved rows into inputs/github_repos/<group>.csv
-    (or use ``add-github-repo --group``).
+    Runs a set of sharded code-search queries and unions the results (repo →
+    matched file paths), working around the 1 000-result cap that GitHub
+    imposes on any single query.  Each candidate repo is then verified
+    against its matched files via `_verify_repo` and tagged ``status=auto``
+    or ``status=exclude`` accordingly; excluded rows are kept in the output
+    for the record, with a ``notes`` explanation.  Writes directly to
+    *output_csv* — there is no candidates/ review step for this command,
+    unlike the other ``discover-*`` commands.
 
     Requires the ``GITHUB_TOKEN`` environment variable.
 
     Parameters
     ----------
-    output_csv
-        Path to write the candidates CSV (columns: ``repo``, ``url``, ``new``).
-    inputs_dir
-        Directory of curated repo group CSVs used to flag which candidates
-        are new (checked across every group).
     package_name
         Distribution name on conda-forge/PyPI (e.g. ``openff-toolkit``); used
-        in the dependency-file queries.
+        in the dependency-file queries and manifest verification.
     import_name
         Python import path (e.g. ``openff.toolkit``); used in the
-        import-statement queries.
+        import-statement queries and notebook verification.
+    output_csv
+        Path to write the repos CSV (columns: ``repo``, ``url``, ``status``,
+        ``notes``).  Defaults to ``data/github_repos/<package_name>.csv``.
+    include_requirements
+        Also search ``requirements.txt`` files.  Off by default — see
+        `_build_queries` for why this query is mostly sharded paging time.
+    search_mode
+        ``full`` (default) or ``environment-only`` (conda environment files
+        only; for generic package names — see `_build_queries`).
 
     Returns
     -------
     pd.DataFrame
-        DataFrame with columns ``repo``, ``url``, and ``new``.
+        DataFrame with columns ``repo``, ``url``, ``status``, and ``notes``.
     """
-    headers = _get_headers()
-    all_repos: dict[str, str] = {}
+    if output_csv is None:
+        output_csv = f"data/github_repos/{package_name}.csv"
 
-    for query in _build_queries(package_name, import_name):
-        repos = _search(query, headers)
+    headers = _get_headers()
+    all_repos: dict[str, dict] = {}
+
+    for query in _build_queries(package_name, import_name, include_requirements, search_mode):
+        try:
+            if query.startswith(("import ", "from ")):
+                # Import queries on generic names can report hundreds of
+                # thousands of token matches (e.g. gradient descent code for
+                # an ``import descent`` search); sharding those exhaustively
+                # is pure paging cost.  Results are relevance-ranked, so the
+                # top 1 000 hold the real import statements — fragments
+                # filter the rest for free.
+                repos, total = _fetch_all_pages(query, headers)
+                flag = "⚠ " if total >= 800 else "✓ "
+                print(f"  {flag}[{total:>6}] {query} (top 1000, unsharded)")
+            else:
+                repos = _search(query, headers)
+        except Exception as exc:
+            print(f"  Warning: query failed, skipping ({query!r}): {exc}")
+            continue
         new_count = sum(1 for k in repos if k not in all_repos)
-        all_repos.update(repos)
+        _merge_repos(all_repos, repos)
         print(f"  running total: {len(all_repos)} repos (+{new_count} new)\n")
         time.sleep(2)
 
-    known_df = curated.load_groups(inputs_dir, ["repo"])
-    known = set(known_df["repo"].fillna("").astype(str).str.strip().str.lower())
+    print(f"\nVerifying {len(all_repos)} candidate repo(s) against matched files …")
+    rows = []
+    for full_name, info in sorted(all_repos.items()):
+        try:
+            status, notes = _verify_repo(package_name, import_name, info["paths"], headers)
+        except Exception as exc:
+            print(f"  Warning: verification failed for {full_name}: {exc}")
+            status, notes = "exclude", f"verification error: {exc}"
+        rows.append({"repo": full_name, "url": info["url"], "status": status, "notes": notes})
 
-    df = pd.DataFrame(
-        [
-            {"repo": name, "url": url, "new": name.lower() not in known}
-            for name, url in sorted(all_repos.items())
-        ]
-    )
+    df = pd.DataFrame(rows, columns=["repo", "url", "status", "notes"])
     if not df.empty:
-        df = df.sort_values(["new", "repo"], ascending=[False, True], kind="mergesort")
+        status_rank = df["status"].map({"auto": 0, "exclude": 1}).fillna(2).astype(int)
+        repo_lower = df["repo"].str.lower()
+        df = (
+            df.assign(_status_rank=status_rank, _repo_lower=repo_lower)
+            .sort_values(["_status_rank", "_repo_lower"], kind="mergesort")
+            .drop(columns=["_status_rank", "_repo_lower"])
+            .reset_index(drop=True)
+        )
 
     pathlib.Path(output_csv).parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(output_csv, index=False)
-    n_new = int(df["new"].sum()) if not df.empty else 0
-    print(f"Saved {len(df)} repos to {output_csv} ({n_new} not yet in {inputs_dir}).")
-    print("Review the new rows, then add approved repos to the curated list.")
+    n_auto = int((df["status"] == "auto").sum()) if not df.empty else 0
+    n_exclude = int((df["status"] == "exclude").sum()) if not df.empty else 0
+    print(f"\nSaved {len(df)} repos to {output_csv} ({n_auto} auto, {n_exclude} exclude).")
 
     return df

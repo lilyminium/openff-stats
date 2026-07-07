@@ -1,0 +1,79 @@
+repo,url,status,notes
+asapdiscovery/asapdiscovery,https://github.com/asapdiscovery/asapdiscovery,auto,import in asapdiscovery-alchemy/asapdiscovery/alchemy/cli/bespoke.py
+bismuthadams1/ActiveLearningSandbox,https://github.com/bismuthadams1/ActiveLearningSandbox,auto,import in activelearner/run_calculations/prepare_xtb_reorg_dataset.py
+bismuthadams1/charge_paper,https://github.com/bismuthadams1/charge_paper,auto,import in benchmark_wf_analysis/qc_archive_run/make_functionals.py
+choderalab/create-rna-nucleoside-dataset,https://github.com/choderalab/create-rna-nucleoside-dataset,auto,import in qca-dataset-submission-test/generate-dataset.ipynb (notebook)
+choderalab/geometry-benchmark-espaloma,https://github.com/choderalab/geometry-benchmark-espaloma,auto,import in qc-opt-geo/espaloma-0.3.0rc1-pavan/01-setup.py
+cole-group/presto-benchmarking,https://github.com/cole-group/presto-benchmarking,auto,openff-qcsubmit in pyproject.toml
+conda-forge/openff-qcsubmit-feedstock,https://github.com/conda-forge/openff-qcsubmit-feedstock,auto,import in recipe/test_version_nonzero.py
+dellacortelab/trip,https://github.com/dellacortelab/trip,auto,import in trip/tools/torsion_benchmark.py
+finlayiainmaclean/opensqm,https://github.com/finlayiainmaclean/opensqm,auto,import in opensqm/md/bespokefit.py
+fjclark/descent-workflow,https://github.com/fjclark/descent-workflow,auto,openff-qcsubmit in pyproject.toml
+greener-group/garnet,https://github.com/greener-group/garnet,auto,import in validation/benchmarks/main.py
+JHoeflich1/OpenFFLipid,https://github.com/JHoeflich1/OpenFFLipid,auto,import in BuildaFF/buildMolDataset.py
+jthorton/BespokeFit-PLB,https://github.com/jthorton/BespokeFit-PLB,auto,import in inputs/scripts/create_bespoke_workflow.py
+jthorton/double-exp-vdw,https://github.com/jthorton/double-exp-vdw,auto,import in data-set-curation/quantum-chemical/Dataset-curation-FB-input-creation-notebook.ipynb (notebook)
+lilyminium/2026-polymers,https://github.com/lilyminium/2026-polymers,auto,openff-qcsubmit in pixi.toml
+lilyminium/ash-sage-rc1,https://github.com/lilyminium/ash-sage-rc1,auto,import in 01_download-data/qm/download-hessian-data.py
+lilyminium/compare-cresset-torsions,https://github.com/lilyminium/compare-cresset-torsions,auto,import in valence-fits/02_curate-data/combine-td-datasets.py
+lilyminium/fit-virtual-sites,https://github.com/lilyminium/fit-virtual-sites,auto,import in 01_curate-data/01_esps/download-esp-records.py
+lilyminium/openff-strike-team,https://github.com/lilyminium/openff-strike-team,auto,import in torsions/datasets/qm/convert-td-to-dataset.py
+lilyminium/profile-qc-data,https://github.com/lilyminium/profile-qc-data,auto,import in scripts/convert-optimization-to-yammbs-unsafe.py
+lilyminium/protein-ff-fits,https://github.com/lilyminium/protein-ff-fits,auto,import in approach-03/03-fits/4-create-forcebalance-inputs.py
+lilyminium/qca-datasets-report,https://github.com/lilyminium/qca-datasets-report,auto,import in scripts/download-single-dataset.py
+lilyminium/sage-2.2.0-looser-msm,https://github.com/lilyminium/sage-2.2.0-looser-msm,auto,import in 01_generate-forcefield/test_fused_rings.ipynb (notebook)
+lilyminium/sage-2.2.2-looser-msm,https://github.com/lilyminium/sage-2.2.2-looser-msm,auto,import in 01_generate-forcefield/test_fused_rings.ipynb (notebook)
+lilyminium/sage-2.3.0-nagl,https://github.com/lilyminium/sage-2.3.0-nagl,auto,import in 03_fit-valence/02_curate-data/download-qcdata-tables.py
+lilyminium/scrapbook-projects,https://github.com/lilyminium/scrapbook-projects,auto,import in restrained-torsion-relaxations/rmsd.py
+lilyminium/valence-fitting,https://github.com/lilyminium/valence-fitting,auto,import in 02_curate-data/curate-dataset.py
+MobleyLab/fitting-exp,https://github.com/MobleyLab/fitting-exp,auto,import in benchmark-data/01-setup.py
+MolecularAI/maize-contrib,https://github.com/MolecularAI/maize-contrib,auto,import in maize/steps/mai/md/ofe.py
+ntBre/benchmarking,https://github.com/ntBre/benchmarking,auto,import in cache_dataset.py
+ntBre/chembl-search,https://github.com/ntBre/chembl-search,auto,import in python/check_coverage.py
+ntBre/coprelos,https://github.com/ntBre/coprelos,auto,import in python/download_opt.py
+ntBre/cura,https://github.com/ntBre/cura,auto,import in work/inchis.py
+ntBre/fast-filter,https://github.com/ntBre/fast-filter,auto,import in scripts/filter_td.py
+ntBre/fench,https://github.com/ntBre/fench,auto,import in python/bench.py
+ntBre/garage-door,https://github.com/ntBre/garage-door,auto,import in python/industry.py
+ntBre/lipoma,https://github.com/ntBre/lipoma,auto,import in cluster.py
+ntBre/openff-benchmarks,https://github.com/ntBre/openff-benchmarks,auto,import in datasets/cache_dataset.py
+ntBre/openff-toolkit,https://github.com/ntBre/openff-toolkit,auto,import in python/opt-records.py
+ntBre/vflib,https://github.com/ntBre/vflib,auto,import in bin/create_fb_inputs.py
+omsf/joint-demo,https://github.com/omsf/joint-demo,auto,openff-qcsubmit in source/openff/environment.yml
+omsf/OpenPharmMDFlow,https://github.com/omsf/OpenPharmMDFlow,auto,import in examples/small_molecules/bespoke-fit/bespokefit.ipynb (notebook)
+OpenDrugDiscovery/openQMComputations,https://github.com/OpenDrugDiscovery/openQMComputations,auto,import in opendata/collections/peptides.py
+openforcefield/2023-workshop-vignettes,https://github.com/openforcefield/2023-workshop-vignettes,auto,import in G-retrieve-qcarchive-torsiondrive.ipynb (notebook)
+openforcefield/2026-virtual-workshops,https://github.com/openforcefield/2026-virtual-workshops,auto,openff-qcsubmit in pixi.toml
+openforcefield/anything-goes,https://github.com/openforcefield/anything-goes,auto,import in besmarts-fit/data/curate-and-convert-training-data-hessians.ipynb (notebook)
+openforcefield/ash-sage-rc2,https://github.com/openforcefield/ash-sage-rc2,auto,import in 01_download-data/qm/download-hessian-data.py
+openforcefield/back-to-school-ashley,https://github.com/openforcefield/back-to-school-ashley,auto,openff-qcsubmit in pixi.toml
+openforcefield/back-to-school-jen,https://github.com/openforcefield/back-to-school-jen,auto,import in 7_benchmarking/benchmarking.py
+openforcefield/besmarts-smee-refit,https://github.com/openforcefield/besmarts-smee-refit,auto,import in data/curate-and-convert-training-data.ipynb (notebook)
+openforcefield/openff-benchmark,https://github.com/openforcefield/openff-benchmark,auto,import in openff/benchmark/geometry_optimizations/compute.py
+openforcefield/openff-bespokefit,https://github.com/openforcefield/openff-bespokefit,auto,import in openff/bespokefit/_tests/cli/test_cache.py
+openforcefield/openff-docs,https://github.com/openforcefield/openff-docs,auto,import in source/workshops/2024/vignettes/colab-vignettes.ipynb (notebook)
+openforcefield/openff-nagl,https://github.com/openforcefield/openff-nagl,auto,import in examples/train-gnn-to-electric-field/train-gnn-to-electric-field.ipynb (notebook)
+openforcefield/openff-qcsubmit,https://github.com/openforcefield/openff-qcsubmit,auto,import in docs/conf.py
+openforcefield/openff-sage,https://github.com/openforcefield/openff-sage,auto,import in data-set-curation/quantum-chemical/curate-1-2-0-opt-hess-set-v2.py
+openforcefield/openff-sphinx-theme,https://github.com/openforcefield/openff-sphinx-theme,auto,openff-qcsubmit in docs/environment.yml
+openforcefield/protein-param-fit,https://github.com/openforcefield/protein-param-fit,auto,import in 1-curate-training-datasets.py
+openforcefield/qca-dataset-submission,https://github.com/openforcefield/qca-dataset-submission,auto,openff-qcsubmit in submissions/2025-06-24-OpenFF-Industry-Benchmark-Season-1-v1.2/environment.yml
+openforcefield/qca-dataset-submission-next-test,https://github.com/openforcefield/qca-dataset-submission-next-test,auto,import in examples/OptimizationDataset/generate-dataset.ipynb (notebook)
+openforcefield/rdkit_ugm_2024_demo,https://github.com/openforcefield/rdkit_ugm_2024_demo,auto,openff-qcsubmit in environment.yml
+openforcefield/rdkit_ugm_2025_demo,https://github.com/openforcefield/rdkit_ugm_2025_demo,auto,openff-qcsubmit in environment.yml
+openforcefield/sage-2.1.0,https://github.com/openforcefield/sage-2.1.0,auto,import in inputs-and-outputs/2.1.0-create-fb-inputs.py
+openforcefield/sage-2.2.0,https://github.com/openforcefield/sage-2.2.0,auto,import in 01_generate-forcefield/test_fused_rings.ipynb (notebook)
+openforcefield/sage-2.2.1,https://github.com/openforcefield/sage-2.2.1,auto,import in 01_generate-forcefield/test_fused_rings.ipynb (notebook)
+openforcefield/sage-2.3.0,https://github.com/openforcefield/sage-2.3.0,auto,import in sage-2.2.1-sdata/02_curate-data/curate-dataset.py
+openforcefield/symposium_2024_demo,https://github.com/openforcefield/symposium_2024_demo,auto,openff-qcsubmit in environment.yml
+openforcefield/yammbs,https://github.com/openforcefield/yammbs,auto,openff-qcsubmit in pixi.toml
+openforcefield/yammbs-dataset-submission,https://github.com/openforcefield/yammbs-dataset-submission,auto,import in datasets/OpenFF-Industry-Benchmark-Season-1-v1.1/new_dataset.py
+pavankum/mlip_optimizer,https://github.com/pavankum/mlip_optimizer,auto,openff-qcsubmit in pyproject.toml
+QuaidAlchemy/quaid,https://github.com/QuaidAlchemy/quaid,auto,import in quaid/cli/bespoke.py
+SimonBoothroyd/gnn-charge-models,https://github.com/SimonBoothroyd/gnn-charge-models,auto,import in train-ff-terms/virtual-sites/generate-train-valence-inputs.py
+Yoshanuikabundi/openff-binder,https://github.com/Yoshanuikabundi/openff-binder,auto,openff-qcsubmit in environment.yml
+lilyminium/evaluator-equilibration,https://github.com/lilyminium/evaluator-equilibration,exclude,no dependency or import evidence
+openforcefield/openff-nagl-models,https://github.com/openforcefield/openff-nagl-models,exclude,no dependency or import evidence
+openforcefield/openff-pablo,https://github.com/openforcefield/openff-pablo,exclude,no dependency or import evidence
+openforcefield/openff-units,https://github.com/openforcefield/openff-units,exclude,no dependency or import evidence
+Yoshanuikabundi/openff-pdbscan,https://github.com/Yoshanuikabundi/openff-pdbscan,exclude,no dependency or import evidence

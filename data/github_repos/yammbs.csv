@@ -1,0 +1,36 @@
+repo,url,status,notes
+amcisaac/geom_dash,https://github.com/amcisaac/geom_dash,auto,import in calculate_params.py
+cole-group/presto-benchmarking,https://github.com/cole-group/presto-benchmarking,auto,yammbs in pyproject.toml
+fjclark/descent-workflow,https://github.com/fjclark/descent-workflow,auto,yammbs in pyproject.toml
+jaclark5/industry_benchmark_v1.2_chemical_space,https://github.com/jaclark5/industry_benchmark_v1.2_chemical_space,auto,import in 1b_Checkmol/fg_assess_utilities.py
+jthorton/htf-tinker,https://github.com/jthorton/htf-tinker,auto,import in minimisation_workflow/minimise_workflow.py
+lilyminium/additional-2.3.0rc2-analysis,https://github.com/lilyminium/additional-2.3.0rc2-analysis,auto,import in qm/get-all-to-all-rmsds-and-tfds.py
+lilyminium/ash-sage-rc1,https://github.com/lilyminium/ash-sage-rc1,auto,import in 04_benchmark/qm/get-all-to-all-rmsd.py
+lilyminium/compare-cresset-torsions,https://github.com/lilyminium/compare-cresset-torsions,auto,import in valence-fits/02_curate-data/split-cresset-set.ipynb (notebook)
+lilyminium/fragment-chembl-data,https://github.com/lilyminium/fragment-chembl-data,auto,import in 03_profile/do_profile.py
+lilyminium/profile-qc-data,https://github.com/lilyminium/profile-qc-data,auto,import in download.ipynb (notebook)
+lilyminium/protein-alpha-workbook,https://github.com/lilyminium/protein-alpha-workbook,auto,import in benchmarks/split-hardware-ff/benchmark-yammbs.py
+lilyminium/sage-2.2.0-looser-msm,https://github.com/lilyminium/sage-2.2.0-looser-msm,auto,import in 02_curate-data/examine-training-data.py
+lilyminium/sage-2.2.2-looser-msm,https://github.com/lilyminium/sage-2.2.2-looser-msm,auto,import in 02_curate-data/examine-training-data.py
+lilyminium/sage-2.3.0-nagl,https://github.com/lilyminium/sage-2.3.0-nagl,auto,import in 03_fit-valence/02_curate-data/label-valence-with-forcefield.py
+lilyminium/scrapbook-projects,https://github.com/lilyminium/scrapbook-projects,auto,import in restrained-torsion-relaxations/rmsd.py
+ntBre/benchmarking,https://github.com/ntBre/benchmarking,auto,import in cache_dataset.py
+ntBre/openff-benchmarks,https://github.com/ntBre/openff-benchmarks,auto,import in datasets/cache_dataset.py
+openforcefield/2026-virtual-workshops,https://github.com/openforcefield/2026-virtual-workshops,auto,yammbs in pixi.toml
+openforcefield/ash-sage-rc2,https://github.com/openforcefield/ash-sage-rc2,auto,import in 01_download-data/physprop/final/profile-dataset.py
+openforcefield/back-to-school-jen,https://github.com/openforcefield/back-to-school-jen,auto,import in 7_benchmarking/benchmarking.py
+openforcefield/diverse-dataset-discovery,https://github.com/openforcefield/diverse-dataset-discovery,auto,import in discoset/generate_new_patterns.py
+openforcefield/sage-2.2.0,https://github.com/openforcefield/sage-2.2.0,auto,import in 05_benchmark_forcefield/benchmark.py
+openforcefield/sage-2.2.1,https://github.com/openforcefield/sage-2.2.1,auto,import in 05_benchmark_forcefield/calculate-mm-vs-qm.py
+openforcefield/sage-2.3.0,https://github.com/openforcefield/sage-2.3.0,auto,import in sage-2.2.1-sdata/05_benchmark-forcefield/benchmark.py
+openforcefield/yammbs,https://github.com/openforcefield/yammbs,auto,yammbs in pixi.toml
+openforcefield/yammbs-dataset-submission,https://github.com/openforcefield/yammbs-dataset-submission,auto,import in datasets/OpenFF-Industry-Benchmark-Season-1-v1.1/new_dataset.py
+OpenFreeEnergy/openfe-benchmarks,https://github.com/OpenFreeEnergy/openfe-benchmarks,auto,import in openfe_benchmarks/data/data_generation/define_freesolv_mnsol_openff_subsets.py
+pavankum/mlip_optimizer,https://github.com/pavankum/mlip_optimizer,auto,yammbs in pyproject.toml
+blopax3/wind_turbine_anomaly_detection,https://github.com/blopax3/wind_turbine_anomaly_detection,exclude,no dependency or import evidence
+dhruvbhagtani/toy-model,https://github.com/dhruvbhagtani/toy-model,exclude,no dependency or import evidence
+iakobin/TreeTect,https://github.com/iakobin/TreeTect,exclude,no dependency or import evidence
+lilyminium/refit-t17-t18-torsions,https://github.com/lilyminium/refit-t17-t18-torsions,exclude,no dependency or import evidence
+materialsinnovation/pymks,https://github.com/materialsinnovation/pymks,exclude,no dependency or import evidence
+openforcefield/anything-goes,https://github.com/openforcefield/anything-goes,exclude,no dependency or import evidence
+rohitashwachaks/MIS-382N-Adv.-Machine-Learning,https://github.com/rohitashwachaks/MIS-382N-Adv.-Machine-Learning,exclude,no dependency or import evidence

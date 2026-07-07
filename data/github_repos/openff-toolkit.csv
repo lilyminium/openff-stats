@@ -1,0 +1,686 @@
+repo,url,status,notes
+0ut0fcontrol/test_openff,https://github.com/0ut0fcontrol/test_openff,auto,import in example1_triazine/test_triazine.ipynb (notebook)
+aai-research-lab/FastMDSimulation,https://github.com/aai-research-lab/FastMDSimulation,auto,openff-toolkit in environment.yml
+aai-research-lab/FastMDXplora,https://github.com/aai-research-lab/FastMDXplora,auto,openff-toolkit in pyproject.toml
+AaronXu9/PoseBench,https://github.com/AaronXu9/PoseBench,auto,import in cogligandbench/models/minimize_energy.py
+Aaryan-Patel2/KinetiDiff,https://github.com/Aaryan-Patel2/KinetiDiff,auto,import in scripts/md/smoke_test.py
+abdulahadabro/Computer-aided-drug-discovery-Kit,https://github.com/abdulahadabro/Computer-aided-drug-discovery-Kit,auto,import in 19_molecular_dynamics.ipynb (notebook)
+Acellera/aceff_examples,https://github.com/Acellera/aceff_examples,auto,import in notebooks/aceff_openmm_md_example.ipynb (notebook)
+Acellera/htmd,https://github.com/Acellera/htmd,auto,import in htmd/builder/nonstandard.py
+Acellera/moleculekit,https://github.com/Acellera/moleculekit,auto,import in moleculekit/molecule.py
+ACoraor/OpenMM-Tools,https://github.com/ACoraor/OpenMM-Tools,auto,import in interchange.py
+adamlaho/AMLP,https://github.com/adamlaho/AMLP,auto,import in amlpa.py
+Adi0521/ProPredict,https://github.com/Adi0521/ProPredict,auto,import in orchestrator/ligands.py
+AIB001/PRISM,https://github.com/AIB001/PRISM,auto,openff-toolkit in requirements.txt
+aiscihub/valleyfeverresearch,https://github.com/aiscihub/valleyfeverresearch,auto,import in pipeline/md/run_openmm_md.py
+ajfriedman22/PTP1B,https://github.com/ajfriedman22/PTP1B,auto,import in ligand_parameter/OpenFF_AD_pdb.py
+ajfriedman22/SM_ConfGen,https://github.com/ajfriedman22/SM_ConfGen,auto,openff-toolkit in setup.py
+ale94mleon/BindFlow,https://github.com/ale94mleon/BindFlow,auto,openff-toolkit in docs/source/env/relaxed/environment.yml
+ale94mleon/TOFF,https://github.com/ale94mleon/TOFF,auto,openff-toolkit in .binder/environment.yml
+alex-hh/in-silico-pgdh,https://github.com/alex-hh/in-silico-pgdh,auto,import in resources/biomodals/MD_protein_ligand/simulate.py
+Alexey-Lukin/silken_net,https://github.com/Alexey-Lukin/silken_net,auto,openff-toolkit in tools/in_silico/environment.yml
+alexisiddiqui/JAX-ENT,https://github.com/alexisiddiqui/JAX-ENT,auto,import in jaxent/examples/5_SAXS/ensemble_generation/neuralplexer/CaM_neuralplexer_scripts/minimise_complexes.py
+amcisaac/geom_dash,https://github.com/amcisaac/geom_dash,auto,import in calculate_params.py
+Ameki0/ResFF,https://github.com/Ameki0/ResFF,auto,openff-toolkit in scripts/openmm-interface/environment.yml
+amritashah/COBB-2035-Modern-Methods-in-Structure-Based-Drug-Discovery,https://github.com/amritashah/COBB-2035-Modern-Methods-in-Structure-Based-Drug-Discovery,auto,import in project 5/simulate.py
+amruthaB-Git/Teach-Open-Cadd_PAK1,https://github.com/amruthaB-Git/Teach-Open-Cadd_PAK1,auto,import in teachopencadd/talktorials/T019_md_simulation/talktorial.ipynb (notebook)
+amulyagarimella/fast-sequencing-AI-imputation,https://github.com/amulyagarimella/fast-sequencing-AI-imputation,auto,openff-toolkit in reqs/requirements.txt
+anandojha/qmmmrebind,https://github.com/anandojha/qmmmrebind,auto,import in qmmmrebind/modules/file_modify.py
+anandsahuofficial/tbxt-hit-id,https://github.com/anandsahuofficial/tbxt-hit-id,auto,openff-toolkit in environment.yml
+anandsahuofficial/tbxt-hit-id-dev,https://github.com/anandsahuofficial/tbxt-hit-id-dev,auto,import in TBXT/scripts/run_mmgbsa.py
+andrewtarzia/topology_scrambler,https://github.com/andrewtarzia/topology_scrambler,auto,openff-toolkit in environment.yml
+ani11452/Align_Your_Structures,https://github.com/ani11452/Align_Your_Structures,auto,openff-toolkit in environment.yml
+Animosius/computational-science,https://github.com/Animosius/computational-science,auto,import in fundamentals/openmm/openmm_zero_to_hero.ipynb (notebook)
+arazthexd/molsberry,https://github.com/arazthexd/molsberry,auto,import in molsberry/modules/openmm/representations.py
+architvasan/DrugScreeningPipeline,https://github.com/architvasan/DrugScreeningPipeline,auto,import in Equil/simulate_mpi.py
+architvasan/OpenMM_Tests_Sunspot,https://github.com/architvasan/OpenMM_Tests_Sunspot,auto,import in ProteinLigEquil/simulation_funcs.py
+architvasan/OpenMM_Workflow,https://github.com/architvasan/OpenMM_Workflow,auto,import in RTCB_Test/simulate_mpi_node1.py
+architvasan/PeptideDesign_OMM,https://github.com/architvasan/PeptideDesign_OMM,auto,import in src/simulate/equilibrate.py
+architvasan/ProteinLigandMPI,https://github.com/architvasan/ProteinLigandMPI,auto,import in src/simulate/equilibrate.py
+architvasan/smallmolec_campaign,https://github.com/architvasan/smallmolec_campaign,auto,openff-toolkit in smallmolec_campaign/training/wandb/run-20250422_151610-4sir3njo/files/requirements.txt
+ArioMoniri/aminak,https://github.com/ArioMoniri/aminak,auto,import in scripts/v14/openmm_mmgbsa.py
+asapdiscovery/asapdiscovery,https://github.com/asapdiscovery/asapdiscovery,auto,import in asapdiscovery-alchemy/asapdiscovery/alchemy/cli/utils.py
+atomCAD/atomCAD,https://github.com/atomCAD/atomCAD,auto,import in python/simulation.py
+axsk/ISOKANN.jl,https://github.com/axsk/ISOKANN.jl,auto,import in scripts/center_of_mass.py
+azizsimx/Python-hub-crypto,https://github.com/azizsimx/Python-hub-crypto,auto,import in Protein_ligand.ipynb (notebook)
+babaid/nix-openmm-reaxff-env,https://github.com/babaid/nix-openmm-reaxff-env,auto,import in utils/solvation.py
+BalytskyiJaroslaw/RAPID-Net,https://github.com/BalytskyiJaroslaw/RAPID-Net,auto,import in training_pipeline/Training_Pockets_Data_Preprocessing.ipynb (notebook)
+barmoral/blanca-evaluator-cluster,https://github.com/barmoral/blanca-evaluator-cluster,auto,import in evaluator-water/hmix_density/GOPAL/hmix_dens_calc.py
+barmoral/evaluator-blanca,https://github.com/barmoral/evaluator-blanca,auto,import in evaluator_water_calcs/SFE/BM_sfes.ipynb (notebook)
+barmoral/evaluator-SFEs,https://github.com/barmoral/evaluator-SFEs,auto,import in test_opc/sfe_npsamples.py
+barmoral/evaluator-ThermoML,https://github.com/barmoral/evaluator-ThermoML,auto,import in NIST_data/filter_dois.ipynb (notebook)
+barmoral/HW_openMM,https://github.com/barmoral/HW_openMM,auto,import in HW_MD.ipynb (notebook)
+barmoral/OpenMM_SPW,https://github.com/barmoral/OpenMM_SPW,auto,import in SPW_MD.ipynb (notebook)
+barmoral/osmotic_calculations,https://github.com/barmoral/osmotic_calculations,auto,import in osmotic_sim_dispatch.py
+BastiaanvHoorn/Fenix,https://github.com/BastiaanvHoorn/Fenix,auto,import in EVB/system_builder.py
+bayer-science-for-a-better-life/abfe-benchmark,https://github.com/bayer-science-for-a-better-life/abfe-benchmark,auto,import in burn_in_parameter_generation.ipynb (notebook)
+BeBerasategi/Transformazio-alkimikoak,https://github.com/BeBerasategi/Transformazio-alkimikoak,auto,import in Molekulen_irudiak_VMD/simulazio_kutxak/Simulazio_kutxa.ipynb (notebook)
+ben-shor/DockFormer,https://github.com/ben-shor/DockFormer,auto,import in dockformer/utils/relax.py
+BenCree/mace_off_types,https://github.com/BenCree/mace_off_types,auto,import in get_vdw.ipynb (notebook)
+BenCree/nagl_torsion,https://github.com/BenCree/nagl_torsion,auto,import in generate_dataset.py
+BenCree/Protein-ligand-openmm-workflow,https://github.com/BenCree/Protein-ligand-openmm-workflow,auto,import in protein-ligand-openmm-1.2.ipynb (notebook)
+benjfdup/pyclops,https://github.com/benjfdup/pyclops,auto,import in pyclops/losses/kdes/_records/_md.py
+BevisD/DiffDock-Pocket,https://github.com/BevisD/DiffDock-Pocket,auto,openff-toolkit in environment.yml
+bharath-raghavan/alchemist-nn,https://github.com/bharath-raghavan/alchemist-nn,auto,import in alchemist/data/lig.py
+bigginlab/ABFE_workflow,https://github.com/bigginlab/ABFE_workflow,auto,openff-toolkit in environment.yml
+biochemi/J_books,https://github.com/biochemi/J_books,auto,import in Copy_of_Protein_ligand.ipynb (notebook)
+BioinfoMachineLearning/MULTICOM_ligand,https://github.com/BioinfoMachineLearning/MULTICOM_ligand,auto,import in multicom_ligand/models/minimize_energy.py
+BioinfoMachineLearning/PoseBench,https://github.com/BioinfoMachineLearning/PoseBench,auto,import in forks/DynamicBind/utils/relax.py
+BioMedAI-UCSC/openmm_generate,https://github.com/BioMedAI-UCSC/openmm_generate,auto,import in scripts/module/ligands.py
+BioMolDynamics/DeepPurpose-MD-Discovery,https://github.com/BioMolDynamics/DeepPurpose-MD-Discovery,auto,openff-toolkit in environment.yml
+bismuthadams1/ActiveLearningSandbox,https://github.com/bismuthadams1/ActiveLearningSandbox,auto,import in activelearner/run_calculations/prepare_xtb_reorg_dataset.py
+bismuthadams1/advanced_esp_vis,https://github.com/bismuthadams1/advanced_esp_vis,auto,import in construction_of_grid.py
+bismuthadams1/charge_paper,https://github.com/bismuthadams1/charge_paper,auto,import in benchmark_wf_analysis/make_esp_db/produce_db.py
+bismuthadams1/ChargeAPI,https://github.com/bismuthadams1/ChargeAPI,auto,import in ChargeAPI/charge_models/base_class.py
+bismuthadams1/ChargeCraft,https://github.com/bismuthadams1/ChargeCraft,auto,import in chargecraft/conformers/conformer_gen.py
+bl1231/bilbomd,https://github.com/bl1231/bilbomd,auto,import in apps/worker/scripts/openmm/utils/model_prep.py
+BlacksheepJane/SurfMaker,https://github.com/BlacksheepJane/SurfMaker,auto,import in surfdock/force_optimize/minimize_utils.py
+blaso00/OpenFFGen,https://github.com/blaso00/OpenFFGen,auto,openff-toolkit in environment.yml
+Boehringer-Ingelheim/TorsionProfiler,https://github.com/Boehringer-Ingelheim/TorsionProfiler,auto,openff-toolkit in environment.yml
+BurgerAndreas/Hessians-LoT,https://github.com/BurgerAndreas/Hessians-LoT,auto,import in bytemol/core/rkutil/match_and_map.py
+ByteDance-Seed/THEMol,https://github.com/ByteDance-Seed/THEMol,auto,import in bytemol/core/rkutil/match_and_map.py
+bytedance/byteff,https://github.com/bytedance/byteff,auto,import in byteff/mol/rkutil/match_and_map.py
+ByteTora/teachopencadd-zh,https://github.com/ByteTora/teachopencadd-zh,auto,import in teachopencadd/教程/T019_分子动力学模拟/talktorial_zh.ipynb (notebook)
+cadenroberts/nersc-distributed-molecular-simulation,https://github.com/cadenroberts/nersc-distributed-molecular-simulation,auto,import in westpa_template/openmm_explicit_rmsd_p_ca_propagator.py
+cap-jmk-real/openmm-mixtures,https://github.com/cap-jmk-real/openmm-mixtures,auto,import in notebooks/simulate_a_coll_in_a_single_mol_repacked_sim.ipynb (notebook)
+carltonbiotec/Autodock_Results_sorter,https://github.com/carltonbiotec/Autodock_Results_sorter,auto,import in Protein+Membranes.ipynb (notebook)
+carlzimmerman/zimmerman-formula,https://github.com/carlzimmerman/zimmerman-formula,auto,import in ai_slop/extended_research/biotech/medicine/validated_pipeline/val_10_cyclic_topology_patcher.py
+CataAI/PoseX,https://github.com/CataAI/PoseX,auto,import in dataset/utils/mol_correct_helper.py
+CCBatIIT/Bridgeport,https://github.com/CCBatIIT/Bridgeport,auto,import in ForceFields/ForceFieldHandler.py
+CCPBioSim/biosim-analysis-workshop,https://github.com/CCPBioSim/biosim-analysis-workshop,auto,import in 4_Simulation_Setup/4_Simulation_Setup.ipynb (notebook)
+CCPBioSim/CCP5_Simulation_of_BioMolecules,https://github.com/CCPBioSim/CCP5_Simulation_of_BioMolecules,auto,import in 4_Simulation_Setup/4_Simulation_Setup.ipynb (notebook)
+chdominguez/easymd-horus,https://github.com/chdominguez/easymd-horus,auto,openff-toolkit in environment.yml
+ChenchenWang-AIDD/mlmm-gbsa,https://github.com/ChenchenWang-AIDD/mlmm-gbsa,auto,import in gbsa.py
+ChenSTeam/Computational_docker_protocol,https://github.com/ChenSTeam/Computational_docker_protocol,auto,import in md_mmpbsa/build/scripts/process.ipynb (notebook)
+chinge55/openmm_blog,https://github.com/chinge55/openmm_blog,auto,import in simulation/main.py
+chiyanglin-AStar/science_coding,https://github.com/chiyanglin-AStar/science_coding,auto,import in md_simulation_talktorial.ipynb (notebook)
+choderalab/charge-datasets,https://github.com/choderalab/charge-datasets,auto,openff-toolkit in datasets/spice/environment.yml
+choderalab/create-rna-nucleoside-dataset,https://github.com/choderalab/create-rna-nucleoside-dataset,auto,import in md/script/openmm_implicit.py
+choderalab/drugforge,https://github.com/choderalab/drugforge,auto,import in drugforge-alchemy/drugforge/alchemy/cli/utils.py
+choderalab/espaloma,https://github.com/choderalab/espaloma,auto,import in espaloma/__init__.py
+choderalab/espaloma-charge,https://github.com/choderalab/espaloma-charge,auto,openff-toolkit in environment.yml
+choderalab/espalomax,https://github.com/choderalab/espalomax,auto,import in espalomax/graph.py
+choderalab/espfit,https://github.com/choderalab/espfit,auto,import in espfit/app/sampler.py
+choderalab/espfit-experiment,https://github.com/choderalab/espfit-experiment,auto,import in experiments/spice-default/data/hdf5/hdf2graph.py
+choderalab/fah-xchem,https://github.com/choderalab/fah-xchem,auto,import in fah_xchem/prepare/dynamics.py
+choderalab/fah_prep,https://github.com/choderalab/fah_prep,auto,import in prepare/dynamics.py
+choderalab/geometry-benchmark-espaloma,https://github.com/choderalab/geometry-benchmark-espaloma,auto,import in qc-opt-geo/espaloma-0.3.0rc1-pavan/01a-download.py
+choderalab/pale,https://github.com/choderalab/pale,auto,import in playground/boltz-example-yamls/boltz_yaml.py
+choderalab/perses,https://github.com/choderalab/perses,auto,import in examples/moonshot-mainseries/01-simulate-receptors.py
+choderalab/pl-benchmark-espaloma-experiment,https://github.com/choderalab/pl-benchmark-espaloma-experiment,auto,import in experiment/script/benchmark_analysis.py
+choderalab/refit-espaloma,https://github.com/choderalab/refit-espaloma,auto,import in openff-default/02-train/baseline/baseline_rmse.py
+choderalab/rna-espaloma,https://github.com/choderalab/rna-espaloma,auto,import in experiment/minimize-vacuum/script/create_model.py
+choderalab/vanilla-espaloma-experiment,https://github.com/choderalab/vanilla-espaloma-experiment,auto,import in experiment/script/create_system.py
+cjacquemard/AutoAtomNN,https://github.com/cjacquemard/AutoAtomNN,auto,import in bin/common.py
+cmelab/forcefields,https://github.com/cmelab/forcefields,auto,import in functions/Espaloma_Functions.py
+cmelab/pl-validation,https://github.com/cmelab/pl-validation,auto,import in functions/Espaloma_Functions.py
+colbyford/Influenza_A_2.3.4.4b_Analyses,https://github.com/colbyford/Influenza_A_2.3.4.4b_Analyses,auto,import in Experiments/Scripts/AF3/run_openmm.ipynb (notebook)
+cole-group/coding-retreat2022,https://github.com/cole-group/coding-retreat2022,auto,import in examples/mace_qcengine.ipynb (notebook)
+cole-group/FEgrow,https://github.com/cole-group/FEgrow,auto,openff-toolkit in environment.yml
+cole-group/presto-benchmarking,https://github.com/cole-group/presto-benchmarking,auto,openff-toolkit in pyproject.toml
+cole-group/QUBE-SOMD-paper,https://github.com/cole-group/QUBE-SOMD-paper,auto,import in HFE/scripts/convert.py
+compsciencelab/ATM_benchmark,https://github.com/compsciencelab/ATM_benchmark,auto,import in ATM_Validation/MCL-1/ligands/ligands_pmx/test_openff.py
+conda-forge/de-forcefields-feedstock,https://github.com/conda-forge/de-forcefields-feedstock,auto,import in recipe/test_load.py
+conda-forge/descent-feedstock,https://github.com/conda-forge/descent-feedstock,auto,import in recipe/test_basic_train.py
+conda-forge/openff-amber-ff-ports-feedstock,https://github.com/conda-forge/openff-amber-ff-ports-feedstock,auto,import in recipe/test_loadable.py
+conda-forge/openff-forcefields-feedstock,https://github.com/conda-forge/openff-forcefields-feedstock,auto,import in recipe/test.py
+conda-forge/openff-fragmenter-feedstock,https://github.com/conda-forge/openff-fragmenter-feedstock,auto,import in recipe/test_fragmenter.py
+conda-forge/openff-interchange-feedstock,https://github.com/conda-forge/openff-interchange-feedstock,auto,import in recipe/test_stack_imports.py
+conda-forge/openff-nagl-feedstock,https://github.com/conda-forge/openff-nagl-feedstock,auto,import in recipe/test_nagl.py
+conda-forge/openff-packmol-feedstock,https://github.com/conda-forge/openff-packmol-feedstock,auto,import in recipe/test_pack.py
+conda-forge/openff-toolkit-feedstock,https://github.com/conda-forge/openff-toolkit-feedstock,auto,import in recipe/test_openff_toolkit.py
+conda-forge/openmmforcefields-feedstock,https://github.com/conda-forge/openmmforcefields-feedstock,auto,import in recipe/test_generators.py
+connordavel/3d_equivalence_testing_final,https://github.com/connordavel/3d_equivalence_testing_final,auto,import in 3d_equivalence_testing_final/3d_equivalence_testing_final.ipynb (notebook)
+connordavel/ambertools_am1_investigations,https://github.com/connordavel/ambertools_am1_investigations,auto,import in bcc_utils.py
+connordavel/ELF_selection_tests,https://github.com/connordavel/ELF_selection_tests,auto,import in MolDatabase.py
+connordavel/Minimum-Polymer-Tests,https://github.com/connordavel/Minimum-Polymer-Tests,auto,import in polymer_implementation_tests.py
+connordavel/openff_polymer_testing,https://github.com/connordavel/openff_polymer_testing,auto,import in create_smarts_substructure.py
+coreytaylorcompchem/the_kitbag,https://github.com/coreytaylorcompchem/the_kitbag,auto,openff-toolkit in pipelines/docking/environment.yml
+crazat/genesis_medicine,https://github.com/crazat/genesis_medicine,auto,openff-toolkit in pyproject.toml
+crystal668-hub/answer-like-a-chemist,https://github.com/crystal668-hub/answer-like-a-chemist,auto,import in skills/open-forcefield-toolkit/scripts/parameterize_molecule.py
+czodrowskilab/5minfame,https://github.com/czodrowskilab/5minfame,auto,import in 2022_02_18-Goetz-OpenMM_PyMol.ipynb (notebook)
+czwiessler/sq-llm-docstring-gen-kt,https://github.com/czwiessler/sq-llm-docstring-gen-kt,auto,import in downloaded_files/Acellera/molecule.py
+dancinlab/demiurge,https://github.com/dancinlab/demiurge,auto,import in exports/CMT/abfe_cmt.py
+DanYev/SMartini,https://github.com/DanYev/SMartini,auto,openff-toolkit in environment.yml
+darvincode/Thesis_Files,https://github.com/darvincode/Thesis_Files,auto,import in Analysis_Scripts/Energy_Scan/convertfiletxt_mol.ipynb (notebook)
+David-Araripe/qligfepv2-BenchmarkExperiments,https://github.com/David-Araripe/qligfepv2-BenchmarkExperiments,auto,import in startFiles/restraint_check.ipynb (notebook)
+DavidDevoogdt/IMLCV,https://github.com/DavidDevoogdt/IMLCV,auto,import in src/IMLCV/data/main.py
+davide-grheco/gbsa-pipeline,https://github.com/davide-grheco/gbsa-pipeline,auto,import in src/gbsa_pipeline/parametrize_openmm.py
+deepprinciple/lmp-work,https://github.com/deepprinciple/lmp-work,auto,import in forcefields/openff.py
+deepsatflow/PDC,https://github.com/deepsatflow/PDC,auto,import in biomodals/MD_protein_ligand/simulate.py
+degrado-lab/easyMD,https://github.com/degrado-lab/easyMD,auto,openff-toolkit in environment.yml
+degrado-lab/ligand-vdGs,https://github.com/degrado-lab/ligand-vdGs,auto,import in ligand_vdgs/functions/graph_utils.py
+degrado-lab/Ribbon-Containers,https://github.com/degrado-lab/Ribbon-Containers,auto,openff-toolkit in containers/easyMD/3.1.0/environment.yml
+Delfictus/SOTA-Dev,https://github.com/Delfictus/SOTA-Dev,auto,import in scripts/benchmark_am1bcc_throughput.py
+DeokhyeonYoon/Practice_for_DrugDiscovery,https://github.com/DeokhyeonYoon/Practice_for_DrugDiscovery,auto,import in Chemical_similarity_search_and_Ligand_stability(vertualscreening)/tutorial_8.ipynb (notebook)
+Desperadus/StructOpt,https://github.com/Desperadus/StructOpt,auto,import in src/structopt/ligand.py
+dhakxls/ovm-pk,https://github.com/dhakxls/ovm-pk,auto,import in scripts/archive/md/md_gpu_prepare.py
+digital-synthesis-lab/autoir,https://github.com/digital-synthesis-lab/autoir,auto,openff-toolkit in pyproject.toml
+dkoes/md-scripts,https://github.com/dkoes/md-scripts,auto,import in reparm_ligand.py
+dnauminator/comp-chem,https://github.com/dnauminator/comp-chem,auto,import in .ipynb_checkpoints/rdkit_MD_test-checkpoint.ipynb (notebook)
+dominicp6/mlmd,https://github.com/dominicp6/mlmd,auto,import in OpenMMSimulation.py
+donatiluca/MoKiTo,https://github.com/donatiluca/MoKiTo,auto,import in src/openmm/simulated_tempering_module.py
+drorlab/GLOW_IVES,https://github.com/drorlab/GLOW_IVES,auto,import in glow_ives/minimizer/minimize_complex.py
+dsuvlu/enantiomers,https://github.com/dsuvlu/enantiomers,auto,import in data/2-butanol/compare_GAFF_FFs.py
+EdwardRanjo/Molecular-Dynamics,https://github.com/EdwardRanjo/Molecular-Dynamics,auto,import in run_md.py
+EinsiaLab/Frontier-Engineering,https://github.com/EinsiaLab/Frontier-Engineering,auto,openff-toolkit in benchmarks/MolecularMechanics/requirements.txt
+elvispolimi/forcefield-condensation,https://github.com/elvispolimi/forcefield-condensation,auto,openff-toolkit in environment.yml
+emdgroup/mdfactory,https://github.com/emdgroup/mdfactory,auto,openff-toolkit in pyproject.toml
+eneskelestemur/confgen,https://github.com/eneskelestemur/confgen,auto,import in confgen/forcefield.py
+eneskelestemur/MDSimulation,https://github.com/eneskelestemur/MDSimulation,auto,openff-toolkit in pyproject.toml
+EricChen521/atm,https://github.com/EricChen521/atm,auto,openff-toolkit in pyproject.toml
+Ericwang6/easybfe,https://github.com/Ericwang6/easybfe,auto,import in easybfe/docking/embed.py
+Erikna00/WhatCat,https://github.com/Erikna00/WhatCat,auto,openff-toolkit in pyproject.toml
+essex-lab/grand-lig,https://github.com/essex-lab/grand-lig,auto,import in examples/Basic_Simulation/basic_NCMC_sim_mu_openff.py
+essex-lab/grandlig-paper,https://github.com/essex-lab/grandlig-paper,auto,import in Mu_Ex_Calculation/calcMuEx.py
+evidencebp/pylint-intervention,https://github.com/evidencebp/pylint-intervention,auto,import in data/in_the_wild/versions/perses/9beb9b0602893c501381967422ec1f048ba67b8a/after/perses_slash_app_slash_fah_generator.py
+Exscientia/StableNetGuardOwl,https://github.com/Exscientia/StableNetGuardOwl,auto,import in guardowl/testsystems.py
+FasikuChristian/Christian_Data_analytics,https://github.com/FasikuChristian/Christian_Data_analytics,auto,import in Md_simulation_raw_code_openMM.ipynb (notebook)
+fbrotzakis/Molecular_Dynamics_openmm,https://github.com/fbrotzakis/Molecular_Dynamics_openmm,auto,import in .ipynb_checkpoints/Protein_ligand-checkpoint.ipynb (notebook)
+fengshikun/SliDe,https://github.com/fengshikun/SliDe,auto,import in get_force_param.py
+ferreira68/STICkit,https://github.com/ferreira68/STICkit,auto,openff-toolkit in pyproject.toml
+finlayiainmaclean/opensqm,https://github.com/finlayiainmaclean/opensqm,auto,openff-toolkit in pyproject.toml
+fjclark/contorsion,https://github.com/fjclark/contorsion,auto,openff-toolkit in pyproject.toml
+fjclark/des-lj-fitting,https://github.com/fjclark/des-lj-fitting,auto,import in workflow/mace-off-testing/get_energies_mace.py
+fjclark/descent-workflow,https://github.com/fjclark/descent-workflow,auto,openff-toolkit in pyproject.toml
+fjclark/mace-omol-interaction-energies,https://github.com/fjclark/mace-omol-interaction-energies,auto,openff-toolkit in hydration_free_energies/environment.yml
+fjclark/openff-smarts-matching-example,https://github.com/fjclark/openff-smarts-matching-example,auto,import in example.ipynb (notebook)
+FoldingAtHome/covid-moonshot,https://github.com/FoldingAtHome/covid-moonshot,auto,openff-toolkit in synthetic-enumeration/sprint-12/environment.yml
+forlilab/cosolvkit,https://github.com/forlilab/cosolvkit,auto,openff-toolkit in environment.yml
+forlilab/Meeko,https://github.com/forlilab/Meeko,auto,import in meeko/espalomatyper.py
+forlilab/molscrub,https://github.com/forlilab/molscrub,auto,import in molscrub/openff_toolkit.py
+fourmodern/toc_tutorial_colab,https://github.com/fourmodern/toc_tutorial_colab,auto,import in teachopencadd/t019_talktorial.ipynb (notebook)
+francescopatane96/Computer_aided_drug_discovery_kit,https://github.com/francescopatane96/Computer_aided_drug_discovery_kit,auto,import in 19_molecular_dynamics.ipynb (notebook)
+FrankLovelace/BraggSpect,https://github.com/FrankLovelace/BraggSpect,auto,import in Py/venv/Lib/site-packages/pymatgen/io/openff.py
+frgoe003/cheminformer,https://github.com/frgoe003/cheminformer,auto,import in benchmark/benchmark_common.py
+Frostday/Agent4Molecule,https://github.com/Frostday/Agent4Molecule,auto,import in mcp_agent/util/gen_ligand.py
+fzlsfrv/7qrz_simulation,https://github.com/fzlsfrv/7qrz_simulation,auto,import in production.ipynb (notebook)
+fzlsfrv/Mor_simulation_,https://github.com/fzlsfrv/Mor_simulation_,auto,import in Equilibration/NPT_protocol_1.ipynb (notebook)
+Gallicchio-Lab/AToM-OpenMM,https://github.com/Gallicchio-Lab/AToM-OpenMM,auto,import in atom_openmm/make_atm_system_from_pdb.py
+Gallicchio-Lab/sbdd-on-a-laptop,https://github.com/Gallicchio-Lab/sbdd-on-a-laptop,auto,import in notebooks/4_Structure_Refinement_and_Binding_Energy_Scoring.ipynb (notebook)
+gaos180/druggraph-open,https://github.com/gaos180/druggraph-open,auto,import in backend/config/services/md_service.py
+GeraltZeroZhong/mdw,https://github.com/GeraltZeroZhong/mdw,auto,openff-toolkit in environment.yml
+GilsonLabUCSD/pAPRika,https://github.com/GilsonLabUCSD/pAPRika,auto,import in docs/tutorials/08-tutorial-sug-roc-notleap.ipynb (notebook)
+Girish09-work/Reinvent-Scoring,https://github.com/Girish09-work/Reinvent-Scoring,auto,import in reinvent_scoring/scoring/score_components/roshambo/openmm_minimize.py
+GJPvWesten/acmdd,https://github.com/GJPvWesten/acmdd,auto,import in 2_TeachOpenCADD/teachopencadd/talktorials/T019_md_simulation/talktorial.ipynb (notebook)
+gosldorf/Prod_Interchange,https://github.com/gosldorf/Prod_Interchange,auto,openff-toolkit in Environment/environment.yml
+graeter-group/grappa,https://github.com/graeter-group/grappa,auto,import in dataset_creation/benchmark_datasets/to_npz.py
+greener-group/garnet,https://github.com/greener-group/garnet,auto,import in garnetff/tests/test_garnet.py
+greenrace666/biocolabs,https://github.com/greenrace666/biocolabs,auto,import in Protein_ligand.ipynb (notebook)
+Grenzlinie/MatTools,https://github.com/Grenzlinie/MatTools,auto,import in src/tool_source_code/pymatgen/src/pymatgen/io/openff.py
+HaoLan-compchem/blog_03_12_2025,https://github.com/HaoLan-compchem/blog_03_12_2025,auto,import in binary_complex/classic_binary_sim_workflow.ipynb (notebook)
+HaoLan-compchem/blog_16_03_2026,https://github.com/HaoLan-compchem/blog_16_03_2026,auto,import in covalent_docking_VS/binary/workflow.ipynb (notebook)
+HBioquant/DiffBindFR,https://github.com/HBioquant/DiffBindFR,auto,import in DiffBindFR/relax/pl.py
+Hekstra-Lab/EF-X-crystal-MD,https://github.com/Hekstra-Lab/EF-X-crystal-MD,auto,openff-toolkit in environment.yml
+HiteSit/HTS_CompChem,https://github.com/HiteSit/HTS_CompChem,auto,import in OpenMM_OpenFF_VanillaMD_MMPBSA/Plain_MD.py
+HiteSit/PyMol_Fitter,https://github.com/HiteSit/PyMol_Fitter,auto,openff-toolkit in docker/environment.yml
+hodakamori/ml-tutorial,https://github.com/hodakamori/ml-tutorial,auto,import in 034_dipole_moment_md/dipole_moment_md.ipynb (notebook)
+honeyvig/byteff,https://github.com/honeyvig/byteff,auto,import in byteff/mol/rkutil/match_and_map.py
+hyf3513OneGO/polychain-generator,https://github.com/hyf3513OneGO/polychain-generator,auto,import in utils/openmm_relax_utils.py
+IAlibay/alchemiscale-utilities,https://github.com/IAlibay/alchemiscale-utilities,auto,import in pontibus/mnsol/gen_network.py
+IAlibay/partial_charge_experiments,https://github.com/IAlibay/partial_charge_experiments,auto,openff-toolkit in environment.yml
+ianfoster/catalysis,https://github.com/ianfoster/catalysis,auto,import in scripts/generate_gromacs_inputs.py
+icomse/7th_workshop_MD,https://github.com/icomse/7th_workshop_MD,auto,import in day_two/session1/openff-outputs.ipynb (notebook)
+infretis/infentory,https://github.com/infretis/infentory,auto,import in openmm_examples/nacl_dissociation/openmm_input/create_system.py
+infretis/inftools,https://github.com/infretis/inftools,auto,import in inftools/exercises/puckering.py
+ingcoder/unomd,https://github.com/ingcoder/unomd,auto,import in src/unomd/main/run_energy_minimization.py
+inna-tsymb/structural_bioinformatics,https://github.com/inna-tsymb/structural_bioinformatics,auto,import in HIV_MD.ipynb (notebook)
+intbio/ResParTools,https://github.com/intbio/ResParTools,auto,openff-toolkit in espaloma-charge/environment.yml
+Intelligent-Drug-Discovery-Lab/SurfDock,https://github.com/Intelligent-Drug-Discovery-Lab/SurfDock,auto,import in force_optimize/minimize_utils.py
+InternScience/Agents-A1,https://github.com/InternScience/Agents-A1,auto,import in evaluation/Tools/mattools/src/tool_source_code/pymatgen/src/pymatgen/io/openff.py
+InternScience/ChemClaw,https://github.com/InternScience/ChemClaw,auto,import in skills/molecular-properties-predictor/assets/bamboo_mixer/formula_design/mol/rkutil/match_and_map.py
+iobio-zjut/DiffEnsemble,https://github.com/iobio-zjut/DiffEnsemble,auto,import in utils/relax.py
+isayevlab/Auto3D_pkg,https://github.com/isayevlab/Auto3D_pkg,auto,import in example/md_preparation.ipynb (notebook)
+itWangCode/AI-Drug-Discovery-Design,https://github.com/itWangCode/AI-Drug-Discovery-Design,auto,import in list/03_Al Drug Discovery & Design/19_md_simulation/019_md_simulation.ipynb (notebook)
+ivanatang/biosensors,https://github.com/ivanatang/biosensors,auto,import in PYR1+LCA_solvated_protein+ligand_parameterization.ipynb (notebook)
+iwatobipen/openmm_runner,https://github.com/iwatobipen/openmm_runner,auto,import in openmm_runner/mdutils.py
+j-degroot/ACMDD,https://github.com/j-degroot/ACMDD,auto,import in teachopencadd/talktorials/T019_md_simulation/talktorial.ipynb (notebook)
+jaclark5/MetaOMol25_org_smiles,https://github.com/jaclark5/MetaOMol25_org_smiles,auto,import in 2_get_smiles_sharded.py
+jaclark5/Test_SPICE,https://github.com/jaclark5/Test_SPICE,auto,import in Filter_SPICE_Suspicious/test_smiles_spice_tmos_geometry_filter.ipynb (notebook)
+jacob-votava/07_24_25_spider_webb_demo,https://github.com/jacob-votava/07_24_25_spider_webb_demo,auto,openff-toolkit in environment.yml
+JacobCote/EasyMD,https://github.com/JacobCote/EasyMD,auto,import in src/EasyMD/restart/restarter.py
+jaeohshin/md_analysis,https://github.com/jaeohshin/md_analysis,auto,import in kinase_akt1.ipynb (notebook)
+jaketanderson/PCP1_MD,https://github.com/jaketanderson/PCP1_MD,auto,import in apo_1402-1482_rosemary/simulate.py
+jaketanderson/PL-ABFE-BRD4,https://github.com/jaketanderson/PL-ABFE-BRD4,auto,import in XD1/main.ipynb (notebook)
+jaketanderson/taproom-md,https://github.com/jaketanderson/taproom-md,auto,import in main.py
+janash/qcbrowse,https://github.com/janash/qcbrowse,auto,import in qcbrowse/util.py
+janash/qcbrowser-prototype,https://github.com/janash/qcbrowser-prototype,auto,import in util.py
+JDCurry/TIMP2-Docking-Pipeline,https://github.com/JDCurry/TIMP2-Docking-Pipeline,auto,import in scripts/timp2_md_ligand_bound.py
+jeageon/evoliez,https://github.com/jeageon/evoliez,auto,openff-toolkit in pyproject.toml
+jeevanbgc/molecularGlues,https://github.com/jeevanbgc/molecularGlues,auto,import in molecularGlues/BTK/fep/prep/esp_charged.py
+jeff231li/HG-GBSA-Optimization,https://github.com/jeff231li/HG-GBSA-Optimization,auto,import in paper_simulations/01-optimization/evaluator-hg-optimization.py
+jeff231li/random-scripts,https://github.com/jeff231li/random-scripts,auto,import in python/generate_library_charges_from_taproom.ipynb (notebook)
+JelfsMaterialsGroup/stko,https://github.com/JelfsMaterialsGroup/stko,auto,openff-toolkit in docs/environment.yml
+jharrymoore/mace-md,https://github.com/jharrymoore/mace-md,auto,import in mace_md/hybrid_md.py
+jharrymoore/mace-openmm,https://github.com/jharrymoore/mace-openmm,auto,openff-toolkit in environment.yml
+JHoeflich1/Co_optimization_refit,https://github.com/JHoeflich1/Co_optimization_refit,auto,import in 02_refit/workflow.py
+JHoeflich1/OpenFFLipid,https://github.com/JHoeflich1/OpenFFLipid,auto,import in AlkaneDiffusion/AlkaneDiffusion_sd/Old/buildWater.py
+Jingbang-Chen/mixup-meta-protein-simulators,https://github.com/Jingbang-Chen/mixup-meta-protein-simulators,auto,openff-toolkit in requirements.txt
+JMorado/SCALeJ,https://github.com/JMorado/SCALeJ,auto,openff-toolkit in pyproject.toml
+joelaforet/polyzymd,https://github.com/joelaforet/polyzymd,auto,openff-toolkit in pixi.toml
+joelaforet/polyzymd_builder,https://github.com/joelaforet/polyzymd_builder,auto,openff-toolkit in environment.yml
+joelaforet/SAMMD,https://github.com/joelaforet/SAMMD,auto,openff-toolkit in pixi.toml
+JoeVonDahab/new_md,https://github.com/JoeVonDahab/new_md,auto,openff-toolkit in pyproject.toml
+joezwu/water-transfer-method,https://github.com/joezwu/water-transfer-method,auto,import in correction_sim/b5_watersim_vs/make_lig_system.py
+jomga/MD_practice,https://github.com/jomga/MD_practice,auto,import in 2b. Prepearing ligands (1).ipynb (notebook)
+josephdepaoloboisvert/ChiMPSS,https://github.com/josephdepaoloboisvert/ChiMPSS,auto,import in notebooks/examples/Build(BP).ipynb (notebook)
+jthorton/BespokeFit-PLB,https://github.com/jthorton/BespokeFit-PLB,auto,import in inputs/scripts/check_bespoke_parameters.py
+jthorton/de-forcefields,https://github.com/jthorton/de-forcefields,auto,import in deforcefields/tests/conftest.py
+jthorton/dim-smee,https://github.com/jthorton/dim-smee,auto,import in fit-dimer-contracted-h-lj.ipynb (notebook)
+jthorton/double-exp-vdw,https://github.com/jthorton/double-exp-vdw,auto,import in data-set-curation/quantum-chemical/Dataset-curation-FB-input-creation-notebook.ipynb (notebook)
+jthorton/htf-tinker,https://github.com/jthorton/htf-tinker,auto,import in htf/tests/conftest.py
+jthorton/nagl-mbis,https://github.com/jthorton/nagl-mbis,auto,import in naglmbis/plugins/utils.py
+jthorton/SPICE-SMEE,https://github.com/jthorton/SPICE-SMEE,auto,import in fit-v1/training/001-expand_torsions.py
+jule-c/flowr_root,https://github.com/jule-c/flowr_root,auto,import in flowr/util/minimize_energy.py
+JulianSierraRodriguez/boresch-restraint-vienna-kit,https://github.com/JulianSierraRodriguez/boresch-restraint-vienna-kit,auto,import in src/boresch_restraint_vienna_kit/simulations_openMM.py
+jwperthold/GroScore,https://github.com/jwperthold/GroScore,auto,import in utils/parametrize_ligand.py
+kangk1204/duetscreen,https://github.com/kangk1204/duetscreen,auto,import in src/duetscreen/docking/mmgbsa.py
+KexinZhangResearch/PhysDock,https://github.com/KexinZhangResearch/PhysDock,auto,import in PhysDock/data/relaxation.py
+kizzhang/MolGent,https://github.com/kizzhang/MolGent,auto,import in molgent/core/forcefield.py
+kohbanye/fep-generation,https://github.com/kohbanye/fep-generation,auto,openff-toolkit in environment.yml
+kojioku/abmptools,https://github.com/kojioku/abmptools,auto,openff-toolkit in pyproject.toml
+Kryst-Investments-LLC/agedefy-ai,https://github.com/Kryst-Investments-LLC/agedefy-ai,auto,openff-toolkit in sidecar-openmm/environment.yml
+KUL-LBMD/CROWN,https://github.com/KUL-LBMD/CROWN,auto,openff-toolkit in environment.yml
+kzfm/FMOkit,https://github.com/kzfm/FMOkit,auto,openff-toolkit in pyproject.toml
+lab221lab221/protein-design,https://github.com/lab221lab221/protein-design,auto,import in docking_prep.py
+labdao/halo,https://github.com/labdao/halo,auto,import in src/halo/core/openmm/charge.py
+learningmatter-mit/AtomisticSkills,https://github.com/learningmatter-mit/AtomisticSkills,auto,import in .agents/skills/drug-complex-system-builder/scripts/build_complex.py
+leeping/forcebalance,https://github.com/leeping/forcebalance,auto,import in src/evaluator_io.py
+LeifSeute/grappa-data-creation,https://github.com/LeifSeute/grappa-data-creation,auto,import in 3bpa-evaluation/make_dataset.py
+liening1/qmmmkit,https://github.com/liening1/qmmmkit,auto,openff-toolkit in environment.yml
+lilyminium/2026-polymers,https://github.com/lilyminium/2026-polymers,auto,openff-toolkit in pixi.toml
+lilyminium/additional-2.3.0rc2-analysis,https://github.com/lilyminium/additional-2.3.0rc2-analysis,auto,import in qm/get-all-to-all-dde.py
+lilyminium/alkane-vdw-fit,https://github.com/lilyminium/alkane-vdw-fit,auto,import in 02_refit/preequilibrated/fit/generate-forcefield.py
+lilyminium/ash-sage-rc1,https://github.com/lilyminium/ash-sage-rc1,auto,import in 02_fit-vdw/refit/generate-forcefield.py
+lilyminium/compare-cresset-torsions,https://github.com/lilyminium/compare-cresset-torsions,auto,import in valence-fits/01_generate-forcefield/generate-forcefield-v1.py
+lilyminium/evaluator-equilibration,https://github.com/lilyminium/evaluator-equilibration,auto,import in eveq/box/box.py
+lilyminium/evaluator-fits,https://github.com/lilyminium/evaluator-fits,auto,import in benchmarks/benchmark.py
+lilyminium/experimental-condensed-fit,https://github.com/lilyminium/experimental-condensed-fit,auto,import in fit/setup-forcefield.py
+lilyminium/fit-virtual-sites,https://github.com/lilyminium/fit-virtual-sites,auto,import in 01_curate-data/01_esps/lilac/output-to-smiles.py
+lilyminium/fragment-chembl-data,https://github.com/lilyminium/fragment-chembl-data,auto,import in 02_fragment/fragment-on-rotatable-bonds.py
+lilyminium/interchange-simulations,https://github.com/lilyminium/interchange-simulations,auto,import in debug/packing-6421-mixture/get-box-size-interchange.ipynb (notebook)
+lilyminium/investigate-smee-physprop,https://github.com/lilyminium/investigate-smee-physprop,auto,import in 01_simulations/cu118/evaluator-preequib/generate-options.py
+lilyminium/investigating-ff-fitting-versions,https://github.com/lilyminium/investigating-ff-fitting-versions,auto,import in 02_check-single-targets/01_opt-48-17/get_rmsd.ipynb (notebook)
+lilyminium/nagl-am1bcc-model-fits,https://github.com/lilyminium/nagl-am1bcc-model-fits,auto,import in 01_curate-data/01_raw/clean_smiles.py
+lilyminium/nagl-mbis-refit,https://github.com/lilyminium/nagl-mbis-refit,auto,import in analysis/plot-comparison-to-sage.py
+lilyminium/openff-gnn-am1bcc-0.1.0,https://github.com/lilyminium/openff-gnn-am1bcc-0.1.0,auto,import in 01_curate-data/02_filtered/enumerate.py
+lilyminium/openff-stats,https://github.com/lilyminium/openff-stats,auto,import in src/openff_stats/cli.py
+lilyminium/openff-strike-team,https://github.com/lilyminium/openff-strike-team,auto,import in torsions/datasets/qm/convert-td-to-dataset.py
+lilyminium/polymetrizer,https://github.com/lilyminium/polymetrizer,auto,import in polymetrizer/graph.py
+lilyminium/profile-qc-data,https://github.com/lilyminium/profile-qc-data,auto,import in offqcdata/profile.py
+lilyminium/protein-alpha-workbook,https://github.com/lilyminium/protein-alpha-workbook,auto,import in benchmarks/split-hardware-ff/benchmark-yammbs.py
+lilyminium/protein-ff-fits,https://github.com/lilyminium/protein-ff-fits,auto,import in approach-03/03-fits/4-create-forcebalance-inputs.py
+lilyminium/qca-datasets-report,https://github.com/lilyminium/qca-datasets-report,auto,import in scripts/label-optimization-smiles.py
+lilyminium/refit-t17-t18-torsions,https://github.com/lilyminium/refit-t17-t18-torsions,auto,import in .ipynb_checkpoints/write-pdb-checkpoint.ipynb (notebook)
+lilyminium/sage-2.0.0-tip3p-refit,https://github.com/lilyminium/sage-2.0.0-tip3p-refit,auto,import in fit/server-existing.py
+lilyminium/sage-2.1.0-opc3,https://github.com/lilyminium/sage-2.1.0-opc3,auto,import in fit/setup-forcefield.py
+lilyminium/sage-2.2.0-looser-msm,https://github.com/lilyminium/sage-2.2.0-looser-msm,auto,import in 01_generate-forcefield/generate-forcefield_nor4.py
+lilyminium/sage-2.2.2-looser-msm,https://github.com/lilyminium/sage-2.2.2-looser-msm,auto,import in 01_generate-forcefield/generate-forcefield_nor4.py
+lilyminium/sage-2.3.0,https://github.com/lilyminium/sage-2.3.0,auto,import in 01_setup/patch-optimization-json.py
+lilyminium/sage-2.3.0-nagl,https://github.com/lilyminium/sage-2.3.0-nagl,auto,import in 02_fit-vdw/equilibration/training/server-existing.py
+lilyminium/sage-nagl,https://github.com/lilyminium/sage-nagl,auto,import in 02_fit-vdw/equilibration/k8s/server-existing.py
+lilyminium/scrapbook-projects,https://github.com/lilyminium/scrapbook-projects,auto,import in absolv-vsite-sfes/test-system.py
+lilyminium/snippets,https://github.com/lilyminium/snippets,auto,import in compare-esps-to-qm/generate-psi4-inputs.py
+lilyminium/thermoml-equilibration,https://github.com/lilyminium/thermoml-equilibration,auto,import in 02_equilibrate-broad/sage-2-0-0_2/server-existing.py
+lilyminium/valence-fitting,https://github.com/lilyminium/valence-fitting,auto,import in 02_curate-data/curate-dataset.py
+lilyminium/virtual-site-initial-fit,https://github.com/lilyminium/virtual-site-initial-fit,auto,import in 02_train-vsites/01_setup-starting-points/fit-to-single/fit-double-bond-charge-to-esp-and-ef-v2.py
+lilyminium/water-cooptimization,https://github.com/lilyminium/water-cooptimization,auto,openff-toolkit in pixi.toml
+lilyminium/water-model-experiments,https://github.com/lilyminium/water-model-experiments,auto,import in initial-forcebalance-experiments/00_repeat-de-tip4p/generate-input-forcefield.py
+lilyminium/water-properties-evaluator,https://github.com/lilyminium/water-properties-evaluator,auto,import in 02_benchmark/generate-options.py
+LindeSchoenmaker/IMERGE-FEP,https://github.com/LindeSchoenmaker/IMERGE-FEP,auto,import in rhfe_gromacs/lig_topology.py
+LindeSchoenmaker/rhfe_gromacs,https://github.com/LindeSchoenmaker/rhfe_gromacs,auto,import in lig_topology.py
+ljmartin/ljmartin.github.io,https://github.com/ljmartin/ljmartin.github.io,auto,import in notebooks/Untitled.ipynb (notebook)
+Llewyn001/SurfNA,https://github.com/Llewyn001/SurfNA,auto,import in src/force_optimize/minimize_utils.py
+louetadelie1/Medin,https://github.com/louetadelie1/Medin,auto,import in generating_input_files/openff_make_ff.ipynb (notebook)
+lrmcdonnell/StructBio,https://github.com/lrmcdonnell/StructBio,auto,import in Assignments/Assignment 5/simulate.py
+LucasDelav/polymd,https://github.com/LucasDelav/polymd,auto,import in src/polymd/pipeline.py
+lucl13/MD_scripts,https://github.com/lucl13/MD_scripts,auto,import in Openmm/openmm_only/openmm_utility.py
+lukasbaldauf/quantis,https://github.com/lukasbaldauf/quantis,auto,import in ase/openmm_nacl_dissociation/openmm_input/create_system.py
+LukasOttenhof/JupOtter,https://github.com/LukasOttenhof/JupOtter,auto,import in dataset/JupyterErrors_dataset/openforcefield_openff-toolkit_test_impropers.ipynb (notebook)
+luwei0917/DynamicBind,https://github.com/luwei0917/DynamicBind,auto,import in utils/relax.py
+maabuu/posebusters_em,https://github.com/maabuu/posebusters_em,auto,openff-toolkit in environment.yml
+maciek-wisniewski/MolecularDynamicsPipeline,https://github.com/maciek-wisniewski/MolecularDynamicsPipeline,auto,openff-toolkit in environment.yml
+madilynpaul/Espaloma-Validation,https://github.com/madilynpaul/Espaloma-Validation,auto,import in Espaloma_Scripts/functions/.ipynb_checkpoints/Espaloma_Functions-checkpoint.py
+magattaca/making-it-rain-jp,https://github.com/magattaca/making-it-rain-jp,auto,import in Protein_ligand_JP.ipynb (notebook)
+maklecule/FLEXMD,https://github.com/maklecule/FLEXMD,auto,openff-toolkit in environment.yml
+malaki-michael/ExpertPI_MODS1,https://github.com/malaki-michael/ExpertPI_MODS1,auto,import in venv/Lib/site-packages/pymatgen/io/openff.py
+maraxen/priox,https://github.com/maraxen/priox,auto,import in src/priox/io/parsing/molecule.py
+maraxen/prolix,https://github.com/maraxen/prolix,auto,import in benchmarks/verify_gaff_end_to_end.py
+martimunicoy/peleffy,https://github.com/martimunicoy/peleffy,auto,import in peleffy/tests/test_molecule.py
+Martin-Floor/prepare_proteins,https://github.com/Martin-Floor/prepare_proteins,auto,import in prepare_proteins/MD/parameterization/openff.py
+martinez-zacharya/TRILL,https://github.com/martinez-zacharya/TRILL,auto,import in trill/utils/openmmforcefields_template_generators.py
+materialsproject/atomate2,https://github.com/materialsproject/atomate2,auto,import in src/atomate2/openff/core.py
+MaterSim/HTOCSP,https://github.com/MaterSim/HTOCSP,auto,openff-toolkit in environment.yml
+MaterSim/pyocse,https://github.com/MaterSim/pyocse,auto,openff-toolkit in environment.yml
+mathilfiker/ml_for_charges,https://github.com/mathilfiker/ml_for_charges,auto,openff-toolkit in environment.yml
+matsunagalab/mdclaw,https://github.com/matsunagalab/mdclaw,auto,import in mdclaw/amber/openmm_build.py
+matta-research-group/SwiftPol,https://github.com/matta-research-group/SwiftPol,auto,import in swiftpol/__init__.py
+matteoferla/DTC-compchem-practical,https://github.com/matteoferla/DTC-compchem-practical,auto,import in 2023-notebooks/2-molecular-mechanics.ipynb (notebook)
+matteoferla/Fragmenstein,https://github.com/matteoferla/Fragmenstein,auto,import in fragmenstein/openmm/fritz.py
+MauriceKarrenbrock/HPC_Drug,https://github.com/MauriceKarrenbrock/HPC_Drug,auto,openff-toolkit in environment.yml
+mdsiamahmed26/Bioinformatics,https://github.com/mdsiamahmed26/Bioinformatics,auto,import in Protein_ligand(simulation).ipynb (notebook)
+metro-maniana/interaction-energy,https://github.com/metro-maniana/interaction-energy,auto,import in src/pipeline/forcefield/atom_energies.py
+meyresearch/EZDock,https://github.com/meyresearch/EZDock,auto,openff-toolkit in requirements.txt
+Micaet/Molecular-Modeling-in-Drug-Discovery,https://github.com/Micaet/Molecular-Modeling-in-Drug-Discovery,auto,import in Molecular_Dynamics.py
+michellab/AMMo,https://github.com/michellab/AMMo,auto,openff-toolkit in environment.yml
+michellab/BioSimSpace,https://github.com/michellab/BioSimSpace,auto,openff-toolkit in python/setup.py
+michellab/emle-bespoke,https://github.com/michellab/emle-bespoke,auto,import in examples/DES_dimers/pre_processing/process_des.py
+michellab/fes-ml,https://github.com/michellab/fes-ml,auto,import in src/fes_ml/alchemical/modifications/charge_transfer.py
+michellab/Stapline,https://github.com/michellab/Stapline,auto,import in parameterisation_scripts/torsion_fitting/molecule_fragmenter.ipynb (notebook)
+Mika-Le/PPIP5K2_Pipeline_Master_Thesis,https://github.com/Mika-Le/PPIP5K2_Pipeline_Master_Thesis,auto,import in scripts/mdsim.py
+mikemhenry/openfe-notebooks,https://github.com/mikemhenry/openfe-notebooks,auto,openff-toolkit in .binder/environment.yml
+milkman1017/Ribose-Chirality-MD,https://github.com/milkman1017/Ribose-Chirality-MD,auto,import in height_umbrella.py
+mizuno-group/MolecularDynamics,https://github.com/mizuno-group/MolecularDynamics,auto,import in experiments/nemoto/240613_tutorial_ligand/preprocess_md.ipynb (notebook)
+mkrishnapraneet/monte-carlo-ordering,https://github.com/mkrishnapraneet/monte-carlo-ordering,auto,openff-toolkit in requirements.txt
+mlmisha/openff-parametrization,https://github.com/mlmisha/openff-parametrization,auto,import in bctest.ipynb (notebook)
+MMLabCodes/data-driven-representative-models-of-biobased-complex-fluids,https://github.com/MMLabCodes/data-driven-representative-models-of-biobased-complex-fluids,auto,openff-toolkit in docs/environment.yml
+MMLabCodes/iPHAsimulator,https://github.com/MMLabCodes/iPHAsimulator,auto,import in modules/charge_calculator.py
+MobleyLab/drug-computing,https://github.com/MobleyLab/drug-computing,auto,import in uci-pharmsci/lectures/MD/MD_Sandbox_Molecule.ipynb (notebook)
+MobleyLab/fitting-exp,https://github.com/MobleyLab/fitting-exp,auto,import in benchmark-data/02-b-minimize.py
+MobleyLab/qm-theory-benchmark,https://github.com/MobleyLab/qm-theory-benchmark,auto,import in 4.local_runs.ipynb (notebook)
+MobleyLab/SeparatedTopologies,https://github.com/MobleyLab/SeparatedTopologies,auto,openff-toolkit in environment.yml
+MobleyLab/slow-rotations,https://github.com/MobleyLab/slow-rotations,auto,import in slow_rotations/mappings.py
+MobleyLab/wbointerpolation,https://github.com/MobleyLab/wbointerpolation,auto,import in datasets/constructure_biaryl_large_set.ipynb (notebook)
+modernatx/rna_theophylline_free_energy_calculations,https://github.com/modernatx/rna_theophylline_free_energy_calculations,auto,import in fe_calcs_with_0_or_2_mg/6-xanthine/3-55NaCl_Mg/2-OpenFF_40winCmplx_30winLig/1-rep1/1-sys_prep/gen_openFF.py
+MolecularAI/maize-contrib,https://github.com/MolecularAI/maize-contrib,auto,import in maize/steps/mai/md/ofe.py
+MolecularAI/reinforcement-learning-active-learning,https://github.com/MolecularAI/reinforcement-learning-active-learning,auto,import in icolos/src/icolos/core/workflow_steps/gromacs/pdb2gmx.py
+molecularmodelinglab/bigbind,https://github.com/molecularmodelinglab/bigbind,auto,import in baselines/minimize_struct.py
+molecularmodelinglab/lfm,https://github.com/molecularmodelinglab/lfm,auto,import in common/openmm_utils.py
+molecularmodelinglab/plantain,https://github.com/molecularmodelinglab/plantain,auto,import in scripts/ff_bigbind_struct.py
+molmod/openmm-tutorial-msbs,https://github.com/molmod/openmm-tutorial-msbs,auto,import in 07_ligands/02_ibuprofen_solvent.ipynb (notebook)
+MolSSI/mmic_openff,https://github.com/MolSSI/mmic_openff,auto,import in mmic_openff/components/ff_component.py
+MolSSI/QCEngine,https://github.com/MolSSI/QCEngine,auto,import in qcengine/programs/openmm.py
+momokchung/forcebalance,https://github.com/momokchung/forcebalance,auto,import in src/evaluator_io.py
+mosdef-hub/foyer,https://github.com/mosdef-hub/foyer,auto,import in foyer/tests/test_topology_graph.py
+MSEP-one/msep.one,https://github.com/MSEP-one/msep.one,auto,import in godot_project/python/scripts/openmm_server.py
+MuPT-hub/mupt,https://github.com/MuPT-hub/mupt,auto,import in mupt/builders/all_atom_dpd.py
+naotriste-chenli/research-mlsr,https://github.com/naotriste-chenli/research-mlsr,auto,import in RHINOS/python_scripts/ligand.py
+Navantock/SE3Set,https://github.com/Navantock/SE3Set,auto,import in se3set/data/md17.py
+NeoBinder/NeoDynamics,https://github.com/NeoBinder/NeoDynamics,auto,openff-toolkit in pixi.toml
+NeuroAI-PNU/Drug_Discovery,https://github.com/NeuroAI-PNU/Drug_Discovery,auto,import in MolecularDynamics/1_MD simulation/20240822_rank_50ns_PME_tmux_10_final.py
+NeuroAI-PNU/MolecularDynamics,https://github.com/NeuroAI-PNU/MolecularDynamics,auto,import in MD simulation/20240822_rank_50ns_PME_tmux_2_final.py
+NeuroAI-PNU/openmm-tutorial,https://github.com/NeuroAI-PNU/openmm-tutorial,auto,import in User guide cookbook/20_1 OpencaddT19 MD.ipynb (notebook)
+nikitafedik/ml_tps_si,https://github.com/nikitafedik/ml_tps_si,auto,import in scripts/get_E_F/get_amber_E_F.ipynb (notebook)
+Nithishwer/abflow,https://github.com/Nithishwer/abflow,auto,openff-toolkit in pyproject.toml
+nonamenoober/nho-doi-1-cu-cho-repo-nay,https://github.com/nonamenoober/nho-doi-1-cu-cho-repo-nay,auto,import in MD_simulation.ipynb (notebook)
+ntBre/benchmarking,https://github.com/ntBre/benchmarking,auto,import in datasets/filter.py
+ntBre/chembl-search,https://github.com/ntBre/chembl-search,auto,import in python/deduplicate-fragments.py
+ntBre/coprelos,https://github.com/ntBre/coprelos,auto,import in openff-toolkit/src/typing/engines/smirnoff/forcefield.py
+ntBre/cura,https://github.com/ntBre/cura,auto,import in work/inchis.py
+ntBre/curato,https://github.com/ntBre/curato,auto,import in cura/serve.py
+ntBre/fast-filter,https://github.com/ntBre/fast-filter,auto,import in scripts/filter_td.py
+ntBre/garage-door,https://github.com/ntBre/garage-door,auto,import in python/shim.py
+ntBre/lipoma,https://github.com/ntBre/lipoma,auto,import in apply.py
+ntBre/openff-benchmarks,https://github.com/ntBre/openff-benchmarks,auto,import in datasets/filter.py
+ntBre/vflib,https://github.com/ntBre/vflib,auto,import in bin/create_fb_inputs.py
+Nudge92/shp2-inhibitor-insilico,https://github.com/Nudge92/shp2-inhibitor-insilico,auto,import in scripts/validation/md_4class.py
+numpde/playground,https://github.com/numpde/playground,auto,import in 20251031-MD-NMR/b_vacuum.py
+ocmadin/LJ_surrogates,https://github.com/ocmadin/LJ_surrogates,auto,import in LJ_surrogates/parameter_modification.py
+OdinZhang/AI-Docking-Evaluation,https://github.com/OdinZhang/AI-Docking-Evaluation,auto,import in DynamicBind/utils/relax.py
+oess/orionmdcore,https://github.com/oess/orionmdcore,auto,import in orionmdcore/forcefield/utils.py
+ofantomas/sella-optimizer-autoresearch,https://github.com/ofantomas/sella-optimizer-autoresearch,auto,import in molecules/01_prepare.py
+ojcharles/notebooks,https://github.com/ojcharles/notebooks,auto,import in DrugDesign_4_MD.ipynb (notebook)
+olsson-group/sma-md,https://github.com/olsson-group/sma-md,auto,import in analysis/energy_solvent.py
+olsson-group/thermodynamic-interpolation,https://github.com/olsson-group/thermodynamic-interpolation,auto,import in mdqm9/analysis/eval_energy.py
+olsson-group/transBG,https://github.com/olsson-group/transBG,auto,import in transBG.py
+omsf/joint-demo,https://github.com/omsf/joint-demo,auto,import in ptm_prototype.py
+omsf/OpenPharmMDFlow,https://github.com/omsf/OpenPharmMDFlow,auto,import in examples/mini_mvp/mini_mvp.ipynb (notebook)
+Open-Catalyst-Project/om-data,https://github.com/Open-Catalyst-Project/om-data,auto,import in electrolytes/water_cluster/water_cluster.py
+OpenBioSim/biosimspace,https://github.com/OpenBioSim/biosimspace,auto,import in src/BioSimSpace/Parameters/_Protocol/_amber.py
+OpenDrugDiscovery/openfractal-client,https://github.com/OpenDrugDiscovery/openfractal-client,auto,import in docs/tutorials/01_submit_dataset.ipynb (notebook)
+OpenDrugDiscovery/openQMComputations,https://github.com/OpenDrugDiscovery/openQMComputations,auto,import in opendata/collections/non_covalents.py
+openforcefield/2021-benchmarking-workshop,https://github.com/openforcefield/2021-benchmarking-workshop,auto,import in workshop.ipynb (notebook)
+openforcefield/2023-workshop-vignettes,https://github.com/openforcefield/2023-workshop-vignettes,auto,import in G-PDB-bespokefit-to-simulation.ipynb (notebook)
+openforcefield/2026-hands-on,https://github.com/openforcefield/2026-hands-on,auto,import in demo.ipynb (notebook)
+openforcefield/2026-stack-tour,https://github.com/openforcefield/2026-stack-tour,auto,import in stack_tour_off.ipynb (notebook)
+openforcefield/2026-virtual-workshops,https://github.com/openforcefield/2026-virtual-workshops,auto,import in fit/fitlib.py
+openforcefield/amber-ff-porting,https://github.com/openforcefield/amber-ff-porting,auto,import in CombineOffxmls.py
+openforcefield/anything-goes,https://github.com/openforcefield/anything-goes,auto,import in besmarts-fit/data/curate-and-convert-training-data-hessians.ipynb (notebook)
+openforcefield/ash-sage-rc2,https://github.com/openforcefield/ash-sage-rc2,auto,import in 01_download-data/qm/download-qcdata-tables.py
+openforcefield/ashgc-v1.0-fit,https://github.com/openforcefield/ashgc-v1.0-fit,auto,import in 01_curate-data/01_raw/cap-peptides.py
+openforcefield/back-to-school-ashley,https://github.com/openforcefield/back-to-school-ashley,auto,openff-toolkit in pixi.toml
+openforcefield/back-to-school-jen,https://github.com/openforcefield/back-to-school-jen,auto,import in 4_make_offxmls/from_finlay/coverage.py
+openforcefield/back-to-school-matt,https://github.com/openforcefield/back-to-school-matt,auto,import in 02_fit-vdw/refit/generate-forcefield.py
+openforcefield/ccpbiosim-2023,https://github.com/openforcefield/ccpbiosim-2023,auto,import in notebooks/counts.py
+openforcefield/cheminformatics-toolkit-equivalence,https://github.com/openforcefield/cheminformatics-toolkit-equivalence,auto,import in 2021_01_09_davel_investigation/3d_equivalence_testing_final.ipynb (notebook)
+openforcefield/descent,https://github.com/openforcefield/descent,auto,import in descent/tests/utils/test_reporting.py
+openforcefield/dimsim,https://github.com/openforcefield/dimsim,auto,openff-toolkit in pixi.toml
+openforcefield/diverse-dataset-discovery,https://github.com/openforcefield/diverse-dataset-discovery,auto,import in bin/select-interesting-molecules_2.2.0_v1.py
+openforcefield/interchange-regression-testing,https://github.com/openforcefield/interchange-regression-testing,auto,import in interchange_regression_utilities/commands/compare_openmm_systems.py
+openforcefield/interchange-workshop-2022,https://github.com/openforcefield/interchange-workshop-2022,auto,openff-toolkit in environment.yml
+openforcefield/MPID_plugin,https://github.com/openforcefield/MPID_plugin,auto,import in create_force_field.py
+openforcefield/openff-amber-ff-ports,https://github.com/openforcefield/openff-amber-ff-ports,auto,import in openff/amber_ff_ports/tests/test_amber_ff_ports.py
+openforcefield/openff-bespokefit,https://github.com/openforcefield/openff-bespokefit,auto,import in openff/bespokefit/_tests/cli/executor/test_run.py
+openforcefield/openff-docs,https://github.com/openforcefield/openff-docs,auto,import in source/_ext/check_python_codeblocks.py
+openforcefield/openff-evaluator,https://github.com/openforcefield/openff-evaluator,auto,import in docs/tutorials/tutorial04.ipynb (notebook)
+openforcefield/openff-forcefields,https://github.com/openforcefield/openff-forcefields,auto,import in scripts/add_xe_vdw.py
+openforcefield/openff-fragmenter,https://github.com/openforcefield/openff-fragmenter,auto,import in examples/fragment-molecules.ipynb (notebook)
+openforcefield/openff-interchange,https://github.com/openforcefield/openff-interchange,auto,import in benchmarks/large-peg.py
+openforcefield/openff-nagl,https://github.com/openforcefield/openff-nagl,auto,import in examples/prepare-dataset/prepare-dataset.ipynb (notebook)
+openforcefield/openff-pablo,https://github.com/openforcefield/openff-pablo,auto,import in examples/load_pdb.ipynb (notebook)
+openforcefield/openff-packmol,https://github.com/openforcefield/openff-packmol,auto,import in openff/packmol/_packmol.py
+openforcefield/openff-qcsubmit,https://github.com/openforcefield/openff-qcsubmit,auto,import in examples/creating-datasets.ipynb (notebook)
+openforcefield/openff-recharge,https://github.com/openforcefield/openff-recharge,auto,import in examples/parameter-training/pyro/train-parameters.py
+openforcefield/openff-reference,https://github.com/openforcefield/openff-reference,auto,import in interchange.py
+openforcefield/openff-sage,https://github.com/openforcefield/openff-sage,auto,import in data-set-curation/quantum-chemical/curate-1-2-0-opt-hess-set-v2.py
+openforcefield/openff-sphinx-theme,https://github.com/openforcefield/openff-sphinx-theme,auto,openff-toolkit in docs/environment.yml
+openforcefield/openff-toolkit,https://github.com/openforcefield/openff-toolkit,auto,import in docs/conf.py
+openforcefield/polymer_examples,https://github.com/openforcefield/polymer_examples,auto,import in minimum_reproducing_example.py
+openforcefield/protein-ligand-benchmark,https://github.com/openforcefield/protein-ligand-benchmark,auto,openff-toolkit in environment.yml
+openforcefield/protein-nmr-fit,https://github.com/openforcefield/protein-nmr-fit,auto,import in butane-test/fit-cumulative-gaussian-observable.py
+openforcefield/protein-param-fit,https://github.com/openforcefield/protein-param-fit,auto,import in 1-curate-training-datasets.py
+openforcefield/proteinbenchmark,https://github.com/openforcefield/proteinbenchmark,auto,import in proteinbenchmark/analysis.py
+openforcefield/ptm_prototype,https://github.com/openforcefield/ptm_prototype,auto,import in ptm_sim.ipynb (notebook)
+openforcefield/qca-dataset-submission,https://github.com/openforcefield/qca-dataset-submission,auto,openff-toolkit in submissions/2025-06-24-OpenFF-Industry-Benchmark-Season-1-v1.2/environment.yml
+openforcefield/qca-dataset-submission-next-test,https://github.com/openforcefield/qca-dataset-submission-next-test,auto,import in examples/OptimizationDataset/generate-dataset.ipynb (notebook)
+openforcefield/rdkit_ugm_2025_demo,https://github.com/openforcefield/rdkit_ugm_2025_demo,auto,import in ptm_prototype.py
+openforcefield/sage-2.1.0,https://github.com/openforcefield/sage-2.1.0,auto,import in benchmarks/smoketests/ligand_in_water_test/ligand_in_water.ipynb (notebook)
+openforcefield/sage-2.2.0,https://github.com/openforcefield/sage-2.2.0,auto,import in 01_generate-forcefield/test_fused_rings.ipynb (notebook)
+openforcefield/sage-2.2.1,https://github.com/openforcefield/sage-2.2.1,auto,import in 01_generate-forcefield/generate-forcefield_nor4.py
+openforcefield/sage-2.3.0,https://github.com/openforcefield/sage-2.3.0,auto,import in sage-2.2.1-sdata/01_generate-forcefield/generate-forcefield.py
+openforcefield/smee,https://github.com/openforcefield/smee,auto,import in examples/compute-energy.ipynb (notebook)
+openforcefield/smirnoff-plugins,https://github.com/openforcefield/smirnoff-plugins,auto,openff-toolkit in pixi.toml
+openforcefield/yammbs,https://github.com/openforcefield/yammbs,auto,import in yammbs/_base/array.py
+openforcefield/yammbs-dataset-submission,https://github.com/openforcefield/yammbs-dataset-submission,auto,import in datasets/download_and_filter_dataset.py
+OpenFreeEnergy/ExampleNotebooks,https://github.com/OpenFreeEnergy/ExampleNotebooks,auto,import in cookbook/bespoke_parameters_showcase.ipynb (notebook)
+OpenFreeEnergy/feflow,https://github.com/OpenFreeEnergy/feflow,auto,import in feflow/protocols/nonequilibrium_cycling.py
+OpenFreeEnergy/gufe,https://github.com/OpenFreeEnergy/gufe,auto,import in src/gufe/utils.py
+OpenFreeEnergy/IndustryBenchmarks2024,https://github.com/OpenFreeEnergy/IndustryBenchmarks2024,auto,import in industry_benchmarks/utils/experimental/plan_rbfe_network_bespoke.py
+OpenFreeEnergy/kartograf,https://github.com/OpenFreeEnergy/kartograf,auto,import in src/kartograf/utils/optional_imports.py
+OpenFreeEnergy/konnektor,https://github.com/OpenFreeEnergy/konnektor,auto,import in src/konnektor/utils/optional_import.py
+OpenFreeEnergy/openfe,https://github.com/OpenFreeEnergy/openfe,auto,import in devtools/data/gen_serialized_results.py
+OpenFreeEnergy/openfe-benchmarks,https://github.com/OpenFreeEnergy/openfe-benchmarks,auto,import in openfe_benchmarks/data/data_generation/define_freesolv_mnsol_openff_subsets.py
+OpenFreeEnergy/openfe-gromacs,https://github.com/OpenFreeEnergy/openfe-gromacs,auto,import in openfe_gromacs/protocols/gromacs_md/md_methods.py
+OpenFreeEnergy/openfe_protocol_utils,https://github.com/OpenFreeEnergy/openfe_protocol_utils,auto,openff-toolkit in environment.yml
+OpenFreeEnergy/openfe_skunkworks,https://github.com/OpenFreeEnergy/openfe_skunkworks,auto,import in src/openfe_skunkworks/protocols/openmm_afe/base.py
+OpenFreeEnergy/pontibus,https://github.com/OpenFreeEnergy/pontibus,auto,openff-toolkit in environment.yml
+openkinome/kinoml,https://github.com/openkinome/kinoml,auto,import in kinoml/core/ligands.py
+openmm/nutmeg,https://github.com/openmm/nutmeg,auto,openff-toolkit in source/nutmeg-large/requirements.txt
+openmm/openmm_workshops,https://github.com/openmm/openmm_workshops,auto,import in section_1/protein_ligand_complex.ipynb (notebook)
+openmm/openmmforcefields,https://github.com/openmm/openmmforcefields,auto,import in openmmforcefields/generators/system_generators.py
+openmm/spice-dataset,https://github.com/openmm/spice-dataset,auto,import in amino-acid-ligand/createAminoAcidLigand.py
+openmm/spice-models,https://github.com/openmm/spice-models,auto,import in five-et/createSpiceDataset.py
+orionarcher/pymatgen-io-openmm,https://github.com/orionarcher/pymatgen-io-openmm,auto,openff-toolkit in requirements.txt
+osram90/whisper,https://github.com/osram90/whisper,auto,import in teachopencadd/talktorials/019_md_simulation/talktorial.ipynb (notebook)
+otunmartins/FRIDGEFREENET,https://github.com/otunmartins/FRIDGEFREENET,auto,import in src/python/insulin_ai/simulation/openmm_complex.py
+pablo-arantes/Cloud-Bind,https://github.com/pablo-arantes/Cloud-Bind,auto,import in EquiBind+MD.ipynb (notebook)
+pablo-arantes/EGB_2023,https://github.com/pablo-arantes/EGB_2023,auto,import in Protein_Membranes_EGB.ipynb (notebook)
+pablo-arantes/making-it-rain,https://github.com/pablo-arantes/making-it-rain,auto,import in MD_Small_Molecules.ipynb (notebook)
+pablo-arantes/ParametrizANI,https://github.com/pablo-arantes/ParametrizANI,auto,openff-toolkit in requirements.txt
+patrickbryant1/Cfold,https://github.com/patrickbryant1/Cfold,auto,openff-toolkit in environment.yml
+patrickbryant1/Umol,https://github.com/patrickbryant1/Umol,auto,openff-toolkit in environment.yml
+pavankum/mlip_optimizer,https://github.com/pavankum/mlip_optimizer,auto,openff-toolkit in pyproject.toml
+pavankum/NSP_sets,https://github.com/pavankum/NSP_sets,auto,import in 3.restrict_to_n_heavy_atoms_oeversion.py
+pavankum/SFE_Calcs,https://github.com/pavankum/SFE_Calcs,auto,import in abcg2_creating_gro_top.ipynb (notebook)
+pcruzparri/MDAnalysisDHAA,https://github.com/pcruzparri/MDAnalysisDHAA,auto,import in actual simulation.py
+peastman/mlipbenchmarks,https://github.com/peastman/mlipbenchmarks,auto,import in computeSpice.py
+PEFrankel/OpenFF-Bilayer,https://github.com/PEFrankel/OpenFF-Bilayer,auto,import in Procedure/Procedure.ipynb (notebook)
+pitmanme/system_builder,https://github.com/pitmanme/system_builder,auto,openff-toolkit in system_builder_12_06_2021/environment.yml
+Pkoiralap/DynamicBindDocker,https://github.com/Pkoiralap/DynamicBindDocker,auto,import in utils/relax.py
+plainerman/DiffDock-Pocket,https://github.com/plainerman/DiffDock-Pocket,auto,openff-toolkit in environment.yml
+poclab-web/streamlit-pyscf,https://github.com/poclab-web/streamlit-pyscf,auto,import in utils/openmm_ui.py
+pokynmr/POKY,https://github.com/pokynmr/POKY,auto,import in Jupyter_Notebooks/Protein_ligand.ipynb (notebook)
+PooleChem/Pyrite,https://github.com/PooleChem/Pyrite,auto,import in pyrite/__init__.py
+Popov-Lab-UNC/mlimplicitsolvent-RAW,https://github.com/Popov-Lab-UNC/mlimplicitsolvent-RAW,auto,import in TI_calculation.py
+prefix-dev/rattler-build-parser-tests,https://github.com/prefix-dev/rattler-build-parser-tests,auto,import in rendering-tests/openmmforcefields/recipe/test_generators.py
+pruethemann/squeezemd,https://github.com/pruethemann/squeezemd,auto,openff-toolkit in install/environment.yml
+Psivant/femto,https://github.com/Psivant/femto,auto,import in femto/md/prepare.py
+QCMM/ffparaim,https://github.com/QCMM/ffparaim,auto,openff-toolkit in environment.yml
+QuaidAlchemy/quaid,https://github.com/QuaidAlchemy/quaid,auto,import in quaid/alchemy/schema/charge.py
+quantaosun/Dock-MD-FEP,https://github.com/quantaosun/Dock-MD-FEP,auto,import in Dock_MD_FEP_restart.ipynb (notebook)
+quantaosun/pl4,https://github.com/quantaosun/pl4,auto,openff-toolkit in environment.yml
+quantaosun/webdock,https://github.com/quantaosun/webdock,auto,import in Free_Cloud_Docking_2D_3D.ipynb (notebook)
+Quantum-for-Life/fep,https://github.com/Quantum-for-Life/fep,auto,import in main.py
+Quantum-for-Life/openmmwrap,https://github.com/Quantum-for-Life/openmmwrap,auto,import in openmmwrap/md/simulation.py
+qubekit/QUBEKit,https://github.com/qubekit/QUBEKit,auto,import in qubekit/cli/combine.py
+qusers/Q,https://github.com/qusers/Q,auto,import in src/QligFEP/chemIO.py
+RagnarB83/ash,https://github.com/RagnarB83/ash,auto,import in ash/interfaces/interface_OpenMM.py
+rayhanmp/PIGNet2-Thesis,https://github.com/rayhanmp/PIGNet2-Thesis,auto,import in src/data/data.ipynb (notebook)
+resting-dove/funm,https://github.com/resting-dove/funm,auto,openff-toolkit in environment.yml
+RiesBen/ruler,https://github.com/RiesBen/ruler,auto,import in dev/roadmap/E_build_networks.ipynb (notebook)
+rinikerlab/amp_bms,https://github.com/rinikerlab/amp_bms,auto,import in source/examples/calibration/HFE_get_lambda_energies_ELE_LJ.py
+rinikerlab/ANA2B,https://github.com/rinikerlab/ANA2B,auto,import in source/MDHelper.py
+rinikerlab/DASH-tree,https://github.com/rinikerlab/DASH-tree,auto,openff-toolkit in environment.yml
+rinikerlab/GNNImplicitSolvent,https://github.com/rinikerlab/GNNImplicitSolvent,auto,openff-toolkit in environment.yml
+rinikerlab/macrocycle-ff-validation,https://github.com/rinikerlab/macrocycle-ff-validation,auto,import in code/md_templates/parameterize/openff/parameterize-amber.py
+rinikerlab/MD_and_NMR_Relaxometry,https://github.com/rinikerlab/MD_and_NMR_Relaxometry,auto,openff-toolkit in environment.yml
+rinikerlab/mdfptools,https://github.com/rinikerlab/mdfptools,auto,import in mdfptools/Parameteriser.py
+rinikerlab/PyGromosTools,https://github.com/rinikerlab/PyGromosTools,auto,import in pygromos/files/forcefield/openff/openff.py
+rinikerlab/QM-GNNIS,https://github.com/rinikerlab/QM-GNNIS,auto,openff-toolkit in environment.yml
+rinikerlab/reeds_applications,https://github.com/rinikerlab/reeds_applications,auto,openff-toolkit in projects/kinase_inhibitors/analysis_scripts/notebooks/environment.yml
+rinikerlab/rest2_ampmm,https://github.com/rinikerlab/rest2_ampmm,auto,import in src/rest2_ampmm/helper_functions.py
+rinikerlab/TorsionMotifTorsionAngleDistributions,https://github.com/rinikerlab/TorsionMotifTorsionAngleDistributions,auto,openff-toolkit in environment.yml
+rismical-dev/rismical,https://github.com/rismical-dev/rismical,auto,import in tools/sdf2rsm/makeparam_rismical.py
+RokasEl/DiastereomericResolutions,https://github.com/RokasEl/DiastereomericResolutions,auto,import in DiastereomericResolutions/Molecular_dynamics/md_core.py
+rotskoff-group/sc_committor_rates,https://github.com/rotskoff-group/sc_committor_rates,auto,openff-toolkit in environment.yml
+rubyrayjuntos/G12D,https://github.com/rubyrayjuntos/G12D,auto,import in backend/prep_hybrid.py
+rudraprsd/custom_pymatgen,https://github.com/rudraprsd/custom_pymatgen,auto,import in io/openff.py
+SabariKumar/Spring2026_MLForChemicalSystems,https://github.com/SabariKumar/Spring2026_MLForChemicalSystems,auto,openff-toolkit in environment.yml
+Sadhvini26/CrystalGen,https://github.com/Sadhvini26/CrystalGen,auto,import in model/venv/Lib/site-packages/pymatgen/io/openff.py
+SAKETH11111/MoML-CA,https://github.com/SAKETH11111/MoML-CA,auto,openff-toolkit in pyproject.toml
+SAMPEL-Group/solvent-inclusive-mlmm,https://github.com/SAMPEL-Group/solvent-inclusive-mlmm,auto,openff-toolkit in environment.yml
+samuelmurail/Pep-Edit_ST,https://github.com/samuelmurail/Pep-Edit_ST,auto,openff-toolkit in environment.yml
+Sanofi-Public/geomaw-solv,https://github.com/Sanofi-Public/geomaw-solv,auto,import in solvaformer/conformers/md_conformers.py
+schallerdavid/mdscripts,https://github.com/schallerdavid/mdscripts,auto,import in scripts/openmm_md.py
+scipion-chem/scipion-chem-openmm,https://github.com/scipion-chem/scipion-chem-openmm,auto,import in openmm/scripts/openmmConstantpH.py
+seekrcentral/seekrflow,https://github.com/seekrcentral/seekrflow,auto,import in seekrflow/modules/base.py
+shehan807/MMomentA,https://github.com/shehan807/MMomentA,auto,openff-toolkit in phoenix/requirements.txt
+shehan807/mpfit-python,https://github.com/shehan807/mpfit-python,auto,import in python/_legacy_constrained.py
+shehan807/pympfit,https://github.com/shehan807/pympfit,auto,import in examples/gdma-charges.py
+SHervoe-Hansen/SI-Cavity-Formation,https://github.com/SHervoe-Hansen/SI-Cavity-Formation,auto,openff-toolkit in environment.yml
+shirtsgroup/LLC_CG_build,https://github.com/shirtsgroup/LLC_CG_build,auto,import in top/topologies/AA/.ipynb_checkpoints/create_monomer-checkpoint.ipynb (notebook)
+shirtsgroup/openff_examples,https://github.com/shirtsgroup/openff_examples,auto,import in openff-molecule-output-lots-of-ways.ipynb (notebook)
+shirtsgroup/terphenyl_simulations,https://github.com/shirtsgroup/terphenyl_simulations,auto,openff-toolkit in environment.yml
+ShisuLi/mdsim,https://github.com/ShisuLi/mdsim,auto,openff-toolkit in environment.yml
+shogo-d-nakamura/MCP_Vina,https://github.com/shogo-d-nakamura/MCP_Vina,auto,import in scrubber/scrubber/espaloma_minim.py
+SII-ZhangHui/MetalloDock,https://github.com/SII-ZhangHui/MetalloDock,auto,import in utils/minimize_build.py
+SimonBoothroyd/absolv,https://github.com/SimonBoothroyd/absolv,auto,import in absolv/runner.py
+SimonBoothroyd/befit,https://github.com/SimonBoothroyd/befit,auto,import in befit/ff.py
+SimonBoothroyd/binary-mixture-publication,https://github.com/SimonBoothroyd/binary-mixture-publication,auto,import in scripts/setup-benchmarks.py
+SimonBoothroyd/descent-ff,https://github.com/SimonBoothroyd/descent-ff,auto,openff-toolkit in environment.yml
+SimonBoothroyd/gnn-charge-models,https://github.com/SimonBoothroyd/gnn-charge-models,auto,import in data-set-curation/qc-esp/curate-am1bcc-set.py
+SimonBoothroyd/molesp,https://github.com/SimonBoothroyd/molesp,auto,import in molesp/surfaces/grids.py
+SimonBoothroyd/nagl,https://github.com/SimonBoothroyd/nagl,auto,import in nagl/labelling.py
+SimonBoothroyd/nonbonded,https://github.com/SimonBoothroyd/nonbonded,auto,import in nonbonded/cli/projects/benchmark/run.py
+SimonBoothroyd/tico,https://github.com/SimonBoothroyd/tico,auto,import in tico/td.py
+SimonCrouzet/BindingMetrics,https://github.com/SimonCrouzet/BindingMetrics,auto,openff-toolkit in environment.yml
+Siri-chandanareddy21/Crystal,https://github.com/Siri-chandanareddy21/Crystal,auto,import in model/venv/Lib/site-packages/pymatgen/io/openff.py
+slochower/host-guest-benchmarks,https://github.com/slochower/host-guest-benchmarks,auto,import in taproom/tests/test_systems.py
+sofiasanvi/cellulose-enzyme-design,https://github.com/sofiasanvi/cellulose-enzyme-design,auto,import in scripts/running_openmm.py
+soulong/myScript,https://github.com/soulong/myScript,auto,import in python/molecular_dynamics/run_md_openmm.py
+space-group-research/phast-forcefields,https://github.com/space-group-research/phast-forcefields,auto,import in phastforcefields/tests/test_phastforcefields.py
+sukritsingh/distributed-sampling,https://github.com/sukritsingh/distributed-sampling,auto,import in langevin-amd-openmm/aMD-minimal-sim.py
+suleymanselim/AutoEnthalpy,https://github.com/suleymanselim/AutoEnthalpy,auto,import in step1_prepare.py
+suleymanselim/ssBind,https://github.com/suleymanselim/ssBind,auto,import in ssBind/gmx_tools.py
+SweeneyAaron/ChemEM,https://github.com/SweeneyAaron/ChemEM,auto,import in ChemEM/tools/openff_tools.py
+swillow/pdb2amber,https://github.com/swillow/pdb2amber,auto,import in sdf2omm/sdf2omm.py
+talagayev/OpenFE_Setup,https://github.com/talagayev/OpenFE_Setup,auto,openff-toolkit in environment.yml
+tdudgeon/simple-simulate-complex,https://github.com/tdudgeon/simple-simulate-complex,auto,openff-toolkit in environment.yml
+Tenzo-0/SBProbMol3,https://github.com/Tenzo-0/SBProbMol3,auto,import in model/flowr/util/minimize_energy.py
+TheHopeSharedFoundation/molecular-dynamics-tools,https://github.com/TheHopeSharedFoundation/molecular-dynamics-tools,auto,import in run_openmm_molecular_dynamics.py
+THGLab/HiQBind,https://github.com/THGLab/HiQBind,auto,import in hiqbind/fix_protein.py
+thomasjamespope/bespokefit_smee,https://github.com/thomasjamespope/bespokefit_smee,auto,openff-toolkit in pyproject.toml
+timbernat/polymerist,https://github.com/timbernat/polymerist,auto,import in polymerist/mdtools/openfftools/_forcefields.py
+timbernat/polymerist_examples,https://github.com/timbernat/polymerist_examples,auto,import in 2-preparation/2.1-loading_polymer_topology.ipynb (notebook)
+timbernat/WaSP_simulations,https://github.com/timbernat/WaSP_simulations,auto,import in components/anneal.py
+tiny-org/soap-sim,https://github.com/tiny-org/soap-sim,auto,import in src/pdb.py
+Tobias-Krynek/Structural-bioinformatics,https://github.com/Tobias-Krynek/Structural-bioinformatics,auto,import in Protein_ligand.ipynb (notebook)
+UCL-CCS/TIES,https://github.com/UCL-CCS/TIES,auto,import in ties/modules/docker.py
+uibcdf/Academia,https://github.com/uibcdf/Academia,auto,import in academia/Modelado_y_simulacion_molecular/Campos_de_fuerza/Example.ipynb (notebook)
+uibcdf/molsysmt,https://github.com/uibcdf/molsysmt,auto,import in molsysmt/form/rdkit_Mol/to_openff_Molecule.py
+uibcdf/OpenPharmacophore-Tools,https://github.com/uibcdf/OpenPharmacophore-Tools,auto,import in simulations/ERalpha/4_complex_preparation/complex_preparation-DPG.ipynb (notebook)
+ur-whitelab/MDCrow,https://github.com/ur-whitelab/MDCrow,auto,import in mdcrow/tools/base_tools/simulation_tools/setup_and_run.py
+v365747/GraphCoarseningGNN,https://github.com/v365747/GraphCoarseningGNN,auto,import in createSpiceDataset.py
+VasilijEpishkin/chemnext,https://github.com/VasilijEpishkin/chemnext,auto,openff-toolkit in environment.yml
+venkataadury/UMDFP,https://github.com/venkataadury/UMDFP,auto,import in UMFTests.ipynb (notebook)
+volkamerlab/teachopencadd,https://github.com/volkamerlab/teachopencadd,auto,openff-toolkit in teachopencadd/talktorials/T019_md_simulation/requirements.txt
+vvoelz/md_demo,https://github.com/vvoelz/md_demo,auto,import in prepare_ligand/build_ligand_topology.py
+WangXinyan940/rna-ligand-rest2,https://github.com/WangXinyan940/rna-ligand-rest2,auto,openff-toolkit in environment.yml
+webbtheosim/GAMERS,https://github.com/webbtheosim/GAMERS,auto,import in openff_system_maker.py
+webbtheosim/md-simulation-files,https://github.com/webbtheosim/md-simulation-files,auto,import in 2026-pblcs-mon-dim/simulation_preparation/parameterization_initialization/parameterize.py
+westpa/westpa2_tutorials,https://github.com/westpa/westpa2_tutorials,auto,import in tutorial7.6-membrane/common_files/create_system.py
+wiederm/endstate_correction,https://github.com/wiederm/endstate_correction,auto,import in endstate_correction/vis.py
+wiederm/notebooks,https://github.com/wiederm/notebooks,auto,import in neq.ipynb (notebook)
+wolberlab/OpenMMDL,https://github.com/wolberlab/OpenMMDL,auto,openff-toolkit in environment.yml
+woshuizhaole/MicrostateLedger2,https://github.com/woshuizhaole/MicrostateLedger2,auto,openff-toolkit in pyproject.toml
+WoutVanEynde/LOSDT,https://github.com/WoutVanEynde/LOSDT,auto,openff-toolkit in environment.yml
+wutobias/BayesTyper,https://github.com/wutobias/BayesTyper,auto,import in BayesTyper/system.py
+wutobias/xtalmd-scripts,https://github.com/wutobias/xtalmd-scripts,auto,import in Notebooks/Building-ff-and-structure-from-lammps-input.ipynb (notebook)
+wwilla7/alphas-quicksteps,https://github.com/wwilla7/alphas-quicksteps,auto,import in charges/am1bccdpol.py
+wwilla7/dpol-water,https://github.com/wwilla7/dpol-water,auto,import in scripts/mpidforce/run.py
+wwilla7/dpolfit,https://github.com/wwilla7/dpolfit,auto,import in dpolfit/optimization/worker_optimizer.py
+wwilla7/factorpol,https://github.com/wwilla7/factorpol,auto,import in examples/00-generate-qm-reference.ipynb (notebook)
+wwilla7/factorpol-benchmarks-scripts,https://github.com/wwilla7/factorpol-benchmarks-scripts,auto,import in scripts/system.py
+xag/asyn-oligomer-screen,https://github.com/xag/asyn-oligomer-screen,auto,import in screen/md_relax.py
+XiangruiLi-Ray/enhanced_sampling_examples,https://github.com/XiangruiLi-Ray/enhanced_sampling_examples,auto,import in abf.ipynb (notebook)
+Xinheng-He/DeepGlycanDock,https://github.com/Xinheng-He/DeepGlycanDock,auto,import in force_optimize/minimize_utils.py
+XtalPi-XFF/2023_XFF_paper,https://github.com/XtalPi-XFF/2023_XFF_paper,auto,import in conformer_validation/scripts/bench_openmm.py
+xuwenwu/molssi,https://github.com/xuwenwu/molssi,auto,import in teachopencadd/talktorials/019_md_simulation/talktorial.ipynb (notebook)
+xxdnb123/generative_model_25fall,https://github.com/xxdnb123/generative_model_25fall,auto,import in xxd_tools/chem_eval.py
+yaledeus/PVB,https://github.com/yaledeus/PVB,auto,import in data/pdbbind_dataset.py
+yashpatel5400/clean_idp_rl,https://github.com/yashpatel5400/clean_idp_rl,auto,import in main/utils/chem_utils.py
+yasuyuki-kourogi/hsa-binding-pose-ml,https://github.com/yasuyuki-kourogi/hsa-binding-pose-ml,auto,openff-toolkit in environment.yml
+yipy0005/Basic-Molecular-Docking-Workshop,https://github.com/yipy0005/Basic-Molecular-Docking-Workshop,auto,import in molscrub-0.1.1/scrubber/espaloma_minim.py
+Yoik/MD,https://github.com/Yoik/MD,auto,import in 1_D2_Potency_Project/egnn/4_short_md.py
+yontemdemirdogen/MoleculerDock,https://github.com/yontemdemirdogen/MoleculerDock,auto,import in Protein_ligand.ipynb (notebook)
+yoonalimsuwan/REAL-FOLD-ONE,https://github.com/yoonalimsuwan/REAL-FOLD-ONE,auto,import in real_fold_one_v2.py
+Yoshanuikabundi/openff-binder,https://github.com/Yoshanuikabundi/openff-binder,auto,openff-toolkit in environment.yml
+Yoshanuikabundi/openff-pdbscan,https://github.com/Yoshanuikabundi/openff-pdbscan,auto,import in examples/census.ipynb (notebook)
+youjibiying/UnbindingFlow,https://github.com/youjibiying/UnbindingFlow,auto,openff-toolkit in environment.yml
+yousafmaha7/ACPPred-ESM2,https://github.com/yousafmaha7/ACPPred-ESM2,auto,import in Protein_ligand.ipynb (notebook)
+yteshirogi/openmm_md,https://github.com/yteshirogi/openmm_md,auto,import in gen_ff.py
+yuanqing-wang/compchem-class,https://github.com/yuanqing-wang/compchem-class,auto,import in functional.ipynb (notebook)
+yuanqing-wang/mudslide,https://github.com/yuanqing-wang/mudslide,auto,import in mudslide/forces/tests/test_energy_molecule.py
+yuanqing-wang/mule,https://github.com/yuanqing-wang/mule,auto,import in mule/tests/conftest.py
+yuanqing-wang/rye,https://github.com/yuanqing-wang/rye,auto,import in rye/diffusion/tests/test_molecule_diffusion.py
+yuxuanzhuang/batter,https://github.com/yuxuanzhuang/batter,auto,import in batter/analysis/restraint.py
+yxnyu/SakePP,https://github.com/yxnyu/SakePP,auto,openff-toolkit in requirements.txt
+zachjaffery/molecular_dynamics,https://github.com/zachjaffery/molecular_dynamics,auto,import in md_small_CHARGED_molecules_zj.ipynb (notebook)
+zguo235/af3_egfr,https://github.com/zguo235/af3_egfr,auto,import in 8_stepbystep.py
+zhang-ivy/perses_protein_mutations,https://github.com/zhang-ivy/perses_protein_mutations,auto,import in code/20_counterion_fix/debug_double_mutant.ipynb (notebook)
+zy-cmd/BindRNAgen,https://github.com/zy-cmd/BindRNAgen,auto,openff-toolkit in environment.yml
+ale94mleon/Palmiche,https://github.com/ale94mleon/Palmiche,exclude,no dependency or import evidence
+betelgeuze-kang/ligand-docking,https://github.com/betelgeuze-kang/ligand-docking,exclude,no dependency or import evidence
+choderalab/fragment-fold,https://github.com/choderalab/fragment-fold,exclude,no dependency or import evidence
+chrisjonesBSU/cecam-mosdef-workshops,https://github.com/chrisjonesBSU/cecam-mosdef-workshops,exclude,no dependency or import evidence
+desenyon/alcas-a1,https://github.com/desenyon/alcas-a1,exclude,no dependency or import evidence
+EricBoittier/JaxPycharmm,https://github.com/EricBoittier/JaxPycharmm,exclude,no dependency or import evidence
+jax-md/jax-md,https://github.com/jax-md/jax-md,exclude,no dependency or import evidence
+joecampdb/codename_comodo,https://github.com/joecampdb/codename_comodo,exclude,no dependency or import evidence
+jule-c/flowr,https://github.com/jule-c/flowr,exclude,no dependency or import evidence
+lwhitm1/Shift_switch_free_energy,https://github.com/lwhitm1/Shift_switch_free_energy,exclude,no dependency or import evidence
+malamute0882-create/bioflow,https://github.com/malamute0882-create/bioflow,exclude,no dependency or import evidence
+maraxen/proxide,https://github.com/maraxen/proxide,exclude,no dependency or import evidence
+materialsproject/pymatgen-core,https://github.com/materialsproject/pymatgen-core,exclude,no dependency or import evidence
+OpenBioSim/sire,https://github.com/OpenBioSim/sire,exclude,no dependency or import evidence
+openforcefield/openff-nagl-models,https://github.com/openforcefield/openff-nagl-models,exclude,no dependency or import evidence
+openforcefield/openff-units,https://github.com/openforcefield/openff-units,exclude,no dependency or import evidence
+openforcefield/openff-utilities,https://github.com/openforcefield/openff-utilities,exclude,no dependency or import evidence
+openforcefield/rdkit_ugm_2024_demo,https://github.com/openforcefield/rdkit_ugm_2024_demo,exclude,no dependency or import evidence
+openforcefield/symposium_2024_demo,https://github.com/openforcefield/symposium_2024_demo,exclude,no dependency or import evidence
+quantaosun/pl3_gmx_mmpbsa,https://github.com/quantaosun/pl3_gmx_mmpbsa,exclude,no dependency or import evidence
+rangsimanketkaew/TransforMol,https://github.com/rangsimanketkaew/TransforMol,exclude,no dependency or import evidence
+rinikerlab/customETKDG,https://github.com/rinikerlab/customETKDG,exclude,no dependency or import evidence
+rohitium/nnrti-mechanisms,https://github.com/rohitium/nnrti-mechanisms,exclude,no dependency or import evidence
+stef41/sentience2vec,https://github.com/stef41/sentience2vec,exclude,no dependency or import evidence
+ubccr/ccr-examples,https://github.com/ubccr/ccr-examples,exclude,no dependency or import evidence

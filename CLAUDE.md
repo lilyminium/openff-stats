@@ -28,7 +28,7 @@ Google Scholar scraping requires Firefox and geckodriver (hardcoded for macOS).
 # inputs/<kind>/<group>.csv — the filename is the group classification)
 openff-stats add-doi DOI... --file dois.txt --group NAME   # auto-routes: 10.5281/zenodo.* → zenodo, else publication
 openff-stats add-publication-doi "10.1021/acs.jpcb.4c01558" --group force-field   # optionally --scholar
-openff-stats add-github-repo openforcefield/openff-toolkit   # --group = package the repo imports
+openff-stats add-github-repo openforcefield/openff-toolkit --group openff-toolkit   # status=manual; --group = package it imports
 openff-stats add-zenodo 10.5281/zenodo.18842670 --group qcsubmit
 
 # Google Scholar lookup by DOI (find/store scholar_cluster_id)
@@ -48,12 +48,17 @@ openff-stats github-stars                 # requires GITHUB_TOKEN; per-group rep
 # GitHub topic descriptions (manual: needs reviewed category column)
 openff-stats github-descriptions          # requires GITHUB_TOKEN
 
+# GitHub repo discovery: script-verified, writes straight to data/github_repos/<package>.csv
+# (status=auto/exclude, evidence in notes) — no candidates/ review step, unlike discover-* below
+openff-stats discover-github-repos                     # sweep all packages in inputs/github_packages.csv
+openff-stats discover-github-repos --package descent   # one package (import name + search mode from the CSV)
+openff-stats classify-repos               # re-tag data/github_repo_stars.csv offline (e.g. after editing the blacklist)
+
 # Optional bulk discovery → candidates/ (gitignored, human-reviewed)
 openff-stats discover-publications --orcid-csv inputs/orcids.csv
 openff-stats discover-packages
 openff-stats discover-dependents          # conda-forge reverse deps of openff-toolkit
 openff-stats discover-zenodo
-openff-stats discover-github-repos        # GitHub code search; requires GITHUB_TOKEN
 ```
 
 All commands accept `--help` and most accept `--input`/`--output` path overrides.
@@ -83,16 +88,20 @@ DOIs from the DOI itself.
 
 ## Architecture
 
-Every source is a **manually curated** CSV in `inputs/`. Collection reads those
-files and writes stats to `data/`. Discovery is optional and only ever writes
-`candidates/` for human review — it never feeds collection directly.
+Every source is a **manually curated** CSV in `inputs/`, with one exception:
+GitHub repo lists live in `data/github_repos/` because they're script-generated
+measurements, not hand input. Collection reads the curated inputs (plus, for
+GitHub, the script-generated repo lists) and writes stats to `data/`. Discovery
+is optional and normally writes `candidates/` for human review — except GitHub
+discovery, which verifies each candidate itself and writes straight to
+`data/github_repos/`, never touching `candidates/`.
 
 **Curation** (manual)
-- `add-*` commands append one row to an `inputs/<kind>/<group>.csv` (metadata fetched, deduped across all groups)
-- `discover-*` commands write `candidates/*.csv` (gitignored) for review
+- `add-*` commands append one row to a curated CSV (metadata fetched, deduped across all groups): `inputs/<kind>/<group>.csv` for DOIs/Zenodo, `data/github_repos/<group>.csv` (status=manual) for GitHub repos
+- `discover-*` commands write `candidates/*.csv` (gitignored) for review — except `discover-github-repos`, which writes verified rows straight to `data/github_repos/<package>.csv` (status=auto/exclude), no review step
 
 **Collection** (automated, run by CI)
-- Reads `inputs/<kind>/*.csv` → writes `data/*.csv` (rows tagged with `group` = filename)
+- Reads `inputs/<kind>/*.csv` (or `data/github_repos/*.csv` for GitHub) → writes `data/*.csv` (rows tagged with `group` = filename)
 
 ### Source modules (`src/openff_stats/`)
 
@@ -102,7 +111,7 @@ files and writes stats to `data/`. Discovery is optional and only ever writes
 | `publications.py` | `add-publication-doi`, `scholar-lookup`; ORCID/Crossref discovery; Scholar (Selenium) / Crossref / ChemRxiv citation collection |
 | `downloads.py` | conda-forge package + dependent-tree discovery; Anaconda API + condastats download collection |
 | `zenodo.py` | `add-zenodo`; Zenodo discovery; DataCite citation collection |
-| `github.py` | `add-github-repo`; curated-list loader; star/description collection; code-search discovery (requires `GITHUB_TOKEN`) |
+| `github.py` | `add-github-repo`; curated-list loader; star/description collection; script-verified code-search discovery + `classify-repos` (requires `GITHUB_TOKEN` for discovery/stars) |
 
 ### Key data flows
 
@@ -119,10 +128,10 @@ outputs carry the `group` column and print cumulative sums per group.
   - Two parallel methods: Anaconda API (most current totals) and condastats (has monthly/yearly breakdown)
   - groups are `openff` / `competitor` (filenames); download sums are printed per group
 
-- `inputs/github_repos/*.csv` → `github.py` → `data/github_repo_stars.csv` (+ descriptions)
-  - group = the package the repos import (e.g. `openff-toolkit.csv`); `github-stars` prints per-group repo-import counts and star sums
-  - `load_curated_repos()` drops rows with `status == exclude`; used by all github collectors
-  - `status` is `manual` / `auto` / `exclude`
+- `data/github_repos/*.csv` → `github.py` → `data/github_repo_stars.csv` (+ descriptions)
+  - group = the package the repos import (e.g. `openff-toolkit.csv`); files are script-generated by `discover-github-repos` from `inputs/github_packages.csv` (package, import_name, search_mode), plus manual rows via `add-github-repo`
+  - `status` is `auto` (verified evidence recorded in `notes`) / `exclude` (matched search, no evidence — kept for the record) / `manual` (added via `add-github-repo`); `load_curated_repos()` drops rows with `status == exclude`
+  - `github-stars` prints per-group repo-import counts and star sums; `classify-repos` re-applies `valid`/`reason` tagging from `inputs/github_owner_blacklist.csv` offline
 
 - `inputs/zenodo/*.csv` → `zenodo.py` → `data/zenodo_citations.csv`
 
