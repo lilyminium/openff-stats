@@ -357,13 +357,31 @@ Caveats:
 Two independent measurements per curated package:
 
 - `anaconda_total` — the `ndownloads` field from the Anaconda.org API
-  (`api.anaconda.org/package/conda-forge/<pkg>`): lifetime total across all
-  versions and platforms. The most current number.
+  (`api.anaconda.org/package/conda-forge/<pkg>`): per-file download
+  counters summed across all currently hosted files. Anaconda publishes no
+  specification of what these counters include.
 - `condastats_total` — the sum of monthly counts from
-  [condastats](https://github.com/sophiamyang/condastats) (backed by the
-  public `anaconda-package-data` dataset). Also the source of the per-year
-  breakdown in `data/downloads_yearly.csv`. Updated roughly monthly, so it
-  trails the Anaconda API total.
+  [condastats](https://github.com/sophiamyang/condastats), backed by the
+  public [anaconda-package-data](https://github.com/anaconda/anaconda-package-data)
+  dataset, which Anaconda builds by
+  [reprocessing raw HTTP request logs](https://www.anaconda.com/blog/package-download-data-updates-fixes-for-accurate-statistics).
+  Also the source of the per-year breakdown in
+  `data/downloads_yearly.csv`. Updated roughly monthly.
+
+**These two numbers are not the same quantity and can disagree by ±50% per
+package — prefer condastats, quoted with a reference date.** A per-version
+spot-check (openff-units) showed the two systems agree within a few percent
+for old `.tar.bz2`-era versions, but the API counters undercount every
+`.conda`-era version by ~1.5–1.8× — modern `.conda` artifacts are served
+via a separate host (`conda-static.anaconda.org`), whose traffic the
+log-derived dataset counts but the per-file counters largely miss. In the
+other direction, the API counter reads higher for low-install packages with
+many files (it counts every HTTP GET at the origin, including mirror syncs
+and bots). Since the dataset is aggregated monthly and Anaconda has revised
+its history (a CDN double-count in mid-2024 was corrected, and previously
+missed `.conda` downloads were backfilled from June 2022), always cite
+downloads as "N as of YYYY-MM per anaconda-package-data" rather than as a
+timeless total.
 
 Please take these download counts with a gigantic pile of salt. They are *not*
 a reflection of user numbers, and vastly overcount "real" installs:
