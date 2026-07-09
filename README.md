@@ -443,7 +443,7 @@ and only what the search queries match — private/unindexed usage is
 invisible, so the import counts are a lower bound and only as good as the
 search + verification.
 
-Two extra columns, `valid` (bool) and `reason`, separate real external
+Two extra columns, `external` (bool) and `external_reason`, separate real external
 adoption from noise:
 
 - `self` — owner is the OpenFF org or a core maintainer account
@@ -459,7 +459,7 @@ adoption from noise:
 - `fork` — the repo is a fork and another member of the same fork family has
   more stars; only the highest-starred member of a family counts.
 
-Invalid rows are kept in the CSV for auditing — only the "valid" adoption
+Invalid rows are kept in the CSV for auditing — only the "external" adoption
 counts exclude them. `openff-stats classify-repos` re-applies this tagging to
 an existing `data/github_repo_stars.csv` offline (e.g. after editing the
 blacklist), without re-fetching from GitHub; `github-stars` collection also
@@ -469,7 +469,7 @@ applies it automatically on every run.
 openff-stats discover-github-repos                    # sweep all packages in inputs/github_packages.csv → data/github_repos/*.csv
 openff-stats discover-github-repos --package descent  # one package (import name + search mode from the CSV)
 openff-stats add-github-repo openforcefield/openff-toolkit --group openff-toolkit  # manual addition (status=manual)
-openff-stats github-stars                              # → data/github_repo_stars.csv (stars + valid/reason)
+openff-stats github-stars                              # → data/github_repo_stars.csv (stars + external/external_reason + has_python_config)
 openff-stats classify-repos                            # re-tag offline after editing the blacklist
 ```
 

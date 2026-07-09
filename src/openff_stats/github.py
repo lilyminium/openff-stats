@@ -384,10 +384,10 @@ def load_owner_blacklist(path: str = "inputs/github_owner_blacklist.csv") -> dic
 
 
 def classify_repos(df: pd.DataFrame, blacklist: dict[str, str]) -> pd.DataFrame:
-    """Tag each repo ``valid``/``reason`` based on whether its owner is blacklisted.
+    """Tag each repo ``external``/``reason`` based on whether its owner is blacklisted.
 
     Repos owned by the OpenFF org/maintainers (self) or by conda-forge (meta,
-    packaging) are excluded from external-adoption counts via ``valid=False``.
+    packaging) are excluded from external-adoption counts via ``external=False``.
 
     Parameters
     ----------
@@ -399,12 +399,12 @@ def classify_repos(df: pd.DataFrame, blacklist: dict[str, str]) -> pd.DataFrame:
     Returns
     -------
     pd.DataFrame
-        *df* with ``valid`` (bool) and ``reason`` (str, ``""`` when valid) columns added.
+        *df* with ``external`` (bool) and ``reason`` (str, ``""`` when external) columns added.
     """
     df = df.copy()
     owners = df["repo"].astype(str).str.split("/", n=1).str[0].str.lower()
     reasons = owners.map(blacklist)
-    df["valid"] = reasons.isna()
+    df["external"] = reasons.isna()
     df["reason"] = reasons.fillna("")
     return df
 
@@ -412,18 +412,18 @@ def classify_repos(df: pd.DataFrame, blacklist: dict[str, str]) -> pd.DataFrame:
 def apply_fork_rule(df: pd.DataFrame, group_priority: list[str] | None = None) -> pd.DataFrame:
     """Invalidate cross-group duplicates and forks of higher-starred repos.
 
-    Two passes, neither of which touches rows that are already invalid
+    Two passes, neither of which touches rows that are already external=False
     (their ``self``/``meta``/... reason is left alone):
 
     1. **Duplicates** — the same repo listed in more than one group only
        counts once: the row in the highest-priority group (the order of
        *group_priority*, e.g. the row order of inputs/github_packages.csv;
-       file order when not given) keeps its validity, every other row
-       becomes ``valid=False``, ``reason="duplicate"``.
+       file order when not given) keeps its external status, every other row
+       becomes ``external=False``, ``reason="duplicate"``.
     2. **Forks** — among the remaining one-row-per-repo set, repos are
        grouped by fork family (``fork_of`` for forks, else the repo's own
        name).  The member with the highest star count keeps its existing
-       ``valid``/``reason``; every other member is set ``valid=False``,
+       ``external``/``reason``; every other member is set ``external=False``,
        ``reason="fork"``.  A fork whose family has no other tracked member
        is left as-is.
 
@@ -431,7 +431,7 @@ def apply_fork_rule(df: pd.DataFrame, group_priority: list[str] | None = None) -
     ----------
     df
         DataFrame with ``group``, ``repo``, ``fork_of``, ``stars``,
-        ``valid``, and ``reason`` columns (as produced by
+        ``external``, and ``reason`` columns (as produced by
         `collect_repo_stars`).
     group_priority
         Group names in decreasing priority, deciding which group keeps a
@@ -440,7 +440,7 @@ def apply_fork_rule(df: pd.DataFrame, group_priority: list[str] | None = None) -
     Returns
     -------
     pd.DataFrame
-        *df* with ``valid``/``reason`` updated for demoted rows.
+        *df* with ``external``/``reason`` updated for demoted rows.
     """
     df = df.copy()
 
@@ -455,8 +455,8 @@ def apply_fork_rule(df: pd.DataFrame, group_priority: list[str] | None = None) -
     for idx in order:
         key = str(df.at[idx, "repo"]).lower()
         if key in primary_rows:
-            if df.at[idx, "valid"]:
-                df.at[idx, "valid"] = False
+            if df.at[idx, "external"]:
+                df.at[idx, "external"] = False
                 df.at[idx, "reason"] = "duplicate"
         else:
             primary_rows[key] = idx
@@ -466,9 +466,9 @@ def apply_fork_rule(df: pd.DataFrame, group_priority: list[str] | None = None) -
     family = fork_of.where(fork_of != "", primary["repo"]).str.lower()
     winners = set(primary.groupby(family)["stars"].idxmax())
     for idx in primary.index:
-        if idx in winners or not df.at[idx, "valid"]:
+        if idx in winners or not df.at[idx, "external"]:
             continue
-        df.at[idx, "valid"] = False
+        df.at[idx, "external"] = False
         df.at[idx, "reason"] = "fork"
     return df
 
@@ -476,14 +476,14 @@ def apply_fork_rule(df: pd.DataFrame, group_priority: list[str] | None = None) -
 def collect_repo_stars(inputs_dir: str, output_csv: str) -> pd.DataFrame:
     """Fetch star counts for every curated repo via the GitHub Repos API.
 
-    Makes one request per repo.  Skips repos that return a non-200 status
-    (private, deleted, or renamed) and records stars=0 for them.  Records a
-    ``fork_of`` column (the fork-network root's ``full_name``, from the API's
-    ``source`` field; ``""`` for non-forks).  Classifies each repo's owner
-    against `load_owner_blacklist` — ``valid=False`` marks self-owned (OpenFF
+    Makes one request per repo to fetch star counts and fork information.
+    Also checks for the presence of ``setup.py`` or ``pyproject.toml`` in each
+    repo during the same loop and records a ``has_python_config`` column
+    (True if either file exists). Classifies each repo's owner against
+    `load_owner_blacklist` — ``external=False`` marks self-owned (OpenFF
     org/maintainers) or packaging (conda-forge) repos — then applies
     `apply_fork_rule` so only the highest-starred member of a fork family
-    counts as valid.  Both are excluded from external-adoption counts.
+    counts as external. Both are excluded from external-adoption counts.
     Prints per-group sums (the group = which package the repos import, so
     the repo count per group is the "GitHub repo imports" number).
 
@@ -495,13 +495,14 @@ def collect_repo_stars(inputs_dir: str, output_csv: str) -> pd.DataFrame:
         Directory of curated repo group CSVs (a single CSV also works).
     output_csv
         Path to write the results CSV (columns: ``group``, ``repo``,
-        ``stars``, ``fork_of``, ``valid``, ``reason``).
+        ``stars``, ``fork_of``, ``has_python_config``, ``external``,
+        ``reason``).
 
     Returns
     -------
     pd.DataFrame
         DataFrame with columns ``group``, ``repo``, ``stars``, ``fork_of``,
-        ``valid``, and ``reason``.
+        ``has_python_config``, ``external``, and ``reason``.
     """
     import tqdm
 
@@ -509,7 +510,7 @@ def collect_repo_stars(inputs_dir: str, output_csv: str) -> pd.DataFrame:
     df = load_curated_repos(inputs_dir)
     rows = []
 
-    for _, curated_row in tqdm.tqdm(df.iterrows(), total=len(df), desc="Fetching stars"):
+    for _, curated_row in tqdm.tqdm(df.iterrows(), total=len(df), desc="Fetching stars and Python configs"):
         repo = curated_row["repo"]
         url = f"https://api.github.com/repos/{repo}"
         while True:
@@ -532,11 +533,25 @@ def collect_repo_stars(inputs_dir: str, output_csv: str) -> pd.DataFrame:
             else:
                 stars = 0
 
+            # Check for pyproject.toml or setup.py during the same repo loop
+            has_python_config = False
+            for filename in ["pyproject.toml", "setup.py"]:
+                check_url = f"https://api.github.com/repos/{repo}/contents/{filename}"
+                try:
+                    check_r = requests.get(check_url, headers=headers, timeout=30)
+                    if check_r.status_code == 200:
+                        has_python_config = True
+                        break
+                except Exception:
+                    pass
+                time.sleep(0.01)  # modest rate limiting for each check
+
             rows.append({
                 "group": curated_row["group"],
                 "repo": repo,
                 "stars": stars,
                 "fork_of": fork_of,
+                "has_python_config": has_python_config,
             })
             break
 
@@ -550,11 +565,13 @@ def collect_repo_stars(inputs_dir: str, output_csv: str) -> pd.DataFrame:
     print(f"\nSaved star counts for {len(result)} repos to {output_csv}")
     print("\nGitHub repo imports per group:")
     for group_name, subset in result.groupby("group"):
-        n_valid = int(subset["valid"].sum())
-        valid_stars = int(subset.loc[subset["valid"], "stars"].sum())
+        n_external = int(subset["external"].sum())
+        external_stars = int(subset.loc[subset["external"], "stars"].sum())
+        n_with_config = int(subset["has_python_config"].sum())
         print(
-            f"  {group_name}: {len(subset)} repos ({n_valid} valid), "
-            f"{int(subset['stars'].sum()):,} stars ({valid_stars:,} valid)"
+            f"  {group_name}: {len(subset)} repos ({n_external} external), "
+            f"{int(subset['stars'].sum()):,} stars ({external_stars:,} external) | "
+            f"{n_with_config} with Python config"
         )
     return result
 

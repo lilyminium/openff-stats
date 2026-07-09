@@ -1,6 +1,6 @@
 # data/
 
-Output files from the openff-stats pipeline. Last updated: 2026-07-07.
+Output files from the openff-stats pipeline. Last updated: 2026-07-09.
 See the top-level README's "Methodology and caveats" section for how each
 number is measured. Every table below is broken down by group — the group
 is the `inputs/<kind>/<group>.csv` file a source is curated in.
@@ -88,23 +88,29 @@ against the files that matched (dependency manifests / real import
 statements) and tagged `status=auto` or `exclude` with the evidence recorded
 per row. Only `auto`/`manual` rows are counted below.
 
-| Group (package imported) | Repos | Valid repos | Stars | Valid stars |
-|--------------------------|-------|--------------|-------|-------------|
-| openff-toolkit | 660 | 544 | 14,006 | 12,558 |
-| openff-qcsubmit | 73 | 1 | 364 | 8 |
-| descent | 4 | 0 | 7 | 0 |
-| yammbs | 28 | 0 | 39 | 0 |
-| **Total** | **765** | **545** | **14,416** | **12,566** |
+| Group (package imported) | Repos | External repos | Stars | External stars | With Python config |
+|--------------------------|-------|----------------|-------|----------------|--------------------|
+| openff-toolkit | 660 | 544 | 14,067 | 12,618 | 249 |
+| openff-qcsubmit | 73 | 1 | 364 | 8 | 19 |
+| descent | 4 | 0 | 7 | 0 | 0 |
+| yammbs | 28 | 0 | 39 | 0 | 8 |
+| **Total** | **765** | **545** | **14,477** | **12,626** | **276** |
 
-> **Caveat:** "Valid" counts exclude repos owned by the OpenFF org and core
-> maintainers (`reason` = "self" — these measure our own activity, not
+> **Caveat:** "External" counts exclude repos owned by the OpenFF org and core
+> maintainers (`external_reason` = "self" — these measure our own activity, not
 > external adoption), `conda-forge` packaging repos (`"meta"`), repos listed
 > in a higher-priority group (`"duplicate"` — a repo importing several
 > tracked packages counts once, in the first group per
 > `inputs/github_packages.csv`, so later rows read as *additional* adoption),
 > and forks outshone by a family member (`"fork"`). The full rows remain in
-> `github_repo_stars.csv` with a `reason` column; quote the valid counts,
+> `github_repo_stars.csv` with an `external_reason` column; quote the external counts,
 > not the raw totals, when talking about external adoption.
+
+> **Note on Python configs:** The `github_repo_stars.csv` file includes a
+> `has_python_config` column indicating whether each repo contains a
+> `setup.py` or `pyproject.toml` file. This signals a Python package and
+> can be used to filter for only "mature" repos that have adopted modern
+> packaging (pyproject.toml) or traditional setup.py.
 
 > **Note on descent:** its generic name makes GitHub code search unusable
 > (`gradient-descent` etc. match a `descent` query), so it is searched in
