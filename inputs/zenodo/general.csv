@@ -31,7 +31,6 @@ zenodo_id,doi,title,creators,publication_year,resource_type
 15443084,10.5281/zenodo.15443084,Open Force Field and Open Free Energy,"Baggs Eastwood, James Robert",2025,poster
 17936667,10.5281/zenodo.17936667,OpenFF 2.2.1 Relative Binding Free Energy Benchmarks,"Irfan, Alibay",2025,dataset
 17604924,10.5281/zenodo.17604924,OpenFE RBFE benchmarks of OpenFF 3.0.0alpha0,"Alibay, Irfan",2025,dataset
-17525527,10.5281/zenodo.17525527,openforcefield/openff-toolkit: 0.18.0 Runtime improvements for large molecules,Jeff Wagner; Matt Thompson; David L. Mobley; John Chodera; Caitlin Bannan; Andrea Rizzi; trevorgokey; David L. Dotson; Josh A. Mitchell; jaimergp; Pavan Behara; Camila; Christopher Bayly; JoshHorton; Lily Wang; Iván Pulido; PEFrankel; Victoria Lim; Jennifer A Clark; Sukanya Sasmal; SimonBoothroyd; Andrew Dalke; Ethan Holz; Brent Westbrook; Daniel Smith; Evan Pretti; Irfan Alibay; Josh Horton,2025,software
 17408578,10.5281/zenodo.17408578,OpenFF 2.3.0rc1 Relative Binding Free Energy Benchmarks,"Alibay, Irfan",2025,dataset
 17344420,10.5281/zenodo.17344420,POPC Openff-2.2.1 run1,JH,2025,dataset
 17343810,10.5281/zenodo.17343810,POPC Openff-2.2.1 run2,JH,2025,dataset

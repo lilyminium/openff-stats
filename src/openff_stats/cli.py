@@ -225,15 +225,21 @@ def add_github_repo_cmd(repo: str, inputs_dir: str, group: str) -> None:
     show_default=True,
     help="Group file to append to (filename = classification, e.g. qcsubmit).",
 )
-def add_zenodo_cmd(id_or_doi: str, inputs_dir: str, group: str) -> None:
+@click.option(
+    "--move",
+    is_flag=True,
+    help="Move the record to the target group if it exists in another group.",
+)
+def add_zenodo_cmd(id_or_doi: str, inputs_dir: str, group: str, move: bool) -> None:
     """Add a Zenodo record (numeric ID, DOI, or URL) to a curated group CSV.
 
-    The duplicate check spans every group file.
+    The duplicate check spans every group file. If found in another group,
+    use --move to transfer it to the target group.
     """
     from openff_stats.zenodo import add_zenodo_record
 
     try:
-        add_zenodo_record(id_or_doi, inputs_dir, group)
+        add_zenodo_record(id_or_doi, inputs_dir, group, move=move)
     except ValueError as exc:
         raise click.ClickException(str(exc))
 

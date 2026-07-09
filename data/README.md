@@ -45,14 +45,23 @@ additions are counted from the next `openff-stats citations` run.
 | Sage 2.3.0 + AshGC | 2026 | 0 | 3 |
 | **Total** | | **463** | **690** |
 
+### Software Papers
+
+| Paper | Year | Crossref | Scholar |
+|-------|------|----------|---------|
+| Escaping Atom Types (Toolkit) | 2018 | 154 | 239 |
+| BespokeFit (QCSubmit) | 2022 | 37 | 72 |
+| **Total** | | **181** | **311** |
+
 ## Zenodo citations (DataCite)
 
 | Group | Records | Citations |
 |-------|---------|-----------|
-| general | 233 | 23 |
+| general | 232 | 22 |
+| openff-toolkit | 65 | 19 |
 | qcsubmit | 18 | 7 |
-| yammbs | 1 | 1 |
-| **Total** | **252** | **31** |
+| yammbs | 2 | 2 |
+| **Total** | **317** | **50** |
 
 ## Download counts
 
