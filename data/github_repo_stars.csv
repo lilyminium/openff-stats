@@ -1,7 +1,11 @@
 group,repo,stars,fork_of,has_python_config,external,reason
+descent,conda-forge/descent-feedstock,0,,False,False,meta
 descent,fjclark/des-lj-fitting,0,,False,False,duplicate
 descent,lilyminium/2026-polymers,0,,False,False,self
-descent,openforcefield/back-to-school-jen,2,,False,False,self
+descent,nirum/descent,25,,True,True,
+descent,openforcefield/2026-virtual-workshops,5,,False,False,self
+descent,openforcefield/anything-goes,11,,False,False,self
+descent,openforcefield/back-to-school-ashley,0,,False,False,self
 descent,SimonBoothroyd/descent-ff,5,,False,False,duplicate
 openff-qcsubmit,asapdiscovery/asapdiscovery,50,,True,False,duplicate
 openff-qcsubmit,bismuthadams1/ActiveLearningSandbox,0,,True,False,duplicate
@@ -13,7 +17,7 @@ openff-qcsubmit,conda-forge/openff-qcsubmit-feedstock,0,,False,False,meta
 openff-qcsubmit,dellacortelab/trip,8,,False,True,
 openff-qcsubmit,finlayiainmaclean/opensqm,0,,True,False,duplicate
 openff-qcsubmit,fjclark/descent-workflow,0,,True,False,duplicate
-openff-qcsubmit,greener-group/garnet,10,,True,False,duplicate
+openff-qcsubmit,greener-group/garnet,11,,True,False,duplicate
 openff-qcsubmit,JHoeflich1/OpenFFLipid,0,,False,False,duplicate
 openff-qcsubmit,jthorton/BespokeFit-PLB,1,,False,False,duplicate
 openff-qcsubmit,jthorton/double-exp-vdw,4,,False,False,duplicate
@@ -54,7 +58,7 @@ openff-qcsubmit,openforcefield/back-to-school-ashley,0,,False,False,self
 openff-qcsubmit,openforcefield/back-to-school-jen,2,,False,False,self
 openff-qcsubmit,openforcefield/besmarts-smee-refit,0,,False,False,self
 openff-qcsubmit,openforcefield/openff-benchmark,9,,True,False,self
-openff-qcsubmit,openforcefield/openff-bespokefit,79,,True,False,self
+openff-qcsubmit,openforcefield/openff-bespokefit,80,,True,False,self
 openff-qcsubmit,openforcefield/openff-docs,0,,False,False,self
 openff-qcsubmit,openforcefield/openff-nagl,23,,True,False,self
 openff-qcsubmit,openforcefield/openff-qcsubmit,26,,True,False,self
@@ -92,7 +96,7 @@ openff-toolkit,AIB001/PRISM,28,,True,True,
 openff-toolkit,aiscihub/valleyfeverresearch,0,,False,True,
 openff-toolkit,ajfriedman22/PTP1B,0,,False,True,
 openff-toolkit,ajfriedman22/SM_ConfGen,2,,True,True,
-openff-toolkit,ale94mleon/BindFlow,166,,True,True,
+openff-toolkit,ale94mleon/BindFlow,168,,True,True,
 openff-toolkit,ale94mleon/TOFF,1,,True,True,
 openff-toolkit,alex-hh/in-silico-pgdh,0,,False,True,
 openff-toolkit,Alexey-Lukin/silken_net,19,,False,True,
@@ -264,8 +268,8 @@ openff-toolkit,fjclark/mace-omol-interaction-energies,0,,False,True,
 openff-toolkit,fjclark/openff-smarts-matching-example,0,,False,True,
 openff-toolkit,FoldingAtHome/covid-moonshot,59,,False,True,
 openff-toolkit,forlilab/cosolvkit,33,,True,True,
-openff-toolkit,forlilab/Meeko,376,,True,True,
-openff-toolkit,forlilab/molscrub,53,,True,True,
+openff-toolkit,forlilab/Meeko,375,,True,True,
+openff-toolkit,forlilab/molscrub,54,,True,True,
 openff-toolkit,fourmodern/toc_tutorial_colab,0,,False,True,
 openff-toolkit,francescopatane96/Computer_aided_drug_discovery_kit,25,,False,True,
 openff-toolkit,FrankLovelace/BraggSpect,0,,False,True,
@@ -282,9 +286,9 @@ openff-toolkit,Girish09-work/Reinvent-Scoring,0,,True,True,
 openff-toolkit,GJPvWesten/acmdd,0,,False,True,
 openff-toolkit,gosldorf/Prod_Interchange,1,,False,True,
 openff-toolkit,graeter-group/grappa,62,,True,True,
-openff-toolkit,greener-group/garnet,10,,True,True,
+openff-toolkit,greener-group/garnet,11,,True,True,
 openff-toolkit,greenrace666/biocolabs,0,,False,True,
-openff-toolkit,Grenzlinie/MatTools,15,,True,True,
+openff-toolkit,Grenzlinie/MatTools,16,,True,True,
 openff-toolkit,HaoLan-compchem/blog_03_12_2025,1,,False,True,
 openff-toolkit,HaoLan-compchem/blog_16_03_2026,0,,False,True,
 openff-toolkit,HBioquant/DiffBindFR,118,,True,True,
@@ -304,7 +308,7 @@ openff-toolkit,ingcoder/unomd,183,,True,True,
 openff-toolkit,inna-tsymb/structural_bioinformatics,0,,False,True,
 openff-toolkit,intbio/ResParTools,0,,False,True,
 openff-toolkit,Intelligent-Drug-Discovery-Lab/SurfDock,254,,False,True,
-openff-toolkit,InternScience/Agents-A1,424,,False,True,
+openff-toolkit,InternScience/Agents-A1,435,,False,True,
 openff-toolkit,InternScience/ChemClaw,52,,False,True,
 openff-toolkit,iobio-zjut/DiffEnsemble,0,,False,True,
 openff-toolkit,isayevlab/Auto3D_pkg,195,,True,True,
@@ -348,7 +352,7 @@ openff-toolkit,jthorton/double-exp-vdw,4,,False,True,
 openff-toolkit,jthorton/htf-tinker,3,,True,True,
 openff-toolkit,jthorton/nagl-mbis,2,,True,True,
 openff-toolkit,jthorton/SPICE-SMEE,3,,False,True,
-openff-toolkit,jule-c/flowr_root,126,,False,True,
+openff-toolkit,jule-c/flowr_root,128,,False,True,
 openff-toolkit,JulianSierraRodriguez/boresch-restraint-vienna-kit,0,,True,True,
 openff-toolkit,jwperthold/GroScore,0,,False,True,
 openff-toolkit,kangk1204/duetscreen,0,,True,True,
@@ -426,7 +430,7 @@ openff-toolkit,maraxen/prolix,0,,True,True,
 openff-toolkit,martimunicoy/peleffy,12,,True,True,
 openff-toolkit,Martin-Floor/prepare_proteins,8,,True,True,
 openff-toolkit,martinez-zacharya/TRILL,121,,True,True,
-openff-toolkit,materialsproject/atomate2,322,,True,True,
+openff-toolkit,materialsproject/atomate2,323,,True,True,
 openff-toolkit,MaterSim/HTOCSP,8,,False,True,
 openff-toolkit,MaterSim/pyocse,3,,True,True,
 openff-toolkit,mathilfiker/ml_for_charges,2,,False,True,
@@ -498,7 +502,7 @@ openff-toolkit,oess/orionmdcore,2,,True,True,
 openff-toolkit,ofantomas/sella-optimizer-autoresearch,1,,True,True,
 openff-toolkit,ojcharles/notebooks,0,,False,True,
 openff-toolkit,olsson-group/sma-md,5,,False,True,
-openff-toolkit,olsson-group/thermodynamic-interpolation,3,,False,True,
+openff-toolkit,olsson-group/thermodynamic-interpolation,4,,False,True,
 openff-toolkit,olsson-group/transBG,1,,False,True,
 openff-toolkit,omsf/joint-demo,6,,False,True,
 openff-toolkit,omsf/OpenPharmMDFlow,0,,True,True,
@@ -527,7 +531,7 @@ openff-toolkit,openforcefield/interchange-regression-testing,0,,True,False,self
 openff-toolkit,openforcefield/interchange-workshop-2022,0,,False,False,self
 openff-toolkit,openforcefield/MPID_plugin,0,,True,False,self
 openff-toolkit,openforcefield/openff-amber-ff-ports,3,,True,False,self
-openff-toolkit,openforcefield/openff-bespokefit,79,,True,False,self
+openff-toolkit,openforcefield/openff-bespokefit,80,,True,False,self
 openff-toolkit,openforcefield/openff-docs,0,,False,False,self
 openff-toolkit,openforcefield/openff-evaluator,59,,True,False,self
 openff-toolkit,openforcefield/openff-forcefields,187,,True,False,self
@@ -684,13 +688,13 @@ openff-toolkit,tiny-org/soap-sim,0,,False,True,
 openff-toolkit,Tobias-Krynek/Structural-bioinformatics,0,,False,True,
 openff-toolkit,UCL-CCS/TIES,9,,True,True,
 openff-toolkit,uibcdf/Academia,6,,False,True,
-openff-toolkit,uibcdf/molsysmt,13,,True,True,
+openff-toolkit,uibcdf/molsysmt,14,,True,True,
 openff-toolkit,uibcdf/OpenPharmacophore-Tools,1,,False,True,
-openff-toolkit,ur-whitelab/MDCrow,243,,True,True,
+openff-toolkit,ur-whitelab/MDCrow,244,,True,True,
 openff-toolkit,v365747/GraphCoarseningGNN,0,,False,True,
 openff-toolkit,VasilijEpishkin/chemnext,1,,False,True,
 openff-toolkit,venkataadury/UMDFP,2,,False,True,
-openff-toolkit,volkamerlab/teachopencadd,1029,,True,True,
+openff-toolkit,volkamerlab/teachopencadd,1030,,True,True,
 openff-toolkit,vvoelz/md_demo,1,,False,True,
 openff-toolkit,WangXinyan940/rna-ligand-rest2,1,,True,True,
 openff-toolkit,webbtheosim/GAMERS,2,,False,True,

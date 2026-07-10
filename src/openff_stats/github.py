@@ -76,7 +76,23 @@ def _build_queries(
     environment files — the last-resort mode for generic package names where
     even the other manifest and import queries are dominated by same-token
     noise (see inputs/github_packages.csv).
+
+    ``search_mode="manifest-yaml-conservative"`` targets generic package names
+    by searching YAML files for the conda list syntax (``"- <package>"``) plus
+    modern configs (pyproject.toml, pixi.toml), avoiding the noise of
+    requirements.txt and Python imports. Covers all YAML file names (not just
+    environment.yml / environment.yaml). Verification handles YAML, YML, and
+    TOML dependency formats.
     """
+    if search_mode == "manifest-yaml-conservative":
+        return [
+            # YAML list syntax: search specific environment filenames
+            f'"- {package_name}" extension:yaml',
+            f'"- {package_name}" extension:yml',
+            # Modern configs
+            f"{package_name} filename:pyproject.toml",
+            f"{package_name} filename:pixi.toml",
+        ]
     if search_mode == "environment-only":
         return [
             f"{package_name} filename:environment.yml",
@@ -850,6 +866,76 @@ def _notebook_has_import(content: str, import_name: str) -> bool:
     return False
 
 
+def _toml_has_package(content: str, package_name: str) -> bool:
+    """Return True if a TOML file (pyproject.toml, pixi.toml) declares *package_name*.
+    
+    Searches common dependency sections:
+    - [project] dependencies
+    - [build-system] requires
+    - [tool.poetry.dependencies]
+    - [tool.pixi.dependencies]
+    - [tool.pixi.pypi-dependencies]
+    
+    Extracts package names from version specifiers (e.g. "descent>=0.5" → "descent")
+    and matches case-insensitively, rejecting substring-only matches.
+    """
+    try:
+        import tomllib
+    except ImportError:
+        # Python < 3.11
+        try:
+            import tomli as tomllib
+        except ImportError:
+            # No TOML parser available; fall back to regex search
+            return False
+    
+    try:
+        data = tomllib.loads(content)
+    except Exception:
+        return False
+    
+    package_name_lower = package_name.lower()
+    
+    def extract_package_name(dep_str: str) -> str:
+        """Extract package name from a dependency string (e.g. 'descent>=0.5' → 'descent')."""
+        dep = str(dep_str).split("[")[0]  # Remove extras
+        dep = dep.split(";")[0]  # Remove environment markers
+        dep = dep.split(">")[0].split("<")[0].split("=")[0].split("!")[0].split("~")[0].strip()
+        return dep.lower()
+    
+    # Check [project] dependencies (PEP 621)
+    project_deps = data.get("project", {}).get("dependencies", [])
+    if isinstance(project_deps, list):
+        if any(extract_package_name(dep) == package_name_lower for dep in project_deps):
+            return True
+    
+    # Check [build-system] requires
+    build_deps = data.get("build-system", {}).get("requires", [])
+    if isinstance(build_deps, list):
+        if any(extract_package_name(dep) == package_name_lower for dep in build_deps):
+            return True
+    
+    # Check [tool.poetry.dependencies]
+    poetry_deps = data.get("tool", {}).get("poetry", {}).get("dependencies", {})
+    if isinstance(poetry_deps, dict):
+        if any(str(k).lower() == package_name_lower for k in poetry_deps.keys()):
+            return True
+    
+    # Check [tool.pixi.dependencies]
+    pixi_deps = data.get("tool", {}).get("pixi", {}).get("dependencies", {})
+    if isinstance(pixi_deps, dict):
+        if any(str(k).lower() == package_name_lower for k in pixi_deps.keys()):
+            return True
+    
+    # Check [tool.pixi.pypi-dependencies] (for git installs and PyPI packages)
+    pixi_pypi_deps = data.get("tool", {}).get("pixi", {}).get("pypi-dependencies", {})
+    if isinstance(pixi_pypi_deps, dict):
+        if any(str(k).lower() == package_name_lower for k in pixi_pypi_deps.keys()):
+            return True
+    
+    return False
+
+
 def _verify_repo(
     package_name: str,
     import_name: str,
@@ -898,8 +984,13 @@ def _verify_repo(
     import re
 
     manifest_regex = _manifest_regex(package_name)
+    # Check files by recognized names OR by YAML extension with "env" in stem
+    # (catches non-standard names like conda-env.yaml, env.yaml found by YAML searches)
     manifest_paths = sorted(
-        p for p in paths if pathlib.PurePosixPath(p).name.lower() in _MANIFEST_BASENAMES
+        p for p in paths
+        if pathlib.PurePosixPath(p).name.lower() in _MANIFEST_BASENAMES
+        or (pathlib.PurePosixPath(p).suffix.lower() in (".yaml", ".yml") 
+            and "env" in pathlib.PurePosixPath(p).stem.lower())
     )
     for path in manifest_paths:
         # Pre-screen on the search's text-match fragments: only fetch the
@@ -919,9 +1010,16 @@ def _verify_repo(
         time.sleep(0.5)
         if content is None:
             continue
-        for line in content.splitlines():
-            if manifest_regex.match(line.split("#", 1)[0]):
+        
+        # Check TOML files using TOML parser
+        if pathlib.PurePosixPath(path).suffix.lower() == ".toml":
+            if _toml_has_package(content, package_name):
                 return "auto", f"{package_name} in {path}"
+        # Check all other formats (YAML, YML, setup.cfg, requirements.txt, etc.)
+        else:
+            for line in content.splitlines():
+                if manifest_regex.match(line.split("#", 1)[0]):
+                    return "auto", f"{package_name} in {path}"
 
     import_regex = re.compile(
         rf"(^|[^\w.])(import|from)\s+{re.escape(import_name)}\b", re.MULTILINE
