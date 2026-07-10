@@ -76,6 +76,57 @@ section of the top-level README for the spot-check.
 | openff | 15 | 10,072,572 | 7,254,585 |
 | competitor | 2 | 5,155,888 | 4,941,993 |
 
+### Average monthly users per year
+
+| Year | Group | Total Downloads | Avg Monthly | 10% of Monthly |
+|------|-------|-----------------|-------------|----------------|
+| 2019 | competitor | 16,522 | 1,377 | 138 |
+| 2020 | competitor | 123,568 | 10,297 | 1,030 |
+| 2021 | competitor | 584,737 | 48,728 | 4,873 |
+| 2021 | openff | 261,653 | 21,804 | 2,180 |
+| 2022 | competitor | 610,264 | 50,855 | 5,086 |
+| 2022 | openff | 571,635 | 47,636 | 4,764 |
+| 2023 | competitor | 709,601 | 59,133 | 5,913 |
+| 2023 | openff | 1,370,440 | 114,203 | 11,420 |
+| 2024 | competitor | 1,073,923 | 89,494 | 8,949 |
+| 2024 | openff | 2,499,397 | 208,283 | 20,828 |
+| 2025 | competitor | 1,440,190 | 120,016 | 12,002 |
+| 2025 | openff | 3,652,277 | 304,356 | 30,436 |
+| 2026 | competitor | 597,083 | 85,298 | 8,530 |
+| 2026 | openff | 1,722,728 | 246,104 | 24,610 |
+
+### Average monthly users per year by package
+
+#### 2025
+
+**Competitor packages (2025):**
+
+| Package | Downloads | Avg Monthly | 10% of Monthly |
+|---------|-----------|-------------|----------------|
+| ambertools | 697,426 | 58,119 | 5,812 |
+| parmed | 742,764 | 61,897 | 6,190 |
+
+**Openff packages (2025):**
+
+| Package | Downloads | Avg Monthly | 10% of Monthly |
+|---------|-----------|-------------|----------------|
+| descent | 1,447 | 121 | 12 |
+| openff-amber-ff-ports | 507,954 | 42,330 | 4,233 |
+| openff-bespokefit | 12,566 | 1,047 | 105 |
+| openff-evaluator-base | 4,177 | 348 | 35 |
+| openff-forcefields | 514,924 | 42,910 | 4,291 |
+| openff-fragmenter-base | 28,616 | 2,385 | 238 |
+| openff-interchange-base | 473,612 | 39,468 | 3,947 |
+| openff-models | 260,631 | 21,719 | 2,172 |
+| openff-nagl-base | 100,073 | 8,339 | 834 |
+| openff-nagl-models | 94,245 | 7,854 | 785 |
+| openff-qcsubmit | 32,375 | 2,698 | 270 |
+| openff-recharge | 24,318 | 2,026 | 203 |
+| openff-toolkit-base | 526,029 | 43,836 | 4,384 |
+| openff-toolkit-examples | 10,733 | 894 | 89 |
+| openff-units | 529,030 | 44,086 | 4,409 |
+| openff-utilities | 531,547 | 44,296 | 4,430 |
+
 > **Caveat:** These numbers vastly overcount real installs. OpenFF packages depend on each
 > other, so a single user install pulls in many packages simultaneously. CI/CD pipelines
 > also contribute heavily. The true user count is likely 5–10× lower than these figures.
