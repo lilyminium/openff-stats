@@ -139,7 +139,7 @@ against the files that matched (dependency manifests / real import
 statements) and tagged `status=auto` or `exclude` with the evidence recorded
 per row. Only `auto`/`manual` rows are counted below.
 
-| Group (package imported) | Repos | External repos | Stars | External stars | With Python config |
+| Group (package imported) | Repos | External repos | Stars | External stars | With Python Installation |
 |--------------------------|-------|----------------|-------|----------------|--------------------|
 | openff-toolkit | 660 | 544 | 14,067 | 12,618 | 249 |
 | openff-qcsubmit | 73 | 1 | 364 | 8 | 19 |
