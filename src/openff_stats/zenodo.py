@@ -71,6 +71,7 @@ def add_zenodo_record(
     id_or_doi: str,
     inputs_dir: str = "inputs/zenodo",
     group: str = "general",
+    move: bool = False,
 ) -> None:
     """Add a Zenodo record to the curated group CSV via the Zenodo API.
 
@@ -81,9 +82,10 @@ def add_zenodo_record(
     inputs_dir
         Directory of group CSVs (filename = group classification).
     group
-        Group file to append to (``<inputs_dir>/<group>.csv``).  The
-        duplicate check spans every group file, so a record can only live in
-        one group.
+        Group file to append to (``<inputs_dir>/<group>.csv``).
+    move
+        If True, move the record from another group to the target group.
+        If False, warn but do not add if it exists in another group.
     """
     record_id = _parse_zenodo_id(id_or_doi)
     response = requests.get(f"{ZENODO_BASE}/records/{record_id}", timeout=60)
@@ -93,18 +95,44 @@ def add_zenodo_record(
     row = _record_to_row(response.json())
     print(f"{row['zenodo_id']}: {row['title']} ({row['resource_type']}, {row['publication_year']})")
 
+    # Check all groups for existing record
     all_groups = curated.load_groups(inputs_dir, list(row))
-    existing = all_groups["zenodo_id"].fillna("").astype(str).str.strip() == str(row["zenodo_id"])
-    if existing.any():
-        found_group = all_groups.loc[existing, "group"].iloc[0]
+    existing_mask = all_groups["zenodo_id"].fillna("").astype(str).str.strip() == str(row["zenodo_id"])
+    
+    inputs_csv = curated.group_path(inputs_dir, group)
+    df = curated.load(inputs_csv, list(row))
+    existing_in_target = df["zenodo_id"].fillna("").astype(str).str.strip() == str(row["zenodo_id"])
+    
+    if existing_in_target.any():
         print(
-            f"Record already present in group '{found_group}', "
+            f"Record already present in group '{group}', "
             f"no changes made: {row['zenodo_id']}"
         )
         return
-
-    inputs_csv = curated.group_path(inputs_dir, group)
-    df = curated.load(inputs_csv, list(row))
+    
+    # Check if it exists in another group
+    if existing_mask.any():
+        existing_groups = all_groups.loc[existing_mask, "group"].unique().tolist()
+        existing_groups = [g for g in existing_groups if g != group]
+        
+        if existing_groups:
+            if not move:
+                print(
+                    f"Record already present in group(s): {', '.join(existing_groups)}. "
+                    f"Use --move to transfer to '{group}'."
+                )
+                return
+            else:
+                # Remove from other groups
+                for other_group in existing_groups:
+                    other_csv = curated.group_path(inputs_dir, other_group)
+                    other_df = curated.load(other_csv, list(row))
+                    other_existing = other_df["zenodo_id"].fillna("").astype(str).str.strip() == str(row["zenodo_id"])
+                    if other_existing.any():
+                        other_df = other_df[~other_existing].reset_index(drop=True)
+                        curated.save(other_df, other_csv)
+                        print(f"Moved record from group '{other_group}' to '{group}': {row['zenodo_id']}")
+    
     df = curated.append_row(df, row)
     df["_year_sort"] = pd.to_numeric(df["publication_year"], errors="coerce")
     df = df.sort_values(

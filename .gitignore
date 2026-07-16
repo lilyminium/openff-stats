@@ -171,3 +171,6 @@ STATUS.md
 
 # Discovery output for human review — scratch by design, never committed
 candidates/
+
+# Agent workflow (local only, not tracked)
+.agents/
